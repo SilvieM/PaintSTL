@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Assets;
+using Assets.Classes;
 using UnityEngine;
 
 public class Generate : MonoBehaviour
@@ -30,205 +31,131 @@ public class Generate : MonoBehaviour
 
             var greenTriangles = new List<Triangle>();
             var otherTriangles = new List<Triangle>();
+            var allTriangles = new List<Triangle>();
+            var allVertices = new Dictionary<Vector3, Vertex>();
             foreach (var (subMesh, subMeshIndex) in subMeshes.LoopIndex())
             {
-                //var currentTriangle = new Triangle();
-                //var counter = 0;
-                //foreach (var (color, index) in subMesh.colors.LoopIndex())
-                //{
-                //    //if (color == Color.green)
-                //    {
-                //        var vertex = subMesh.vertices[index];
-                //        switch (counter)
-                //        {
-                //            case 0: currentTriangle.a = vertex;
-                //                currentTriangle.n = subMesh.normals[index];
-                //                currentTriangle.subMeshNumber = subMeshIndex;
-                //                currentTriangle.vertexNumberOfA = index;
-
-                //                counter++;
-                //                break;
-                //            case 1: currentTriangle.b = vertex;
-                //                counter++;
-                //                break;
-                //            case 2: currentTriangle.c = vertex;
-                //                if(color==Color.green)
-                //                    greenTriangles.Add(currentTriangle);
-                //                else otherTriangles.Add(currentTriangle);
-                //                currentTriangle = new Triangle();
-                //                counter = 0;
-                //                break;
-                //        }
-
-                //    }
-                //}
-                int[] t = subMesh.triangles;
-                int triangleCount = t.Length;
-                Vector3[] v = subMesh.vertices;
-                Vector3[] n = subMesh.normals;
+                int triangleCount = subMesh.triangles.Length;
+                var verts = subMesh.vertices;
+                var normals = subMesh.normals;
+                var colors = subMesh.colors; //all these must be called here, and not time and time again in the loop.
                 for (int i = 0; i < triangleCount; i += 3)
                 {
-                    int a = t[i], b = t[i + 1], c = t[i + 2];
-                    var triangle = new Triangle()
                     {
-                        a = v[a],
-                        b = v[b],
-                        c = v[c],
-                        n = n[a],
-                        subMeshNumber = subMeshIndex,
-                        vertexNumberOfA = a
-                    };
-                    if (subMesh.colors[i] == Color.green) greenTriangles.Add(triangle);
-                    else otherTriangles.Add(triangle);
+                        var currentTriangle = new Triangle();
+
+                        if (!allVertices.ContainsKey(verts[i])) allVertices.Add(verts[i], new Vertex(verts[i], currentTriangle, i, subMeshIndex));
+                        currentTriangle.a = allVertices[verts[i]];
+                        allVertices[verts[i]].belongsTo.Add(currentTriangle);
+
+                        if (!allVertices.ContainsKey(verts[i+1])) allVertices.Add(verts[i+1], new Vertex(verts[i+1], currentTriangle, i+1, subMeshIndex));
+                        currentTriangle.b = allVertices[verts[i+1]];
+                        allVertices[verts[i+1]].belongsTo.Add(currentTriangle);
+
+                        if (!allVertices.ContainsKey(verts[i+2])) allVertices.Add(verts[i+2], new Vertex(verts[i+2], currentTriangle, i+2, subMeshIndex));
+                        currentTriangle.c = allVertices[verts[i+2]];
+                        allVertices[verts[i+2]].belongsTo.Add(currentTriangle);
+
+                        currentTriangle.n = normals[i];
+                        currentTriangle.subMeshNumber = subMeshIndex;
+                        currentTriangle.vertexNumberOfA = i;
+                        currentTriangle.color = colors[i];
+                        allTriangles.Add(currentTriangle);
+                    }
 
                 }
             }
+            Debug.Log($"Found triangles: {allTriangles.Count}");
 
-            Debug.Log($"Found green Triangles: {greenTriangles.Count} and other Triangles: {otherTriangles.Count} in mesh {mesh.gameObject.name}");
-
-            foreach (var firstTriangle in greenTriangles) //if it has already found all their neighbors there cant be any more
+            var edgeVertices = new List<Vertex>();
+            foreach (var triangle in allTriangles)
             {
-                if(firstTriangle.hasAllNeighbors) continue;
-                foreach (var secondTriangle in greenTriangles)
+                if (triangle.color == Color.green)
                 {
-                    if(secondTriangle.hasAllNeighbors) continue; 
-                    if(secondTriangle.Equals(firstTriangle)) continue;
-                    if(firstTriangle.TryAddAsNeighbor(secondTriangle)) //If we could add it to one, we can also add it to the other. If not, we can save the effort.
-                        secondTriangle.TryAddAsNeighbor(firstTriangle);
+                    triangle.CalcDirectNeighbors();
+                    if (triangle.abNeighbor.color != Color.green)
+                    {
+                        edgeVertices.Add(triangle.a);
+                        edgeVertices.Add(triangle.b);
+                    }
+
+                    if (triangle.bcNeighbor.color != Color.green)
+                    {
+                        edgeVertices.Add(triangle.b);
+                        edgeVertices.Add(triangle.c);
+                    }
+
+                    if (triangle.caNeighbor.color != Color.green)
+                    {
+                        edgeVertices.Add(triangle.c);
+                        edgeVertices.Add(triangle.a);
+                    }
                 }
             }
-
-            var edges = new List<Edge>();
-            foreach (var greenTriangle in greenTriangles)
+            for (int i=0; i<edgeVertices.Count-1; i+=2)
             {
-                if (greenTriangle.abNeighbor == null)
-                {
-                    edges.Add(new Edge()
-                    {
-                        belongsToTriangle = greenTriangle,
-                        side1 = greenTriangle.a,
-                        side2 = greenTriangle.b
-                    });
-                }
-                if (greenTriangle.bcNeighbor == null)
-                {
-                    edges.Add(new Edge()
-                    {
-                        belongsToTriangle = greenTriangle,
-                        side1 = greenTriangle.b,
-                        side2 = greenTriangle.c
-                    });
-                }
-                if (greenTriangle.caNeighbor == null)
-                {
-                    edges.Add(new Edge()
-                    {
-                        belongsToTriangle = greenTriangle,
-                        side1 = greenTriangle.c,
-                        side2 = greenTriangle.a
-                    });
-                }
+                    Debug.DrawLine(mesh.transform.TransformPoint(edgeVertices[i].pos), mesh.transform.TransformPoint(edgeVertices[i+1].pos), Color.red,
+                        5, false);
             }
-
-            Debug.Log($"Edges: {edges.Count}");
-            foreach (var edge in edges)
-            {
-                //Debug.DrawLine(edge.side1/20+new Vector3(2.896f,1.54f,-0.279f), edge.side2/20 + new Vector3(2.896f, 1.54f, -0.279f), Color.red, 5, false);
-                Debug.DrawLine(mesh.transform.TransformPoint(edge.side1), mesh.transform.TransformPoint(edge.side2), Color.red, 5, false);
-            }
-
         }
     }
 
-    public class Triangle
-    {
-        public Vector3 a;
-        public Vector3 b;
-        public Vector3 c;
-        public Vector3 n;
-        public int vertexNumberOfA;
-        public int subMeshNumber;
-        public Triangle abNeighbor;
-        public Triangle bcNeighbor;
-        public Triangle caNeighbor;
+    //private static void MarkOpenEdges(List<Triangle> greenTriangles, OnMeshClick mesh)
+    //{
+    //    foreach (var firstTriangle in greenTriangles) //if it has already found all their neighbors there cant be any more
+    //    {
+    //        if (firstTriangle.hasAllNeighbors) continue;
+    //        foreach (var secondTriangle in greenTriangles)
+    //        {
+    //            if (secondTriangle.hasAllNeighbors) continue;
+    //            if (secondTriangle.Equals(firstTriangle)) continue;
+    //            if (firstTriangle.TryAddAsNeighbor(secondTriangle)
+    //            ) //If we could add it to one, we can also add it to the other. If not, we can save the effort.
+    //                secondTriangle.TryAddAsNeighbor(firstTriangle);
+    //        }
+    //    }
 
-        public Triangle()
-        {
-        }
+    //    var edges = new List<Edge>();
+    //    foreach (var greenTriangle in greenTriangles)
+    //    {
+    //        if (greenTriangle.abNeighbor == null)
+    //        {
+    //            edges.Add(new Edge()
+    //            {
+    //                belongsToTriangle = greenTriangle,
+    //                side1 = greenTriangle.a,
+    //                side2 = greenTriangle.b
+    //            });
+    //        }
 
-        public bool PointIsOnCornerOf(Vector3 point)
-        {
-            if (point == a || point == b || point == c) return true;
-            return false;
-        }
-        public bool IsAdjacent(Triangle other)
-        {
-            if (PointIsOnCornerOf(other.a))
-            {
-                if (PointIsOnCornerOf(other.b) || PointIsOnCornerOf(other.c)) return true;
-            }
-            if (PointIsOnCornerOf(other.b))
-            {
-                if (PointIsOnCornerOf(other.a) || PointIsOnCornerOf(other.c)) return true;
-            }
-            if (PointIsOnCornerOf(other.c))
-            {
-                if (PointIsOnCornerOf(other.a) || PointIsOnCornerOf(other.b)) return true;
-            }
+    //        if (greenTriangle.bcNeighbor == null)
+    //        {
+    //            edges.Add(new Edge()
+    //            {
+    //                belongsToTriangle = greenTriangle,
+    //                side1 = greenTriangle.b,
+    //                side2 = greenTriangle.c
+    //            });
+    //        }
 
-            return false;
-        }
+    //        if (greenTriangle.caNeighbor == null)
+    //        {
+    //            edges.Add(new Edge()
+    //            {
+    //                belongsToTriangle = greenTriangle,
+    //                side1 = greenTriangle.c,
+    //                side2 = greenTriangle.a
+    //            });
+    //        }
+    //    }
 
-        public bool hasAllNeighbors => abNeighbor != null && bcNeighbor != null && caNeighbor != null;
+    //    Debug.Log($"Edges: {edges.Count}");
+    //    foreach (var edge in edges)
+    //    {
+    //        //Debug.DrawLine(edge.side1/20+new Vector3(2.896f,1.54f,-0.279f), edge.side2/20 + new Vector3(2.896f, 1.54f, -0.279f), Color.red, 5, false);
+    //        Debug.DrawLine(mesh.transform.TransformPoint(edge.side1), mesh.transform.TransformPoint(edge.side2), Color.red,
+    //            5, false);
+    //    }
+    //}
 
-        public bool TryAddAsNeighbor(Triangle potentialNeighbor)
-        {
-            if (potentialNeighbor.PointIsOnCornerOf(a))
-            {
-                if (potentialNeighbor.PointIsOnCornerOf(b))
-                {
-                    abNeighbor = potentialNeighbor;
-                    return true;
-                }
-
-                if (potentialNeighbor.PointIsOnCornerOf(c))
-                {
-                    caNeighbor = potentialNeighbor;
-                    return true;
-                }
-                
-            }
-            if (potentialNeighbor.PointIsOnCornerOf(b) && potentialNeighbor.PointIsOnCornerOf(c))
-            {
-                bcNeighbor = potentialNeighbor;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        public override bool Equals(System.Object obj)
-        {
-            //Check for null and compare run-time types.
-            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
-            {
-                return false;
-            }
-            else
-            {
-                Triangle other = (Triangle)obj;
-                return (a == other.a) && (b == other.b)&&(c==other.c); //Right now we never have the case of generating triangles that have their points in other orders.
-            }
-        }
-
-
-    }
-
-    public class Edge
-    {
-        public Triangle belongsToTriangle;
-        public Vector3 side1;
-        public Vector3 side2;
-    }
 }

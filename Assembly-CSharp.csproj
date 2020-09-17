@@ -57,9 +57,11 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\OnMeshClick.cs" />
      <Compile Include="Assets\Scripts\SimpleCameraController.cs" />
+     <Compile Include="Assets\Classes\Triangle.cs" />
      <Compile Include="Assets\Generate.cs" />
      <Compile Include="Assets\MyExtensions.cs" />
      <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
+     <Compile Include="Assets\Classes\Vertex.cs" />
  <Reference Include="Unity.RenderPipeline.Universal.ShaderLibrary">
  <HintPath>F:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/Unity.RenderPipeline.Universal.ShaderLibrary.dll</HintPath>
  </Reference>

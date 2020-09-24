@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.Classes;
 
 namespace Assets
 {
@@ -9,5 +11,13 @@ namespace Assets
     {
         public static IEnumerable<(T item, int index)> LoopIndex<T>(this IEnumerable<T> self) =>
             self.Select((item, index) => (item, index));
+
+        public static void AddIfNotExists(this Dictionary<Vector3, Vertex> dictionary, Vector3 key, Vertex value)
+        {
+            if(!dictionary.ContainsKey(key))
+                dictionary[key] = value;
+        }
+
+
     }
 }

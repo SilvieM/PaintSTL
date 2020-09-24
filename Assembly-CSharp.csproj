@@ -59,6 +59,8 @@
      <Compile Include="Assets\Scripts\SimpleCameraController.cs" />
      <Compile Include="Assets\Classes\Triangle.cs" />
      <Compile Include="Assets\Generate.cs" />
+     <Compile Include="Assets\Import.cs" />
+     <Compile Include="Assets\Classes\Edge.cs" />
      <Compile Include="Assets\MyExtensions.cs" />
      <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
      <Compile Include="Assets\Classes\Vertex.cs" />

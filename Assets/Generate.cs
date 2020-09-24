@@ -44,17 +44,17 @@ public class Generate : MonoBehaviour
                     {
                         var currentTriangle = new Triangle();
 
-                        if (!allVertices.ContainsKey(verts[i])) allVertices.Add(verts[i], new Vertex(verts[i], currentTriangle, i, subMeshIndex));
+                        allVertices.AddIfNotExists(verts[i], new Vertex(verts[i], i, subMeshIndex));
                         currentTriangle.a = allVertices[verts[i]];
-                        allVertices[verts[i]].belongsTo.Add(currentTriangle);
+                        allVertices[verts[i]].AddBelongsTo(currentTriangle);
 
-                        if (!allVertices.ContainsKey(verts[i+1])) allVertices.Add(verts[i+1], new Vertex(verts[i+1], currentTriangle, i+1, subMeshIndex));
+                        allVertices.AddIfNotExists(verts[i+1], new Vertex(verts[i+1], i+1, subMeshIndex));
                         currentTriangle.b = allVertices[verts[i+1]];
-                        allVertices[verts[i+1]].belongsTo.Add(currentTriangle);
+                        allVertices[verts[i+1]].AddBelongsTo(currentTriangle);
 
-                        if (!allVertices.ContainsKey(verts[i+2])) allVertices.Add(verts[i+2], new Vertex(verts[i+2], currentTriangle, i+2, subMeshIndex));
+                        allVertices.AddIfNotExists(verts[i + 2], new Vertex(verts[i + 2], i + 3, subMeshIndex));
                         currentTriangle.c = allVertices[verts[i+2]];
-                        allVertices[verts[i+2]].belongsTo.Add(currentTriangle);
+                        allVertices[verts[i+2]].AddBelongsTo(currentTriangle);
 
                         currentTriangle.n = normals[i];
                         currentTriangle.subMeshNumber = subMeshIndex;
@@ -67,7 +67,7 @@ public class Generate : MonoBehaviour
             }
             Debug.Log($"Found triangles: {allTriangles.Count}");
 
-            var edgeVertices = new List<Vertex>();
+            var openEdges = new List<Edge>();
             foreach (var triangle in allTriangles)
             {
                 if (triangle.color == Color.green)
@@ -75,87 +75,61 @@ public class Generate : MonoBehaviour
                     triangle.CalcDirectNeighbors();
                     if (triangle.abNeighbor.color != Color.green)
                     {
-                        edgeVertices.Add(triangle.a);
-                        edgeVertices.Add(triangle.b);
+                        openEdges.Add(new Edge(triangle.a, triangle.b,
+                            new List<Triangle>() {triangle, triangle.abNeighbor}));
                     }
 
                     if (triangle.bcNeighbor.color != Color.green)
                     {
-                        edgeVertices.Add(triangle.b);
-                        edgeVertices.Add(triangle.c);
+                        openEdges.Add(new Edge(triangle.b, triangle.c,
+                            new List<Triangle>() { triangle, triangle.bcNeighbor }));
                     }
 
                     if (triangle.caNeighbor.color != Color.green)
                     {
-                        edgeVertices.Add(triangle.c);
-                        edgeVertices.Add(triangle.a);
+                        openEdges.Add(new Edge(triangle.c, triangle.a,
+                            new List<Triangle>() { triangle, triangle.caNeighbor }));
                     }
                 }
             }
-            for (int i=0; i<edgeVertices.Count-1; i+=2)
+            foreach (var openEdge in openEdges)
             {
-                    Debug.DrawLine(mesh.transform.TransformPoint(edgeVertices[i].pos), mesh.transform.TransformPoint(edgeVertices[i+1].pos), Color.red,
+                    Debug.DrawLine(mesh.transform.TransformPoint(openEdge.vertex1.pos), mesh.transform.TransformPoint(openEdge.vertex2.pos), Color.red,
                         5, false);
             }
+
+            var newTriangles = new List<Triangle>();
+            foreach (var openEdge in openEdges)
+            {
+                var dir = (-openEdge.belongsTo[0].n.normalized - openEdge.belongsTo[1].n.normalized).normalized;
+                var edgeLength = (openEdge.vertex2.pos - openEdge.vertex1.pos).magnitude;
+                Vector3 edgeVector = openEdge.vertex2.pos - openEdge.vertex1.pos;
+                var middlePoint = openEdge.vertex1.pos + edgeVector / 2;
+                var thirdPoint = middlePoint + dir * edgeLength/2;
+                var newTriangle = new Triangle();
+                newTriangle.a = openEdge.vertex1;
+                newTriangle.b = openEdge.vertex2;
+                var newVertex = new Vertex(thirdPoint, 1111, 0);
+                allVertices.AddIfNotExists(thirdPoint, newVertex);
+                newTriangle.c = newVertex;
+                newVertex.AddBelongsTo(newTriangle);
+                newTriangles.Add(newTriangle);
+            }
+            var lastSubmesh = subMeshes.Last();
+            var triangles = lastSubmesh.triangles.ToList();
+            var vertices = lastSubmesh.vertices.ToList();
+            foreach (var newTriangle in newTriangles)
+            {
+                var index = triangles.Count;
+                triangles.AddRange(new List<int>(){index, index+1, index+2});
+                vertices.AddRange(new List<Vector3>(){ newTriangle.a.pos, newTriangle.b.pos, newTriangle.c.pos });
+            }
+
+            lastSubmesh.triangles = triangles.ToArray();
+            lastSubmesh.vertices = vertices.ToArray();
+
         }
     }
 
-    //private static void MarkOpenEdges(List<Triangle> greenTriangles, OnMeshClick mesh)
-    //{
-    //    foreach (var firstTriangle in greenTriangles) //if it has already found all their neighbors there cant be any more
-    //    {
-    //        if (firstTriangle.hasAllNeighbors) continue;
-    //        foreach (var secondTriangle in greenTriangles)
-    //        {
-    //            if (secondTriangle.hasAllNeighbors) continue;
-    //            if (secondTriangle.Equals(firstTriangle)) continue;
-    //            if (firstTriangle.TryAddAsNeighbor(secondTriangle)
-    //            ) //If we could add it to one, we can also add it to the other. If not, we can save the effort.
-    //                secondTriangle.TryAddAsNeighbor(firstTriangle);
-    //        }
-    //    }
-
-    //    var edges = new List<Edge>();
-    //    foreach (var greenTriangle in greenTriangles)
-    //    {
-    //        if (greenTriangle.abNeighbor == null)
-    //        {
-    //            edges.Add(new Edge()
-    //            {
-    //                belongsToTriangle = greenTriangle,
-    //                side1 = greenTriangle.a,
-    //                side2 = greenTriangle.b
-    //            });
-    //        }
-
-    //        if (greenTriangle.bcNeighbor == null)
-    //        {
-    //            edges.Add(new Edge()
-    //            {
-    //                belongsToTriangle = greenTriangle,
-    //                side1 = greenTriangle.b,
-    //                side2 = greenTriangle.c
-    //            });
-    //        }
-
-    //        if (greenTriangle.caNeighbor == null)
-    //        {
-    //            edges.Add(new Edge()
-    //            {
-    //                belongsToTriangle = greenTriangle,
-    //                side1 = greenTriangle.c,
-    //                side2 = greenTriangle.a
-    //            });
-    //        }
-    //    }
-
-    //    Debug.Log($"Edges: {edges.Count}");
-    //    foreach (var edge in edges)
-    //    {
-    //        //Debug.DrawLine(edge.side1/20+new Vector3(2.896f,1.54f,-0.279f), edge.side2/20 + new Vector3(2.896f, 1.54f, -0.279f), Color.red, 5, false);
-    //        Debug.DrawLine(mesh.transform.TransformPoint(edge.side1), mesh.transform.TransformPoint(edge.side2), Color.red,
-    //            5, false);
-    //    }
-    //}
 
 }

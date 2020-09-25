@@ -64,6 +64,7 @@
      <Compile Include="Assets\MyExtensions.cs" />
      <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
      <Compile Include="Assets\Classes\Vertex.cs" />
+     <Compile Include="Assets\InterfaceFunctions.cs" />
  <Reference Include="Unity.RenderPipeline.Universal.ShaderLibrary">
  <HintPath>F:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/Unity.RenderPipeline.Universal.ShaderLibrary.dll</HintPath>
  </Reference>

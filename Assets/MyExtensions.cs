@@ -17,7 +17,11 @@ namespace Assets
             if(!dictionary.ContainsKey(key))
                 dictionary[key] = value;
         }
-
+        public static void AddIfNotExists(this Dictionary<(Vector3, Vector3), Edge> dictionary, (Vector3, Vector3) key, Edge value)
+        {
+            if (!dictionary.ContainsKey(key))
+                dictionary[key] = value;
+        }
 
     }
 }

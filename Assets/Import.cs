@@ -46,9 +46,10 @@ public class Import : MonoBehaviour
             go.name = name;
             meshes[0].name = "Mesh-" + name;
             go.GetComponent<MeshFilter>().sharedMesh = meshes[0];
-            var res = Resources.Load("STLMeshMaterial2") as Material;
+            var res = Resources.Load("SeeThruSTLMeshMaterial") as Material;
             go.GetComponent<MeshRenderer>().material = res;
             go.AddComponent<OnMeshClick>();
+            go.AddComponent<Generate>();
             go.AddComponent<MeshCollider>();
             go.transform.position = Vector3.zero;
             go.transform.localScale = new Vector3(0.1f,0.1f,0.1f);
@@ -68,12 +69,13 @@ public class Import : MonoBehaviour
                 var mesh = meshes[i];
                 mesh.name = "Mesh-" + name + "(" + i + ")";
                 go.GetComponent<MeshFilter>().sharedMesh = mesh;
-                var res = Resources.Load("STLMeshMaterial2") as Material;
+                var res = Resources.Load("SeeThruSTLMeshMaterial") as Material;
                 go.GetComponent<MeshRenderer>().material = res;
                 go.AddComponent<MeshCollider>();
                 go.transform.position = Vector3.zero;
             }
             parent.AddComponent<OnMeshClick>();
+            parent.AddComponent<Generate>();
             parent.transform.position = Vector3.zero;
             parent.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             created = parent;

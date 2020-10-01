@@ -34,4 +34,23 @@ public class InterfaceFunctions : MonoBehaviour
         }
     }
 
+    public void Generate()
+    {
+        var objects = GameObject.FindObjectsOfType<Generate>();
+        foreach (var generate in objects)
+        {
+            generate.GenerateMesh();
+        }
+    }
+
+    public void Split()
+    {
+        var objects = GameObject.FindObjectsOfType<Generate>();
+        foreach (var generate in objects)
+        {
+            generate.Split();
+        }
+    }
+
+
 }

@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 
 public class OnMeshClick : MonoBehaviour
 {
+    //TODO make the colors be kept in sync with what the generate script builds!
     private List<Collider> childrenColliders;
     // Start is called before the first frame update
     void Start()

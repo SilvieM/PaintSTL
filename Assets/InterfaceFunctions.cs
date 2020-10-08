@@ -52,5 +52,22 @@ public class InterfaceFunctions : MonoBehaviour
         }
     }
 
+    public void BuildBorders()
+    {
+        var objects = GameObject.FindObjectsOfType<Generate>();
+        foreach (var generate in objects)
+        {
+            generate.BuildBorders();
+        }
+    }
+
+    public void DisplayNormals()
+    {
+        var objects = GameObject.FindObjectsOfType<Generate>();
+        foreach (var generate in objects)
+        {
+            generate.DisplayNormals();
+        }
+    }
 
 }

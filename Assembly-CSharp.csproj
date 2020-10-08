@@ -61,6 +61,7 @@
      <Compile Include="Assets\Classes\Plane.cs" />
      <Compile Include="Assets\Generate.cs" />
      <Compile Include="Assets\Import.cs" />
+     <Compile Include="Assets\DrawArrow.cs" />
      <Compile Include="Assets\Classes\Edge.cs" />
      <Compile Include="Assets\InterfaceFunctions.cs" />
      <Compile Include="Assets\MyExtensions.cs" />

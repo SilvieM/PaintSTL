@@ -19,6 +19,21 @@ namespace Assets.Classes
         public  Edge EdgeCa;
         public Triangle(Vertex a, Vertex b, Vertex c, Vector3 n)
         {
+            initTriangle(a, b, c, n);
+            //var compareN = n.normalized;
+            //var prelimN = Vector3.Cross(c.pos - a.pos, b.pos - a.pos).normalized;
+        }
+
+        public Triangle(Vertex a, Vertex b, Vertex c, Vector3 n, Vector3 normalOfOther)
+        {
+            var prelimN = Vector3.Cross(c.pos - a.pos, b.pos - a.pos).normalized;
+            //the Dot product of this tri and the other colored tri should be smaller than 0 = obtuse angle (weiter Winkel) so that normal always "looks" away => outside
+            if (Vector3.Dot(prelimN, normalOfOther) < 0) initTriangle(a, b, c, prelimN);  
+            else initTriangle(b,a,c,-prelimN); //if it was in the wrong orientation, also turn around b and a so that they go in the same direction always
+        }
+
+        private void initTriangle(Vertex a, Vertex b, Vertex c, Vector3 n)
+        {
             this.a = a;
             this.b = b;
             this.c = c;
@@ -28,7 +43,7 @@ namespace Assets.Classes
             EdgeAb = new Edge(a, b, this);
             EdgeBc = new Edge(b, c, this);
             EdgeCa = new Edge(c, a, this);
-            this.n = n == Vector3.zero ? Vector3.Cross(b.pos - a.pos, c.pos - a.pos) : n;
+            this.n = n.normalized;
         }
 
         public Triangle abNeighbor;

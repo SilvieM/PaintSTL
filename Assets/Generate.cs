@@ -11,24 +11,12 @@ using Object = UnityEngine.Object;
 
 public class Generate : MonoBehaviour
 {
-    //TODO move the functionality on each object, and only call the methods from here.
     public Dictionary<(Vector3, Vector3), Edge> allEdges { get; set; }
 
     public Dictionary<Vector3, Vertex> allVertices { get; set; }
 
     public List<Triangle> allTriangles { get; set; }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 
     public void GenerateMesh()
     {
@@ -66,23 +54,34 @@ public class Generate : MonoBehaviour
             }
         }
         Debug.Log($"Found triangles: {allTriangles.Count}");
+        
+    }
+
+    public void BuildBorders()
+    {
         var allNewTriangles = new List<Triangle>();
-        for (int i = 0; i <= 4; i++)
+        while (true)
         {
-            var openEdges = CalcOpenEdges(i<0);
+            var openEdges = CalcOpenEdges(allTriangles);
+            Debug.Log("Open Edges found: "+openEdges.Count);
+            if (openEdges.Count == 0) break;
             var newTriangles = CreateNewTriangles(openEdges);
             allNewTriangles.AddRange(newTriangles);
             allTriangles.AddRange(newTriangles);
+            
         }
-        
+        var subMeshes = new List<Mesh>();
+        var meshFilters = transform.GetComponentsInChildren<MeshFilter>();
+        subMeshes.AddRange(meshFilters.Select(meshFilter => meshFilter.sharedMesh));
+
         DrawNewTriangles(subMeshes, allNewTriangles);
-        var openEdgesToDraw = CalcOpenEdges();
-        MarkOpenEdges(openEdgesToDraw);
+        //var openEdgesToDraw = CalcOpenEdges();
+        //MarkEdges(openEdgesToDraw);
     }
 
-    private void MarkOpenEdges(List<Edge> openEdges)
+    private void MarkEdges(List<Edge> edges)
     {
-        foreach (var openEdge in openEdges)
+        foreach (var openEdge in edges)
         {
             Debug.DrawLine(transform.TransformPoint(openEdge.vertex1.pos),
                 transform.TransformPoint(openEdge.vertex2.pos), Color.red,
@@ -123,8 +122,10 @@ public class Generate : MonoBehaviour
     private List<Triangle> CreateNewTriangles(List<Edge> openEdges)
     {
         var newTriangles = new List<Triangle>();
-        foreach (var openEdge in openEdges)
+        while (openEdges.Any())
         {
+            var openEdge = openEdges.First();
+            openEdges.RemoveAt(0); //basically Dequeue
             if (openEdge.belongsTo2 != null) //This is the case for first order triangles: Create new triangle for each free edge
             {
                 var dir = (-openEdge.belongsTo.n.normalized - openEdge.belongsTo2.n.normalized).normalized;
@@ -134,19 +135,20 @@ public class Generate : MonoBehaviour
                 var thirdPoint = middlePoint + dir * edgeLength / 2;
                 var newVertex = new Vertex(thirdPoint, 1111, 0);
                 allVertices.AddIfNotExists(thirdPoint, newVertex);
-                var newTriangle = new Triangle(openEdge.vertex1, openEdge.vertex2, allVertices[thirdPoint], Vector3.zero);//TODO  calculate normals properly!
+                var newTriangle = new Triangle(openEdge.vertex1, openEdge.vertex2, allVertices[thirdPoint], Vector3.zero, openEdge.belongsTo.n.normalized);//TODO  calculate normals properly!
                 newTriangle.color = openEdge.belongsTo.color;
                 newTriangles.Add(newTriangle);
             }
             else //This will happen for all non-firstorder triangles: Create new triangle out of 2 existing edges
             {
-                //TODO make sure that the edges are not used twice!!
                 //Find second open edge
-                var brotherEdge = openEdges.First(edge => edge != openEdge && edge.vertex1 == openEdge.vertex1 || edge.vertex2 == openEdge.vertex1);
+                var brotherEdge = openEdges.FirstOrDefault(edge => edge != openEdge && edge.vertex1 == openEdge.vertex1 || edge.vertex2 == openEdge.vertex1);
                 if (brotherEdge == null) continue;
+                //make sure that the edges are not used twice, that is why brother is removed too
+                openEdges.Remove(brotherEdge);
                 var openVertexOnBrother = brotherEdge.vertex1 == openEdge.vertex1 ? brotherEdge.vertex2 : brotherEdge.vertex1;
                 var newTriangle = new Triangle(openEdge.vertex1, openEdge.vertex2, openVertexOnBrother,
-                    Vector3.zero);
+                    Vector3.zero, openEdge.belongsTo.n.normalized);
                 newTriangle.color = openEdge.belongsTo.color;
                 newTriangles.Add(newTriangle);
             }
@@ -155,30 +157,32 @@ public class Generate : MonoBehaviour
         return newTriangles;
     }
 
-    //TODO also draw new normals
     public void DrawNewTriangles(List<Mesh> subMeshes, List<Triangle> allnewTriangles)
     {
         var lastSubmesh = subMeshes.Last();
         var triangles = lastSubmesh.triangles.ToList();
         var vertices = lastSubmesh.vertices.ToList();
         var colors = lastSubmesh.colors.ToList();
+        var normals = lastSubmesh.normals.ToList();
         foreach (var newTriangle in allnewTriangles)
         {
             var index = triangles.Count;
             triangles.AddRange(new List<int>() { index, index + 1, index + 2 });
             vertices.AddRange(new List<Vector3>() { newTriangle.a.pos, newTriangle.b.pos, newTriangle.c.pos });
             colors.AddRange(new List<Color>() {newTriangle.color, newTriangle.color, newTriangle.color});
+            normals.AddRange(new List<Vector3>() { newTriangle.n, newTriangle.n, newTriangle.n });
         }
 
         lastSubmesh.vertices = vertices.ToArray();
         lastSubmesh.triangles = triangles.ToArray();
         lastSubmesh.colors = colors.ToArray();
+        lastSubmesh.normals = normals.ToArray();
     }
 
-    private List<Edge> CalcOpenEdges(bool firstpass = false)
+    private List<Edge> CalcOpenEdges(List<Triangle> triangles)
     {
         var openEdges = new List<Edge>();
-        foreach (var triangle in allTriangles)
+        foreach (var triangle in triangles)
         {
             if (triangle.color == Color.green)
             {
@@ -242,6 +246,29 @@ public class Generate : MonoBehaviour
         go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
 
         
+    }
+
+    public void DisplayNormals()
+    {
+        foreach (var triangle in allTriangles)
+        {
+            if (triangle.color != Color.green) continue;
+            var mid = (triangle.a.pos + triangle.b.pos + triangle.c.pos) / 3;
+            DrawArrow.LineForDebug(transform.TransformPoint(mid), transform.TransformPoint(mid + triangle.n.normalized), Color.cyan);
+            //Debug.DrawLine(transform.TransformPoint(mid), transform.TransformPoint(mid+triangle.n.normalized), Color.cyan,
+             //   5, false);
+
+        }
+    }
+
+    public void DisplayNormals(List<Triangle> triangles)
+    {
+        foreach (var triangle in triangles)
+        {
+            var mid = (triangle.a.pos + triangle.b.pos + triangle.c.pos) / 3;
+            Debug.DrawLine(transform.TransformPoint(mid), transform.TransformPoint(mid + triangle.n.normalized), Color.cyan,
+                5, false);
+        }
     }
 
 

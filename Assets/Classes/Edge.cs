@@ -10,15 +10,16 @@ namespace Assets.Classes
         public Vertex vertex2;
         public readonly Vector3 Delta;
         public Triangle belongsTo;
+
         public Triangle belongsTo2
         {
             get
             {
 
-                 if (belongsTo.EdgeAb == this) return belongsTo.abNeighbor;
-                 if (belongsTo.EdgeBc == this) return belongsTo.bcNeighbor;
-                 if (belongsTo.EdgeCa == this) return belongsTo.caNeighbor;
-                 else return null;
+                if (belongsTo.EdgeAb == this) return belongsTo.abNeighbor;
+                if (belongsTo.EdgeBc == this) return belongsTo.bcNeighbor;
+                if (belongsTo.EdgeCa == this) return belongsTo.caNeighbor;
+                else return null;
             }
         }
 
@@ -33,6 +34,8 @@ namespace Assets.Classes
         public Vector3 PointAt(float t) => vertex1.pos + t * Delta;
         public float LengthSquared => Delta.sqrMagnitude;
 
-        public float Project(Vector3 p) => Vector3.Dot((p - vertex1.pos),Delta) / LengthSquared;
+        public float Project(Vector3 p) => Vector3.Dot((p - vertex1.pos), Delta) / LengthSquared;
+
+        public Vector3 Middlepoint => vertex1.pos + Delta / 2;
     }
 }

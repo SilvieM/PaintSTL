@@ -48,16 +48,16 @@ public class InterfaceFunctions : MonoBehaviour
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
-            generate.Split();
+            //generate.Split();
         }
     }
 
-    public void BuildBorders()
+    public void MakeNewPartMyAlgo()
     {
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
-            generate.BuildBorders();
+            generate.MakeNewPartMyAlgo();
         }
     }
 
@@ -67,6 +67,15 @@ public class InterfaceFunctions : MonoBehaviour
         foreach (var generate in objects)
         {
             generate.DisplayNormals();
+        }
+    }
+
+    public void MakeNewPartPeprAlgo()
+    {
+        var objects = GameObject.FindObjectsOfType<Generate>();
+        foreach (var generate in objects)
+        {
+            generate.MakeNewPartPeprAlgo();
         }
     }
 

@@ -17,6 +17,15 @@ namespace Assets.Classes
         public  Edge EdgeAb;
         public  Edge EdgeBc;
         public  Edge EdgeCa;
+        public Triangle Original;
+
+        /// <summary>
+        /// Constructor to use when n is given and reliable (from stl file)
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <param name="n"></param>
         public Triangle(Vertex a, Vertex b, Vertex c, Vector3 n)
         {
             initTriangle(a, b, c, n);
@@ -24,6 +33,27 @@ namespace Assets.Classes
             //var prelimN = Vector3.Cross(c.pos - a.pos, b.pos - a.pos).normalized;
         }
 
+        /// <summary>
+        /// Constructor that calculates the n based on the order of the other points
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        public Triangle(Vertex a, Vertex b, Vertex c)
+        {
+            var calculatedN = Vector3.Cross(c.pos - a.pos, b.pos - a.pos).normalized;
+            initTriangle(a, b, c, calculatedN);
+            //var compareN = n.normalized;
+        }
+
+        /// <summary>
+        /// Constructor to use when only another side is given, calculates n based on that an might turn around triangle
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <param name="n"></param>
+        /// <param name="normalOfOther"></param>
         public Triangle(Vertex a, Vertex b, Vertex c, Vector3 n, Vector3 normalOfOther)
         {
             var prelimN = Vector3.Cross(c.pos - a.pos, b.pos - a.pos).normalized;
@@ -145,6 +175,26 @@ namespace Assets.Classes
             return null;
         }
 
+        public Triangle GetShiftedCopy(Vector3 shiftBy, Dictionary<Vector3, Vertex> allVertices)
+        {
+            var a = new Vertex(this.a.pos + shiftBy, 0,0);
+            var b = new Vertex(this.b.pos + shiftBy, 0, 0);
+            var c = new Vertex(this.c.pos + shiftBy, 0, 0);
 
+            allVertices.AddIfNotExists(a.pos, a);
+
+            allVertices.AddIfNotExists(b.pos, b);
+
+            allVertices.AddIfNotExists(c.pos, c);
+
+            var currentTriangle = new Triangle(allVertices[c.pos], allVertices[b.pos], allVertices[a.pos], -this.n){Original = this};
+            return currentTriangle;
+        }
+
+        public Triangle GetFlippedCopy()
+        {
+            var currentTriangle = new Triangle(c, b, a, -this.n) { Original = this };
+            return currentTriangle;
+        }
     }
 }

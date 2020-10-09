@@ -9,7 +9,7 @@ public class OnMeshClick : MonoBehaviour
     //TODO make the colors be kept in sync with what the generate script builds!
     private List<Collider> childrenColliders;
     // Start is called before the first frame update
-    void Start()
+    public void Start()
     {
         var thismesh = gameObject.GetComponent<MeshFilter>();
         if(thismesh!= null) thismesh.sharedMesh.colors = Enumerable.Repeat(Color.white, thismesh.sharedMesh.vertices.Length).ToArray();
@@ -40,7 +40,6 @@ public class OnMeshClick : MonoBehaviour
             {
                 
                 Debug.Log($"Clicked on Object {hit.collider.gameObject.name} on triangle {hit.triangleIndex}");
-                Debug.DrawLine(hit.point, hit.point + hit.normal, Color.green);
                 var mesh = hit.transform.gameObject.GetComponent<MeshFilter>().sharedMesh;
                 
                 var colorsNew = mesh.colors;
@@ -50,15 +49,14 @@ public class OnMeshClick : MonoBehaviour
                 }
                 mesh.colors = colorsNew;
 
-
-
-                //Vector3[] vertices = mesh.vertices;
-                //for (int i = 0; i < 3; i++)
-                //{
-                //    vertices[hit.triangleIndex * 3 + i] -= ray.direction.normalized;
-                //}
-
-                //mesh.vertices = vertices;
+                var triangles = GetComponent<Generate>().allTriangles;
+                
+                var submeshIndex = int.Parse(mesh.name);
+                var paintedTri = triangles.Where(tri =>
+                    tri.subMeshNumber == submeshIndex
+                && tri.vertexNumberOfA == hit.triangleIndex*3);
+                paintedTri.First().color = Color.green;
+                
             }
         }
     }

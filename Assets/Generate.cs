@@ -57,26 +57,55 @@ public class Generate : MonoBehaviour
         
     }
 
-    public void BuildBorders()
+    public void MakeNewPartPeprAlgo()
     {
-        var allNewTriangles = new List<Triangle>();
+        var paintedTriangles = allTriangles.Where(tri => tri.color!= null &&tri.color==Color.green).ToList();
+        if(!paintedTriangles.Any()) return;
+        var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
+        var newTrianglesInsideFace = paintedTriangles.Select(tri => tri.GetShiftedCopy(-avgNormal, allVertices)).ToList();
+        var openEdges = CalcOpenEdges(newTrianglesInsideFace);
+        var newTrianglesSideFaces = new List<Triangle>();
+        foreach (var openEdge in openEdges)
+        {
+            var correspondingEdge = GetCorrespondingEdge(openEdge);
+
+            var triangle1 = new Triangle(allVertices[openEdge.vertex2.pos], allVertices[openEdge.vertex1.pos], allVertices[correspondingEdge.vertex2.pos]);
+            newTrianglesSideFaces.Add(triangle1);
+            var triangle2 = new Triangle(allVertices[correspondingEdge.vertex2.pos], allVertices[correspondingEdge.vertex1.pos], allVertices[openEdge.vertex2.pos] );
+            newTrianglesSideFaces.Add(triangle2);
+        }
+
+        paintedTriangles.AddRange(newTrianglesInsideFace);
+        paintedTriangles.AddRange(newTrianglesSideFaces);
+        MakeNewObject(paintedTriangles, avgNormal);
+
+    }
+
+    private static Edge GetCorrespondingEdge(Edge openEdge)
+    {
+        Edge correspondingEdge;
+        if (openEdge.belongsTo.EdgeAb == openEdge)
+            correspondingEdge = openEdge.belongsTo.Original.EdgeBc;
+        else if (openEdge.belongsTo.EdgeCa == openEdge)
+            correspondingEdge = openEdge.belongsTo.Original.EdgeCa;
+        else correspondingEdge = openEdge.belongsTo.Original.EdgeAb;
+        return correspondingEdge;
+    }
+
+    public void MakeNewPartMyAlgo()
+    {
+        var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == Color.green).ToList();
+        var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
         while (true)
         {
-            var openEdges = CalcOpenEdges(allTriangles);
+            var openEdges = CalcOpenEdges(paintedTriangles, true);
             Debug.Log("Open Edges found: "+openEdges.Count);
             if (openEdges.Count == 0) break;
             var newTriangles = CreateNewTriangles(openEdges);
-            allNewTriangles.AddRange(newTriangles);
-            allTriangles.AddRange(newTriangles);
-            
-        }
-        var subMeshes = new List<Mesh>();
-        var meshFilters = transform.GetComponentsInChildren<MeshFilter>();
-        subMeshes.AddRange(meshFilters.Select(meshFilter => meshFilter.sharedMesh));
+            paintedTriangles.AddRange(newTriangles);
 
-        DrawNewTriangles(subMeshes, allNewTriangles);
-        //var openEdgesToDraw = CalcOpenEdges();
-        //MarkEdges(openEdgesToDraw);
+        }
+        MakeNewObject(paintedTriangles, avgNormal);
     }
 
     private void MarkEdges(List<Edge> edges)
@@ -128,14 +157,12 @@ public class Generate : MonoBehaviour
             openEdges.RemoveAt(0); //basically Dequeue
             if (openEdge.belongsTo2 != null) //This is the case for first order triangles: Create new triangle for each free edge
             {
-                var dir = (-openEdge.belongsTo.n.normalized - openEdge.belongsTo2.n.normalized).normalized;
-                var edgeLength = (openEdge.vertex2.pos - openEdge.vertex1.pos).magnitude;
-                Vector3 edgeVector = openEdge.vertex2.pos - openEdge.vertex1.pos;
-                var middlePoint = openEdge.vertex1.pos + edgeVector / 2;
-                var thirdPoint = middlePoint + dir * edgeLength / 2;
-                var newVertex = new Vertex(thirdPoint, 1111, 0);
+                var dir = (-openEdge.belongsTo.n.normalized + -openEdge.belongsTo2.n.normalized).normalized;
+                var edgeLength = openEdge.Delta.magnitude;
+                var thirdPoint = openEdge.Middlepoint + dir * edgeLength / 2;
+                var newVertex = new Vertex(thirdPoint, 0, 0);
                 allVertices.AddIfNotExists(thirdPoint, newVertex);
-                var newTriangle = new Triangle(openEdge.vertex1, openEdge.vertex2, allVertices[thirdPoint], Vector3.zero, openEdge.belongsTo.n.normalized);//TODO  calculate normals properly!
+                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, allVertices[thirdPoint]);
                 newTriangle.color = openEdge.belongsTo.color;
                 newTriangles.Add(newTriangle);
             }
@@ -147,8 +174,7 @@ public class Generate : MonoBehaviour
                 //make sure that the edges are not used twice, that is why brother is removed too
                 openEdges.Remove(brotherEdge);
                 var openVertexOnBrother = brotherEdge.vertex1 == openEdge.vertex1 ? brotherEdge.vertex2 : brotherEdge.vertex1;
-                var newTriangle = new Triangle(openEdge.vertex1, openEdge.vertex2, openVertexOnBrother,
-                    Vector3.zero, openEdge.belongsTo.n.normalized);
+                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, openVertexOnBrother);
                 newTriangle.color = openEdge.belongsTo.color;
                 newTriangles.Add(newTriangle);
             }
@@ -157,47 +183,26 @@ public class Generate : MonoBehaviour
         return newTriangles;
     }
 
-    public void DrawNewTriangles(List<Mesh> subMeshes, List<Triangle> allnewTriangles)
-    {
-        var lastSubmesh = subMeshes.Last();
-        var triangles = lastSubmesh.triangles.ToList();
-        var vertices = lastSubmesh.vertices.ToList();
-        var colors = lastSubmesh.colors.ToList();
-        var normals = lastSubmesh.normals.ToList();
-        foreach (var newTriangle in allnewTriangles)
-        {
-            var index = triangles.Count;
-            triangles.AddRange(new List<int>() { index, index + 1, index + 2 });
-            vertices.AddRange(new List<Vector3>() { newTriangle.a.pos, newTriangle.b.pos, newTriangle.c.pos });
-            colors.AddRange(new List<Color>() {newTriangle.color, newTriangle.color, newTriangle.color});
-            normals.AddRange(new List<Vector3>() { newTriangle.n, newTriangle.n, newTriangle.n });
-        }
 
-        lastSubmesh.vertices = vertices.ToArray();
-        lastSubmesh.triangles = triangles.ToArray();
-        lastSubmesh.colors = colors.ToArray();
-        lastSubmesh.normals = normals.ToArray();
-    }
-
-    private List<Edge> CalcOpenEdges(List<Triangle> triangles)
+    private List<Edge> CalcOpenEdges(List<Triangle> triangles, bool colorFilter = false)
     {
         var openEdges = new List<Edge>();
         foreach (var triangle in triangles)
         {
-            if (triangle.color == Color.green)
+            if (!colorFilter || triangle.color == Color.green)
             {
                 triangle.CalcDirectNeighbors();
-                if (triangle.abNeighbor == null || triangle.abNeighbor.color != Color.green)
+                if (triangle.abNeighbor == null || triangle.abNeighbor.color != triangle.color)
                 {
                     openEdges.Add(triangle.EdgeAb);
                 }
 
-                if (triangle.bcNeighbor == null || triangle.bcNeighbor.color != Color.green)
+                if (triangle.bcNeighbor == null || triangle.bcNeighbor.color != triangle.color)
                 {
                     openEdges.Add(triangle.EdgeBc);
                 }
 
-                if (triangle.caNeighbor == null || triangle.caNeighbor.color != Color.green)
+                if (triangle.caNeighbor == null || triangle.caNeighbor.color != triangle.color)
                 {
                     openEdges.Add(triangle.EdgeCa);
                 }
@@ -207,27 +212,24 @@ public class Generate : MonoBehaviour
         return openEdges;
     }
 
-    //TODO remove splitted stuff from original model
-    public void Split()
+    public void MakeNewObject(List<Triangle> triangles, Vector3 offset)
     {
-        if(allTriangles == null) return;
-        var triangles = new List<int>();
+        var trianglesInts = new List<int>();
         var vertices = new List<Vector3>();
         var colors = new List<Color>();
         var normals = new List<Vector3>();
-        foreach (var triangle in allTriangles)
+        foreach (var triangle in triangles)
         {
-            if (triangle.color != Color.green) continue;
-            var index = triangles.Count;
-            triangles.AddRange(new List<int>() {index, index + 1, index + 2});
-            vertices.AddRange(new List<Vector3>() {triangle.a.pos, triangle.b.pos, triangle.c.pos});
-            colors.AddRange(new List<Color>() {triangle.color, triangle.color, triangle.color});
-            normals.AddRange(new List<Vector3>(){triangle.n, triangle.n, triangle.n});
+            var index = trianglesInts.Count;
+            trianglesInts.AddRange(new List<int>() { index, index + 1, index + 2 });
+            vertices.AddRange(new List<Vector3>() { triangle.a.pos, triangle.b.pos, triangle.c.pos });
+            colors.AddRange(new List<Color>() { triangle.color, triangle.color, triangle.color });
+            normals.AddRange(new List<Vector3>() { triangle.n, triangle.n, triangle.n });
         }
         var mesh = new Mesh()
         {
             vertices = vertices.ToArray(),
-            triangles = triangles.ToArray(),
+            triangles = trianglesInts.ToArray(),
             colors = colors.ToArray(),
             normals = normals.ToArray(),
             name = "SplitObjectMesh",
@@ -237,37 +239,22 @@ public class Generate : MonoBehaviour
         Object.DestroyImmediate(go.GetComponent<BoxCollider>());
         go.name = "SplitObject";
         go.GetComponent<MeshFilter>().sharedMesh = mesh;
-        var res = Resources.Load("SeeThruSTLMeshMaterial") as Material;
+        var res = Resources.Load("STLMeshMaterial2") as Material;
         go.GetComponent<MeshRenderer>().material = res;
         go.AddComponent<OnMeshClick>();
         go.AddComponent<Generate>();
         go.AddComponent<MeshCollider>();
-        go.transform.position = -Vector3.one;
+        go.transform.position = offset;
         go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-
-        
     }
 
-    public void DisplayNormals()
+    public void DisplayNormals(List<Triangle> triangles = null)
     {
-        foreach (var triangle in allTriangles)
-        {
-            if (triangle.color != Color.green) continue;
-            var mid = (triangle.a.pos + triangle.b.pos + triangle.c.pos) / 3;
-            DrawArrow.LineForDebug(transform.TransformPoint(mid), transform.TransformPoint(mid + triangle.n.normalized), Color.cyan);
-            //Debug.DrawLine(transform.TransformPoint(mid), transform.TransformPoint(mid+triangle.n.normalized), Color.cyan,
-             //   5, false);
-
-        }
-    }
-
-    public void DisplayNormals(List<Triangle> triangles)
-    {
+        if (triangles == null) triangles = allTriangles;
         foreach (var triangle in triangles)
         {
             var mid = (triangle.a.pos + triangle.b.pos + triangle.c.pos) / 3;
-            Debug.DrawLine(transform.TransformPoint(mid), transform.TransformPoint(mid + triangle.n.normalized), Color.cyan,
-                5, false);
+            DrawArrow.LineForDebug(transform.TransformPoint(mid), transform.TransformPoint(mid + triangle.n.normalized), Color.cyan);
         }
     }
 

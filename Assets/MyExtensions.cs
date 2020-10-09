@@ -23,5 +23,21 @@ namespace Assets
                 dictionary[key] = value;
         }
 
+        public static Vector3 Average(this System.Collections.Generic.IEnumerable<Vector3> source)
+        {
+            var x = source.Average(vec => vec.x);
+            var y = source.Average(vec => vec.y);
+            var z = source.Average(vec => vec.z);
+            return new Vector3(x,y,z);
+        }
+        //public static Vector3 Average<TSource>(this System.Collections.Generic.IEnumerable<TSource> source, Func<TSource, Vector3> selector)
+        //{
+            
+        //    var x = source.Average(vec => vec.x);
+        //    var y = source.Average(vec => vec.y);
+        //    var z = source.Average(vec => vec.z);
+        //    return new Vector3(x, y, z);
+        //}
+
     }
 }

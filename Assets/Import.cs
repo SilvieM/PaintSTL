@@ -44,13 +44,13 @@ public class Import : MonoBehaviour
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             Object.DestroyImmediate(go.GetComponent<BoxCollider>());
             go.name = name;
-            meshes[0].name = "Mesh-" + name;
+            meshes[0].name = "0";
             go.GetComponent<MeshFilter>().sharedMesh = meshes[0];
-            var res = Resources.Load("SeeThruSTLMeshMaterial") as Material;
+            var res = Resources.Load("STLMeshMaterial2") as Material;
             go.GetComponent<MeshRenderer>().material = res;
-            go.AddComponent<OnMeshClick>();
-            go.AddComponent<Generate>();
+            go.AddComponent<OnMeshClick>().Start();
             go.AddComponent<MeshCollider>();
+            go.AddComponent<Generate>().GenerateMesh();
             go.transform.position = Vector3.zero;
             go.transform.localScale = new Vector3(0.1f,0.1f,0.1f);
             created = go;
@@ -67,20 +67,20 @@ public class Import : MonoBehaviour
                 go.name = name + "(" + i + ")";
 
                 var mesh = meshes[i];
-                mesh.name = "Mesh-" + name + "(" + i + ")";
+                mesh.name = i.ToString();
                 go.GetComponent<MeshFilter>().sharedMesh = mesh;
-                var res = Resources.Load("SeeThruSTLMeshMaterial") as Material;
+                var res = Resources.Load("STLMeshMaterial2") as Material;
                 go.GetComponent<MeshRenderer>().material = res;
                 go.AddComponent<MeshCollider>();
                 go.transform.position = Vector3.zero;
             }
-            parent.AddComponent<OnMeshClick>();
-            parent.AddComponent<Generate>();
+            parent.AddComponent<OnMeshClick>().Start();
+            parent.AddComponent<Generate>().GenerateMesh();
             parent.transform.position = Vector3.zero;
             parent.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             created = parent;
         }
-        var cam = GameObject.FindGameObjectWithTag("MainCamera");
+        var cam = GameObject.FindGameObjectWithTag("MainCamera"); //TODO make this work
         cam.transform.LookAt(created.transform);
         
     }

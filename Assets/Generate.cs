@@ -42,11 +42,10 @@ public class Generate : MonoBehaviour
 
                     allVertices.AddIfNotExists(verts[i + 2], new Vertex(verts[i + 2], i + 3, subMeshIndex));
 
-                    var currentTriangle = new Triangle(allVertices[verts[i]], allVertices[verts[i + 1]], allVertices[verts[i + 2]], normals[i]);
+                    var currentTriangle = new Triangle(allVertices[verts[i]], allVertices[verts[i + 1]], allVertices[verts[i + 2]], normals[i], colors[i]);
 
                     currentTriangle.subMeshNumber = subMeshIndex;
                     currentTriangle.vertexNumberOfA = i;
-                    currentTriangle.color = colors[i];
 
                     allTriangles.Add(currentTriangle);
                 }
@@ -59,7 +58,7 @@ public class Generate : MonoBehaviour
 
 
     //Algorithms:
-    //Pepper3DStyle, Adjustable Width and Scaling of inner Si´de
+    //Pepper3DStyle, Adjustable Width and Scaling of inner Side
     //Onepoint: One point in the middle of a painted area, connect all open sides to it
     //"MyAlgorithm" some fluent generation?
 
@@ -76,9 +75,11 @@ public class Generate : MonoBehaviour
         {
             var correspondingEdge = GetCorrespondingEdge(openEdge);
 
-            var triangle1 = new Triangle(allVertices[openEdge.vertex2.pos], allVertices[openEdge.vertex1.pos], allVertices[correspondingEdge.vertex2.pos]);
+            var triangle1 = new Triangle(allVertices[openEdge.vertex2.pos], allVertices[openEdge.vertex1.pos], allVertices[correspondingEdge.vertex2.pos], Color.green);
+            triangle1.color = Color.green;
             newTrianglesSideFaces.Add(triangle1);
-            var triangle2 = new Triangle(allVertices[correspondingEdge.vertex2.pos], allVertices[correspondingEdge.vertex1.pos], allVertices[openEdge.vertex2.pos] );
+            var triangle2 = new Triangle(allVertices[correspondingEdge.vertex2.pos], allVertices[correspondingEdge.vertex1.pos], allVertices[openEdge.vertex2.pos], Color.green );
+            triangle2.color = Color.green;
             newTrianglesSideFaces.Add(triangle2);
         }
 
@@ -87,6 +88,8 @@ public class Generate : MonoBehaviour
         MakeNewObject(paintedTriangles, avgNormal);
 
     }
+
+    
 
     private static Edge GetCorrespondingEdge(Edge openEdge)
     {
@@ -98,6 +101,27 @@ public class Generate : MonoBehaviour
         else correspondingEdge = openEdge.belongsTo.Original.EdgeAb;
         return correspondingEdge;
     }
+    public void MakeNewPartOnePointAlgo()
+    {
+        var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == Color.green).ToList();
+
+        var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
+        var middlePointOfSelected = paintedTriangles.Select(tri => tri.middlePoint).Average();
+        var newPoint = middlePointOfSelected - avgNormal *1; //Adjust here for depth
+        allVertices.AddIfNotExists(newPoint, new Vertex(newPoint, 0, 0));
+        var newVertex = allVertices[newPoint];
+        var openEdges = CalcOpenEdges(paintedTriangles, true);
+        var trianglesToDiplay = new List<Triangle>();
+        foreach (var openEdge in openEdges)
+        {
+            var newTriangle = new Triangle(openEdge.vertex1, openEdge.vertex2, newVertex, Color.green);
+            newTriangle.color = Color.green;
+            trianglesToDiplay.Add(newTriangle);
+        }
+        trianglesToDiplay.AddRange(paintedTriangles.Select(tri => tri.GetFlippedCopy()));
+        MakeNewObject(trianglesToDiplay, avgNormal);
+    }
+
 
     public void MakeNewPartMyAlgo()
     {
@@ -172,7 +196,7 @@ public class Generate : MonoBehaviour
                 var thirdPoint = openEdge.Middlepoint + dir * edgeLength / 2;
                 var newVertex = new Vertex(thirdPoint, 0, 0);
                 allVertices.AddIfNotExists(thirdPoint, newVertex);
-                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, allVertices[thirdPoint]);
+                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, allVertices[thirdPoint], Color.green);
                 newTriangle.color = openEdge.belongsTo.color;
                 newTriangles.Add(newTriangle);
             }
@@ -190,7 +214,7 @@ public class Generate : MonoBehaviour
                 //make sure that the edges are not used twice, that is why brother is removed too
                 openEdges.Remove(brotherEdge);
                 var openVertexOnBrother = brotherEdge.vertex1 == openEdge.vertex1 ? brotherEdge.vertex2 : brotherEdge.vertex1;
-                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, openVertexOnBrother); //TODO respect order!
+                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, openVertexOnBrother, Color.green); //TODO respect order!
                 newTriangle.color = openEdge.belongsTo.color;
                 newTriangles.Add(newTriangle);
             }
@@ -257,8 +281,8 @@ public class Generate : MonoBehaviour
         go.GetComponent<MeshFilter>().sharedMesh = mesh;
         var res = Resources.Load("STLMeshMaterial2") as Material;
         go.GetComponent<MeshRenderer>().material = res;
-        go.AddComponent<OnMeshClick>().Start();
-        go.AddComponent<Generate>().GenerateMesh();
+        //go.AddComponent<OnMeshClick>().Start();
+        //go.AddComponent<Generate>().GenerateMesh(); //Possibly can make the new splitted objects splittable too?
         go.AddComponent<MeshCollider>();
         go.transform.position = offset;
         go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);

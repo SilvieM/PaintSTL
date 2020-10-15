@@ -79,4 +79,13 @@ public class InterfaceFunctions : MonoBehaviour
         }
     }
 
+    public void MakeNewPartOnePointAlgo()
+    {
+        var objects = GameObject.FindObjectsOfType<Generate>();
+        foreach (var generate in objects)
+        {
+            generate.MakeNewPartOnePointAlgo();
+        }
+    }
+
 }

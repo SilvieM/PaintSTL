@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
+using System.Linq;
 
 namespace Assets.Classes
 {
@@ -26,9 +27,9 @@ namespace Assets.Classes
         /// <param name="b"></param>
         /// <param name="c"></param>
         /// <param name="n"></param>
-        public Triangle(Vertex a, Vertex b, Vertex c, Vector3 n)
+        public Triangle(Vertex a, Vertex b, Vertex c, Vector3 n, Color color)
         {
-            initTriangle(a, b, c, n);
+            initTriangle(a, b, c, n, color);
             //var compareN = n.normalized;
             //var prelimN = Vector3.Cross(c.pos - a.pos, b.pos - a.pos).normalized;
         }
@@ -39,10 +40,10 @@ namespace Assets.Classes
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <param name="c"></param>
-        public Triangle(Vertex a, Vertex b, Vertex c)
+        public Triangle(Vertex a, Vertex b, Vertex c, Color color)
         {
             var calculatedN = Vector3.Cross(c.pos - a.pos, b.pos - a.pos).normalized;
-            initTriangle(a, b, c, calculatedN);
+            initTriangle(a, b, c, calculatedN, color);
             //var compareN = n.normalized;
         }
 
@@ -54,15 +55,15 @@ namespace Assets.Classes
         /// <param name="c"></param>
         /// <param name="n"></param>
         /// <param name="normalOfOther"></param>
-        public Triangle(Vertex a, Vertex b, Vertex c, Vector3 n, Vector3 normalOfOther)
+        public Triangle(Vertex a, Vertex b, Vertex c, Vector3 n, Vector3 normalOfOther, Color color)
         {
             var prelimN = Vector3.Cross(c.pos - a.pos, b.pos - a.pos).normalized;
             //the Dot product of this tri and the other colored tri should be smaller than 0 = obtuse angle (weiter Winkel) so that normal always "looks" away => outside
-            if (Vector3.Dot(prelimN, normalOfOther) < 0) initTriangle(a, b, c, prelimN);  
-            else initTriangle(b,a,c,-prelimN); //if it was in the wrong orientation, also turn around b and a so that they go in the same direction always
+            if (Vector3.Dot(prelimN, normalOfOther) < 0) initTriangle(a, b, c, prelimN, color);  
+            else initTriangle(b,a,c,-prelimN, color); //if it was in the wrong orientation, also turn around b and a so that they go in the same direction always
         }
 
-        private void initTriangle(Vertex a, Vertex b, Vertex c, Vector3 n)
+        private void initTriangle(Vertex a, Vertex b, Vertex c, Vector3 n, Color color)
         {
             this.a = a;
             this.b = b;
@@ -74,6 +75,7 @@ namespace Assets.Classes
             EdgeBc = new Edge(b, c, this);
             EdgeCa = new Edge(c, a, this);
             this.n = n.normalized;
+            this.color = color;
         }
 
         public Triangle abNeighbor;
@@ -115,6 +117,8 @@ namespace Assets.Classes
         public Plane PlaneAb => new Plane(EdgeAb.vertex1.pos, Vector3.Cross(n, EdgeAb.Delta));
         public Plane PlaneBc => new Plane(EdgeBc.vertex1.pos, Vector3.Cross(n, EdgeBc.Delta));
         public Plane PlaneCa => new Plane(EdgeCa.vertex1.pos, Vector3.Cross(n, EdgeCa.Delta));
+
+        public Vector3 middlePoint => Vertices.Select(vert => vert.pos).Average();
         public override bool Equals(System.Object obj)
         {
             //Check for null and compare run-time types.
@@ -187,13 +191,13 @@ namespace Assets.Classes
 
             allVertices.AddIfNotExists(c.pos, c);
 
-            var currentTriangle = new Triangle(allVertices[c.pos], allVertices[b.pos], allVertices[a.pos], -this.n){Original = this};
+            var currentTriangle = new Triangle(allVertices[c.pos], allVertices[b.pos], allVertices[a.pos], -this.n, color){Original = this};
             return currentTriangle;
         }
 
         public Triangle GetFlippedCopy()
         {
-            var currentTriangle = new Triangle(c, b, a, -this.n) { Original = this };
+            var currentTriangle = new Triangle(c, b, a, -this.n, color) { Original = this };
             return currentTriangle;
         }
     }

@@ -90,7 +90,7 @@ namespace Assets.Classes
                 {
                     if (b.belongsTo.Contains(triangle))
                     {
-                        //We do only overwrite the neighbor if we found a new neighbor of the same color
+                        //We do only overwrite the neighbor if we found a new neighbor of the same currentColor
                         if (abNeighbor == null || this.color == triangle.color) abNeighbor = triangle;
                     }
 

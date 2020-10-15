@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Assets;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -40,12 +41,13 @@ public class OnMeshClick : MonoBehaviour
             {
                 
                 Debug.Log($"Clicked on Object {hit.collider.gameObject.name} on triangle {hit.triangleIndex}");
+                var paintColor = ColorManager.Instance.currentColor;
                 var mesh = hit.transform.gameObject.GetComponent<MeshFilter>().sharedMesh;
                 
                 var colorsNew = mesh.colors;
                 for (int i = 0; i < 3; i++)
                 {
-                    colorsNew[hit.triangleIndex*3+i] = Color.green;
+                    colorsNew[hit.triangleIndex*3+i] = paintColor;
                 }
                 mesh.colors = colorsNew;
 
@@ -55,8 +57,8 @@ public class OnMeshClick : MonoBehaviour
                 var paintedTri = triangles.Where(tri =>
                     tri.subMeshNumber == submeshIndex
                 && tri.vertexNumberOfA == hit.triangleIndex*3);
-                paintedTri.First().color = Color.green;
-                
+                paintedTri.First().color = paintColor;
+                ColorManager.Instance.FieldPainted(paintColor);
             }
         }
     }

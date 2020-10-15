@@ -676,6 +676,14 @@
       <Project>{59E958E2-CEE9-48DB-4489-1D36B5B2BE94}</Project>
       <Name>Parabox.Stl.Editor</Name>
     </ProjectReference>
+    <ProjectReference Include="HSVPicker.csproj">
+      <Project>{31D43A57-F726-D77B-C5E5-AAE0A506FB07}</Project>
+      <Name>HSVPicker</Name>
+    </ProjectReference>
+    <ProjectReference Include="HSVPicker.Editors.csproj">
+      <Project>{CE2A285D-0138-CD7B-3708-F957895F77D7}</Project>
+      <Name>HSVPicker.Editors</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

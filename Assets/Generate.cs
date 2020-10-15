@@ -57,11 +57,18 @@ public class Generate : MonoBehaviour
         
     }
 
+
+    //Algorithms:
+    //Pepper3DStyle, Adjustable Width and Scaling of inner Si´de
+    //Onepoint: One point in the middle of a painted area, connect all open sides to it
+    //"MyAlgorithm" some fluent generation?
+
     public void MakeNewPartPeprAlgo()
     {
-        var paintedTriangles = allTriangles.Where(tri => tri.color!= null &&tri.color==Color.green).ToList();
+        var paintedTriangles = allTriangles.Where(tri => tri.color!= null &&tri.color==Color.green).Select(tri => tri.GetFlippedCopy()).ToList();
+        //somehow because models are usually imported from right coordinate space, they need to be flipped to get correct normals displaying
         if(!paintedTriangles.Any()) return;
-        var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
+        var avgNormal = -paintedTriangles.Select(tri => tri.n).Average();
         var newTrianglesInsideFace = paintedTriangles.Select(tri => tri.GetShiftedCopy(-avgNormal, allVertices)).ToList();
         var openEdges = CalcOpenEdges(newTrianglesInsideFace);
         var newTrianglesSideFaces = new List<Triangle>();
@@ -96,15 +103,18 @@ public class Generate : MonoBehaviour
     {
         var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == Color.green).ToList();
         var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
+        var lastNumOpenEdges = 0;
         while (true)
         {
             var openEdges = CalcOpenEdges(paintedTriangles, true);
             Debug.Log("Open Edges found: "+openEdges.Count);
-            if (openEdges.Count == 0) break;
+            if (openEdges.Count == 0||openEdges.Count == lastNumOpenEdges) break;
+            lastNumOpenEdges = openEdges.Count;
             var newTriangles = CreateNewTriangles(openEdges);
             paintedTriangles.AddRange(newTriangles);
 
         }
+        paintedTriangles.AddRange(paintedTriangles.Select(tri => tri.GetFlippedCopy()).ToList()); //TODO hacky bugfix as now both directions are displayed
         MakeNewObject(paintedTriangles, avgNormal);
     }
 
@@ -168,13 +178,19 @@ public class Generate : MonoBehaviour
             }
             else //This will happen for all non-firstorder triangles: Create new triangle out of 2 existing edges
             {
+                //which side of edge is more connected already
+                var moreConnectedVertex = openEdge.vertex2.belongsTo.Count > openEdge.vertex1.belongsTo.Count
+                    ? openEdge.vertex2
+                    : openEdge.vertex1;
+                var lessConnectedVertex = openEdge.vertex1 == moreConnectedVertex ? openEdge.vertex2 : openEdge.vertex1;
                 //Find second open edge
-                var brotherEdge = openEdges.FirstOrDefault(edge => edge != openEdge && edge.vertex1 == openEdge.vertex1 || edge.vertex2 == openEdge.vertex1);
-                if (brotherEdge == null) continue;
+                var brotherEdge = openEdges.FirstOrDefault(edge => edge != openEdge && edge.vertex1 == moreConnectedVertex || edge.vertex2 == moreConnectedVertex) ??
+                                  openEdges.FirstOrDefault(edge => edge != openEdge && edge.vertex1 == lessConnectedVertex || edge.vertex2 == lessConnectedVertex);
+                if(brotherEdge == null) continue;
                 //make sure that the edges are not used twice, that is why brother is removed too
                 openEdges.Remove(brotherEdge);
                 var openVertexOnBrother = brotherEdge.vertex1 == openEdge.vertex1 ? brotherEdge.vertex2 : brotherEdge.vertex1;
-                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, openVertexOnBrother);
+                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, openVertexOnBrother); //TODO respect order!
                 newTriangle.color = openEdge.belongsTo.color;
                 newTriangles.Add(newTriangle);
             }
@@ -232,7 +248,7 @@ public class Generate : MonoBehaviour
             triangles = trianglesInts.ToArray(),
             colors = colors.ToArray(),
             normals = normals.ToArray(),
-            name = "SplitObjectMesh",
+            name = "0",
             indexFormat = IndexFormat.UInt16
         };
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -241,8 +257,8 @@ public class Generate : MonoBehaviour
         go.GetComponent<MeshFilter>().sharedMesh = mesh;
         var res = Resources.Load("STLMeshMaterial2") as Material;
         go.GetComponent<MeshRenderer>().material = res;
-        go.AddComponent<OnMeshClick>();
-        go.AddComponent<Generate>();
+        go.AddComponent<OnMeshClick>().Start();
+        go.AddComponent<Generate>().GenerateMesh();
         go.AddComponent<MeshCollider>();
         go.transform.position = offset;
         go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);

@@ -13,7 +13,7 @@ public class OnMeshClick : MonoBehaviour
     public void Start()
     {
         var thismesh = gameObject.GetComponent<MeshFilter>();
-        if(thismesh!= null) thismesh.sharedMesh.colors = Enumerable.Repeat(Color.white, thismesh.sharedMesh.vertices.Length).ToArray();
+        if (thismesh != null) thismesh.sharedMesh.colors = Enumerable.Repeat(Color.white, thismesh.sharedMesh.vertices.Length).ToArray();
         childrenColliders = new List<Collider>();
         foreach (Transform childTransform in transform)
         {
@@ -32,31 +32,39 @@ public class OnMeshClick : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, 100) && (hit.transform == transform || hit.transform.parent == transform))
         {
-            
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, 100)&& (hit.transform == transform||hit.transform.parent == transform))
+            var paintColor = ColorManager.Instance.currentColor;
+            var mesh = hit.transform.gameObject.GetComponent<MeshFilter>().sharedMesh;
+            Vector3[] vertices = mesh.vertices;
+            int[] meshtriangles = mesh.triangles;
+            Vector3 p0 = vertices[meshtriangles[hit.triangleIndex * 3 + 0]];
+            Vector3 p1 = vertices[meshtriangles[hit.triangleIndex * 3 + 1]];
+            Vector3 p2 = vertices[meshtriangles[hit.triangleIndex * 3 + 2]];
+            p0 = hit.transform.TransformPoint(p0);
+            p1 = hit.transform.TransformPoint(p1);
+            p2 = hit.transform.TransformPoint(p2);
+            Debug.DrawLine(p0, p1, ColorManager.Instance.currentColor);
+            Debug.DrawLine(p1, p2, ColorManager.Instance.currentColor);
+            Debug.DrawLine(p2, p0, ColorManager.Instance.currentColor);
+
+            if (Input.GetMouseButton(0))
             {
-                
-                Debug.Log($"Clicked on Object {hit.collider.gameObject.name} on triangle {hit.triangleIndex}");
-                var paintColor = ColorManager.Instance.currentColor;
-                var mesh = hit.transform.gameObject.GetComponent<MeshFilter>().sharedMesh;
-                
                 var colorsNew = mesh.colors;
                 for (int i = 0; i < 3; i++)
                 {
-                    colorsNew[hit.triangleIndex*3+i] = paintColor;
+                    colorsNew[hit.triangleIndex * 3 + i] = paintColor;
                 }
                 mesh.colors = colorsNew;
 
                 var triangles = GetComponent<Generate>().allTriangles;
-                
+
                 var submeshIndex = int.Parse(mesh.name);
                 var paintedTri = triangles.Where(tri =>
                     tri.subMeshNumber == submeshIndex
-                && tri.vertexNumberOfA == hit.triangleIndex*3);
+                && tri.vertexNumberOfA == hit.triangleIndex * 3);
                 paintedTri.First().color = paintColor;
                 ColorManager.Instance.FieldPainted(paintColor);
             }

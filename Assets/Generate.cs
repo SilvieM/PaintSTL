@@ -64,7 +64,7 @@ public class Generate : MonoBehaviour
 
     public void MakeNewPartPeprAlgo()
     {
-        var paintedTriangles = allTriangles.Where(tri => tri.color!= null &&tri.color==Color.green).Select(tri => tri.GetFlippedCopy()).ToList();
+        var paintedTriangles = allTriangles.Where(tri => tri.color!= null &&tri.color==ColorManager.Instance.currentColor).Select(tri => tri.GetFlippedCopy()).ToList();
         //somehow because models are usually imported from right coordinate space, they need to be flipped to get correct normals displaying
         if(!paintedTriangles.Any()) return;
         var avgNormal = -paintedTriangles.Select(tri => tri.n).Average();
@@ -75,11 +75,9 @@ public class Generate : MonoBehaviour
         {
             var correspondingEdge = GetCorrespondingEdge(openEdge);
 
-            var triangle1 = new Triangle(allVertices[openEdge.vertex2.pos], allVertices[openEdge.vertex1.pos], allVertices[correspondingEdge.vertex2.pos], Color.green);
-            triangle1.color = Color.green;
+            var triangle1 = new Triangle(allVertices[openEdge.vertex2.pos], allVertices[openEdge.vertex1.pos], allVertices[correspondingEdge.vertex2.pos], ColorManager.Instance.currentColor);
             newTrianglesSideFaces.Add(triangle1);
-            var triangle2 = new Triangle(allVertices[correspondingEdge.vertex2.pos], allVertices[correspondingEdge.vertex1.pos], allVertices[openEdge.vertex2.pos], Color.green );
-            triangle2.color = Color.green;
+            var triangle2 = new Triangle(allVertices[correspondingEdge.vertex2.pos], allVertices[correspondingEdge.vertex1.pos], allVertices[openEdge.vertex2.pos], ColorManager.Instance.currentColor);
             newTrianglesSideFaces.Add(triangle2);
         }
 
@@ -103,7 +101,7 @@ public class Generate : MonoBehaviour
     }
     public void MakeNewPartOnePointAlgo()
     {
-        var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == Color.green).ToList();
+        var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == ColorManager.Instance.currentColor).ToList();
 
         var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
         var middlePointOfSelected = paintedTriangles.Select(tri => tri.middlePoint).Average();
@@ -114,8 +112,7 @@ public class Generate : MonoBehaviour
         var trianglesToDiplay = new List<Triangle>();
         foreach (var openEdge in openEdges)
         {
-            var newTriangle = new Triangle(openEdge.vertex1, openEdge.vertex2, newVertex, Color.green);
-            newTriangle.color = Color.green;
+            var newTriangle = new Triangle(openEdge.vertex1, openEdge.vertex2, newVertex, ColorManager.Instance.currentColor);
             trianglesToDiplay.Add(newTriangle);
         }
         trianglesToDiplay.AddRange(paintedTriangles.Select(tri => tri.GetFlippedCopy()));
@@ -125,7 +122,7 @@ public class Generate : MonoBehaviour
 
     public void MakeNewPartMyAlgo()
     {
-        var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == Color.green).ToList();
+        var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == ColorManager.Instance.currentColor).ToList();
         var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
         var lastNumOpenEdges = 0;
         while (true)
@@ -154,7 +151,7 @@ public class Generate : MonoBehaviour
 
     public void DistanceTesting()
     {
-        var triangle = allTriangles.Find(tri => tri.color == Color.green);
+        var triangle = allTriangles.Find(tri => tri.color == ColorManager.Instance.currentColor);
         if (triangle != null)
         {
             var points = new List<Vector3>()
@@ -196,7 +193,7 @@ public class Generate : MonoBehaviour
                 var thirdPoint = openEdge.Middlepoint + dir * edgeLength / 2;
                 var newVertex = new Vertex(thirdPoint, 0, 0);
                 allVertices.AddIfNotExists(thirdPoint, newVertex);
-                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, allVertices[thirdPoint], Color.green);
+                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, allVertices[thirdPoint], ColorManager.Instance.currentColor);
                 newTriangle.color = openEdge.belongsTo.color;
                 newTriangles.Add(newTriangle);
             }
@@ -214,7 +211,7 @@ public class Generate : MonoBehaviour
                 //make sure that the edges are not used twice, that is why brother is removed too
                 openEdges.Remove(brotherEdge);
                 var openVertexOnBrother = brotherEdge.vertex1 == openEdge.vertex1 ? brotherEdge.vertex2 : brotherEdge.vertex1;
-                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, openVertexOnBrother, Color.green); //TODO respect order!
+                var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, openVertexOnBrother, ColorManager.Instance.currentColor); //TODO respect order!
                 newTriangle.color = openEdge.belongsTo.color;
                 newTriangles.Add(newTriangle);
             }
@@ -229,7 +226,7 @@ public class Generate : MonoBehaviour
         var openEdges = new List<Edge>();
         foreach (var triangle in triangles)
         {
-            if (!colorFilter || triangle.color == Color.green)
+            if (!colorFilter || triangle.color == ColorManager.Instance.currentColor)
             {
                 triangle.CalcDirectNeighbors();
                 if (triangle.abNeighbor == null || triangle.abNeighbor.color != triangle.color)

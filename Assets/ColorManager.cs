@@ -36,7 +36,6 @@ namespace Assets
 
         public void FieldPainted(Color color)
         {
-            Debug.Log($"Field painted {color.ToString()}");
             if (previousColors.ContainsKey(color)) previousColors[color]++;
             else
             {

@@ -40,9 +40,9 @@ public class Generate : MonoBehaviour
 
                     allVertices.AddIfNotExists(verts[i + 1], new Vertex(verts[i + 1], i + 1, subMeshIndex));
 
-                    allVertices.AddIfNotExists(verts[i + 2], new Vertex(verts[i + 2], i + 3, subMeshIndex));
+                    allVertices.AddIfNotExists(verts[i + 2], new Vertex(verts[i + 2], i + 2, subMeshIndex));
 
-                    var currentTriangle = new Triangle(allVertices[verts[i]], allVertices[verts[i + 1]], allVertices[verts[i + 2]], normals[i], colors[i]);
+                    var currentTriangle = new Triangle(allVertices[verts[i]], allVertices[verts[i + 1]], allVertices[verts[i + 2]], normals[i], colors[i], false);
 
                     currentTriangle.subMeshNumber = subMeshIndex;
                     currentTriangle.vertexNumberOfA = i;
@@ -57,18 +57,13 @@ public class Generate : MonoBehaviour
     }
 
 
-    //Algorithms:
-    //Pepper3DStyle, Adjustable Width and Scaling of inner Side
-    //Onepoint: One point in the middle of a painted area, connect all open sides to it
-    //"MyAlgorithm" some fluent generation?
-
     public void MakeNewPartPeprAlgo()
     {
-        var paintedTriangles = allTriangles.Where(tri => tri.color!= null &&tri.color==ColorManager.Instance.currentColor).Select(tri => tri.GetFlippedCopy()).ToList();
+        var paintedTriangles = allTriangles.Where(tri => tri.color!= null &&tri.color==ColorManager.Instance.currentColor).ToList();
         //somehow because models are usually imported from right coordinate space, they need to be flipped to get correct normals displaying
         if(!paintedTriangles.Any()) return;
-        var avgNormal = -paintedTriangles.Select(tri => tri.n).Average();
-        var newTrianglesInsideFace = paintedTriangles.Select(tri => tri.GetShiftedCopy(-avgNormal, allVertices)).ToList();
+        var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
+        var newTrianglesInsideFace = paintedTriangles.Select(tri => tri.GetShiftedCopy(avgNormal, allVertices)).ToList();
         var openEdges = CalcOpenEdges(newTrianglesInsideFace);
         var newTrianglesSideFaces = new List<Triangle>();
         foreach (var openEdge in openEdges)
@@ -102,7 +97,7 @@ public class Generate : MonoBehaviour
     public void MakeNewPartOnePointAlgo()
     {
         var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == ColorManager.Instance.currentColor).ToList();
-
+        if (!paintedTriangles.Any()) return;
         var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
         var middlePointOfSelected = paintedTriangles.Select(tri => tri.middlePoint).Average();
         var newPoint = middlePointOfSelected - avgNormal *1; //Adjust here for depth
@@ -112,17 +107,23 @@ public class Generate : MonoBehaviour
         var trianglesToDiplay = new List<Triangle>();
         foreach (var openEdge in openEdges)
         {
-            var newTriangle = new Triangle(openEdge.vertex1, openEdge.vertex2, newVertex, ColorManager.Instance.currentColor);
+            var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, newVertex, ColorManager.Instance.currentColor);
             trianglesToDiplay.Add(newTriangle);
         }
-        trianglesToDiplay.AddRange(paintedTriangles.Select(tri => tri.GetFlippedCopy()));
+
+        CutOutFromMain(trianglesToDiplay, paintedTriangles);
+
+        trianglesToDiplay.AddRange(paintedTriangles);
         MakeNewObject(trianglesToDiplay, avgNormal);
+
+        
     }
 
 
     public void MakeNewPartMyAlgo()
     {
         var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == ColorManager.Instance.currentColor).ToList();
+        if (!paintedTriangles.Any()) return;
         var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
         var lastNumOpenEdges = 0;
         while (true)
@@ -176,6 +177,75 @@ public class Generate : MonoBehaviour
     {
         var meetPoint = triangle.ClosestPointTo(point);
         return (meetPoint - point).sqrMagnitude;
+    }
+
+    private void CutOutFromMain(List<Triangle> add, List<Triangle> remove)
+    {
+        foreach (var triangle in remove)
+        {
+            allTriangles.Remove(triangle);
+        }
+        allTriangles.AddRange(add);
+        RedrawObject();
+    }
+
+    private void RedrawObject()
+    {
+        //for each previously existing submeshes
+        var subMeshes = new List<Mesh>();
+        var meshFilters = transform.GetComponentsInChildren<MeshFilter>();
+        subMeshes.AddRange(meshFilters.Select(meshFilter => meshFilter.sharedMesh));
+        for (int i=0; i<subMeshes.Count;i++)
+        {
+            var trianglesToPutHere = allTriangles.Where(tri => tri.subMeshNumber == i&&tri.isGenerated==false);
+
+            subMeshes[i] = MakeNewMeshFromTriangles(trianglesToPutHere, i);
+
+        }
+        //one new submesh for all newly generated triangles
+        var newTriangles = allTriangles.Where(tri => tri.isGenerated == true);
+        var mesh = MakeNewMeshFromTriangles(newTriangles, subMeshes.Count);
+
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        Object.DestroyImmediate(go.GetComponent<BoxCollider>());
+        go.transform.SetParent(transform, false);
+        go.name = name + "(" + subMeshes.Count + ")";
+        mesh.name = subMeshes.Count.ToString();
+        go.GetComponent<MeshFilter>().sharedMesh = mesh;
+        var res = Resources.Load("STLMeshMaterial2") as Material;
+        go.GetComponent<MeshRenderer>().material = res;
+        go.AddComponent<MeshCollider>();
+        go.transform.position = Vector3.zero;
+
+    }
+
+    private static Mesh MakeNewMeshFromTriangles(IEnumerable<Triangle> newTriangles, int subMeshNumber)
+    {
+        var trianglesInts1 = new List<int>();
+        var vertices1 = new List<Vector3>();
+        var colors1 = new List<Color>();
+        var normals1 = new List<Vector3>();
+
+        foreach (var triangle in newTriangles)
+        {
+            var index = trianglesInts1.Count;
+            trianglesInts1.AddRange(new List<int>()
+                {index + 1, index, index + 2}); //they need to be flipped for some reason
+            vertices1.AddRange(new List<Vector3>() {triangle.a.pos, triangle.b.pos, triangle.c.pos});
+            colors1.AddRange(new List<Color>() {triangle.color, triangle.color, triangle.color});
+            normals1.AddRange(new List<Vector3>() {triangle.n, triangle.n, triangle.n});
+        }
+
+        var mesh = new Mesh()
+        {
+            vertices = vertices1.ToArray(),
+            triangles = trianglesInts1.ToArray(),
+            colors = colors1.ToArray(),
+            normals = normals1.ToArray(),
+            name = subMeshNumber.ToString(),
+            indexFormat = IndexFormat.UInt16
+        };
+        return mesh;
     }
 
 
@@ -251,27 +321,7 @@ public class Generate : MonoBehaviour
 
     public void MakeNewObject(List<Triangle> triangles, Vector3 offset)
     {
-        var trianglesInts = new List<int>();
-        var vertices = new List<Vector3>();
-        var colors = new List<Color>();
-        var normals = new List<Vector3>();
-        foreach (var triangle in triangles)
-        {
-            var index = trianglesInts.Count;
-            trianglesInts.AddRange(new List<int>() { index, index + 1, index + 2 });
-            vertices.AddRange(new List<Vector3>() { triangle.a.pos, triangle.b.pos, triangle.c.pos });
-            colors.AddRange(new List<Color>() { triangle.color, triangle.color, triangle.color });
-            normals.AddRange(new List<Vector3>() { triangle.n, triangle.n, triangle.n });
-        }
-        var mesh = new Mesh()
-        {
-            vertices = vertices.ToArray(),
-            triangles = trianglesInts.ToArray(),
-            colors = colors.ToArray(),
-            normals = normals.ToArray(),
-            name = "0",
-            indexFormat = IndexFormat.UInt16
-        };
+        var mesh = MakeNewMeshFromTriangles(triangles, 0);
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         Object.DestroyImmediate(go.GetComponent<BoxCollider>());
         go.name = "SplitObject";

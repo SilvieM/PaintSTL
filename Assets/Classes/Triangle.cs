@@ -19,6 +19,7 @@ namespace Assets.Classes
         public  Edge EdgeBc;
         public  Edge EdgeCa;
         public Triangle Original;
+        public bool isGenerated = true; //false means it is original from the model
 
         /// <summary>
         /// Constructor to use when n is given and reliable (from stl file)
@@ -27,9 +28,10 @@ namespace Assets.Classes
         /// <param name="b"></param>
         /// <param name="c"></param>
         /// <param name="n"></param>
-        public Triangle(Vertex a, Vertex b, Vertex c, Vector3 n, Color color)
+        public Triangle(Vertex a, Vertex b, Vertex c, Vector3 n, Color color, bool isGenerated = true)
         {
             initTriangle(a, b, c, n, color);
+            this.isGenerated = isGenerated;
             //var compareN = n.normalized;
             //var prelimN = Vector3.Cross(c.pos - a.pos, b.pos - a.pos).normalized;
         }

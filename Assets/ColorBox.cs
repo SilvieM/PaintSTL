@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using Assets;
 using HSVPicker;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class ColorChange : MonoBehaviour
+public class ColorBox : MonoBehaviour
 {
+    private Image img;
+
     private ColorPicker picker;
     // Start is called before the first frame update
     void Start()
     {
-        picker = GetComponent<ColorPicker>();
-        picker.onValueChanged.AddListener(color =>
-        {
-            ColorManager.Instance.currentColor=color;
-        });
-        ColorManager.Instance.currentColor = picker.CurrentColor;
+        img = GetComponent<Image>();
+        picker = GetComponentInParent<ColorPicker>();
     }
 
     // Update is called once per frame
@@ -24,5 +23,9 @@ public class ColorChange : MonoBehaviour
         
     }
 
-
+    public void ColorBoxClicked()
+    {
+        var color = img.color;
+        picker.CurrentColor = color;
+    }
 }

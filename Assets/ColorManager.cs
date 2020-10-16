@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
@@ -26,15 +28,21 @@ namespace Assets
             }
         }
 
+        public event Action<List<Color>> OnColorsChanged;
 
         public Color currentColor;
 
-        public Dictionary<Color, int> previousColors;
+        private readonly Dictionary<Color, int> previousColors = new Dictionary<Color, int>();
 
         public void FieldPainted(Color color)
         {
+            Debug.Log($"Field painted {color.ToString()}");
             if (previousColors.ContainsKey(color)) previousColors[color]++;
-            else previousColors.Add(color, 1);
+            else
+            {
+                previousColors.Add(color, 1);
+                OnColorsChanged?.Invoke(previousColors.Keys.ToList());
+            }
         }
     }
 }

@@ -210,7 +210,6 @@ public class Generate : MonoBehaviour
         Object.DestroyImmediate(go.GetComponent<BoxCollider>());
         go.transform.SetParent(transform, false);
         go.name = name + "(" + subMeshes.Count + ")";
-        mesh.name = subMeshes.Count.ToString();
         go.GetComponent<MeshFilter>().sharedMesh = mesh;
         var res = Resources.Load("STLMeshMaterial2") as Material;
         go.GetComponent<MeshRenderer>().material = res;

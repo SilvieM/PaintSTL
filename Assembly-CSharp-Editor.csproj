@@ -668,14 +668,6 @@
       <Project>{050CEF7F-4B4B-62CF-6341-19B426672687}</Project>
       <Name>Assembly-CSharp</Name>
     </ProjectReference>
-    <ProjectReference Include="Parabox.Stl.csproj">
-      <Project>{25B75375-8E1A-E6FA-F4B8-147087F69FA2}</Project>
-      <Name>Parabox.Stl</Name>
-    </ProjectReference>
-    <ProjectReference Include="Parabox.Stl.Editor.csproj">
-      <Project>{59E958E2-CEE9-48DB-4489-1D36B5B2BE94}</Project>
-      <Name>Parabox.Stl.Editor</Name>
-    </ProjectReference>
     <ProjectReference Include="HSVPicker.csproj">
       <Project>{31D43A57-F726-D77B-C5E5-AAE0A506FB07}</Project>
       <Name>HSVPicker</Name>
@@ -683,6 +675,14 @@
     <ProjectReference Include="HSVPicker.Editors.csproj">
       <Project>{CE2A285D-0138-CD7B-3708-F957895F77D7}</Project>
       <Name>HSVPicker.Editors</Name>
+    </ProjectReference>
+    <ProjectReference Include="Parabox.Stl.csproj">
+      <Project>{25B75375-8E1A-E6FA-F4B8-147087F69FA2}</Project>
+      <Name>Parabox.Stl</Name>
+    </ProjectReference>
+    <ProjectReference Include="Parabox.Stl.Editor.csproj">
+      <Project>{59E958E2-CEE9-48DB-4489-1D36B5B2BE94}</Project>
+      <Name>Parabox.Stl.Editor</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

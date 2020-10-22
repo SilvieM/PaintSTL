@@ -55,27 +55,27 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_PhoneNumberValidator.cs" />
      <Compile Include="Assets\Scripts\OnMeshClick.cs" />
      <Compile Include="Assets\Scripts\SimpleCameraController.cs" />
      <Compile Include="Assets\Classes\Triangle.cs" />
-     <Compile Include="Assets\Classes\Plane.cs" />
-     <Compile Include="Assets\Generate.cs" />
-     <Compile Include="Assets\Import.cs" />
-     <Compile Include="Assets\DrawArrow.cs" />
-     <Compile Include="Assets\Classes\Edge.cs" />
-     <Compile Include="Assets\InterfaceFunctions.cs" />
-     <Compile Include="Assets\MyExtensions.cs" />
-     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
-     <Compile Include="Assets\Classes\Vertex.cs" />
-     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_PhoneNumberValidator.cs" />
+     <Compile Include="Assets\ColorManager.cs" />
+     <Compile Include="Assets\ColorChange.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark03.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\WarpTextExample.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventCheck.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
+     <Compile Include="Assets\Classes\Plane.cs" />
+     <Compile Include="Assets\Generate.cs" />
+     <Compile Include="Assets\Import.cs" />
+     <Compile Include="Assets\DrawArrow.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\CameraController.cs" />
+     <Compile Include="Assets\Classes\Edge.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexJitter.cs" />
+     <Compile Include="Assets\InterfaceFunctions.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ChatController.cs" />
+     <Compile Include="Assets\MyExtensions.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_ExampleScript_01.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ObjectSpin.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_DigitValidator.cs" />
@@ -83,10 +83,13 @@
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextConsoleSimulator.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ShaderPropAnimator.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs" />
+     <Compile Include="Assets\UsedColorsDisplay.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SimpleScript.cs" />
+     <Compile Include="Assets\ColorBox.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_FrameRateCounter.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_B.cs" />
+     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SkewTextExample.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark04.cs" />
@@ -101,10 +104,7 @@
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshProFloatingText.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeA.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\EnvMapAnimator.cs" />
-     <Compile Include="Assets\ColorManager.cs" />
-     <Compile Include="Assets\ColorChange.cs" />
-     <Compile Include="Assets\UsedColorsDisplay.cs" />
-     <Compile Include="Assets\ColorBox.cs" />
+     <Compile Include="Assets\Classes\Vertex.cs" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
@@ -716,14 +716,6 @@
  </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Parabox.Stl.csproj">
-      <Project>{25B75375-8E1A-E6FA-F4B8-147087F69FA2}</Project>
-      <Name>Parabox.Stl</Name>
-    </ProjectReference>
-    <ProjectReference Include="Parabox.Stl.Editor.csproj">
-      <Project>{59E958E2-CEE9-48DB-4489-1D36B5B2BE94}</Project>
-      <Name>Parabox.Stl.Editor</Name>
-    </ProjectReference>
     <ProjectReference Include="HSVPicker.csproj">
       <Project>{31D43A57-F726-D77B-C5E5-AAE0A506FB07}</Project>
       <Name>HSVPicker</Name>
@@ -731,6 +723,14 @@
     <ProjectReference Include="HSVPicker.Editors.csproj">
       <Project>{CE2A285D-0138-CD7B-3708-F957895F77D7}</Project>
       <Name>HSVPicker.Editors</Name>
+    </ProjectReference>
+    <ProjectReference Include="Parabox.Stl.csproj">
+      <Project>{25B75375-8E1A-E6FA-F4B8-147087F69FA2}</Project>
+      <Name>Parabox.Stl</Name>
+    </ProjectReference>
+    <ProjectReference Include="Parabox.Stl.Editor.csproj">
+      <Project>{59E958E2-CEE9-48DB-4489-1D36B5B2BE94}</Project>
+      <Name>Parabox.Stl.Editor</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -8,24 +8,14 @@ using UnityEngine.Rendering;
 public class OnMeshClick : MonoBehaviour
 {
     //TODO make the colors be kept in sync with what the generate script builds!
-    private List<Collider> childrenColliders;
+    private Collider _collider;
+    
     // Start is called before the first frame update
     public void Start()
     {
-        var thismesh = gameObject.GetComponent<MeshFilter>();
-        if (thismesh != null) thismesh.sharedMesh.colors = Enumerable.Repeat(Color.white, thismesh.sharedMesh.vertices.Length).ToArray();
-        childrenColliders = new List<Collider>();
-        foreach (Transform childTransform in transform)
-        {
-            childrenColliders.Add(childTransform.GetComponent<Collider>());
-            var mesh = childTransform.gameObject.GetComponent<MeshFilter>().sharedMesh;
-            Vector3[] vertices = mesh.vertices;
-            Color[] colors = Enumerable.Repeat(Color.white, vertices.Length).ToArray();
-            //Color32[] colors32 = Enumerable.Repeat(new Color32(), vertices.Length).ToArray();
-            mesh.colors = colors;
-            //mesh.colors32 = colors32;
-        }
-
+        //var thismesh = gameObject.GetComponent<MeshFilter>();
+        //if (thismesh != null) thismesh.sharedMesh.colors = Enumerable.Repeat(Color.white, thismesh.sharedMesh.vertices.Length).ToArray();
+        _collider = gameObject.GetComponent<Collider>();
     }
 
 
@@ -55,17 +45,13 @@ public class OnMeshClick : MonoBehaviour
                 var colorsNew = mesh.colors;
                 for (int i = 0; i < 3; i++)
                 {
-                    colorsNew[hit.triangleIndex * 3 + i] = paintColor;
+                    colorsNew[meshtriangles[hit.triangleIndex * 3 + i]] = paintColor;
                 }
                 mesh.colors = colorsNew;
 
-                var triangles = GetComponent<Generate>().allTriangles;
-
-                var submeshIndex = int.Parse(mesh.name);
-                var paintedTri = triangles.Where(tri =>
-                    tri.subMeshNumber == submeshIndex
-                && tri.vertexNumberOfA == hit.triangleIndex * 3);
-                paintedTri.First().color = paintColor;
+                var colors = GetComponent<Generate>().colorsPerTri;
+                colors[hit.triangleIndex] = paintColor;
+                
                 ColorManager.Instance.FieldPainted(paintColor);
             }
         }

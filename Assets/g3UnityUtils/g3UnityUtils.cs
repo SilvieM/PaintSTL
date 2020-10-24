@@ -1,14 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using g3;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Assets.g3UnityUtils
 {
+
     public class g3UnityUtils
     {
 
 
-        public static GameObject CreateMeshGO(string name, DMesh3 mesh, Material setMaterial = null, bool bCollider = true)
+        public static GameObject CreateMeshGO(string name, DMesh3 mesh, List<Color> colors = null, Material setMaterial = null, bool bCollider = true)
         {
             var gameObj = new GameObject(name);
             gameObj.AddComponent<MeshFilter>();
@@ -16,7 +20,7 @@ namespace Assets.g3UnityUtils
             if (bCollider)
             {
                 gameObj.AddComponent(typeof(MeshCollider));
-                gameObj.GetComponent<MeshCollider>().enabled = false;
+                gameObj.GetComponent<MeshCollider>().enabled = true;
             }
             if (setMaterial)
             {
@@ -27,14 +31,11 @@ namespace Assets.g3UnityUtils
                 gameObj.AddComponent<MeshRenderer>().material = StandardMaterial(Color.red);
             }
             return gameObj;
-        }
-        public static GameObject CreateMeshGO(string name, DMesh3 mesh, Color color, bool bCollider = true)
-        {
-            return CreateMeshGO(name, mesh, StandardMaterial(color), bCollider);
+
         }
 
 
-        public static void SetGOMesh(GameObject go, DMesh3 mesh)
+        public static void SetGOMesh(GameObject go, DMesh3 mesh, List<Color> colors = null)
         {
             DMesh3 useMesh = mesh;
             if (!mesh.IsCompact)
@@ -46,7 +47,7 @@ namespace Assets.g3UnityUtils
             MeshFilter filter = go.GetComponent<MeshFilter>();
             if (filter == null)
                 throw new Exception("g3UnityUtil.SetGOMesh: go " + go.name + " has no MeshFilter");
-            Mesh unityMesh = DMeshToUnityMesh(useMesh);
+            Mesh unityMesh = DMeshToUnityMesh(useMesh, colors);
             filter.sharedMesh = unityMesh;
         }
 
@@ -56,7 +57,7 @@ namespace Assets.g3UnityUtils
         /// <summary>
         /// Convert DMesh3 to unity Mesh
         /// </summary>
-        public static Mesh DMeshToUnityMesh(DMesh3 m, bool bLimitTo64k = false)
+        public static Mesh DMeshToUnityMesh(DMesh3 m, List<Color> colors = null, bool bLimitTo64k = false)
         {
             if (bLimitTo64k && (m.MaxVertexID > 65535 || m.MaxTriangleID > 65535))
             {
@@ -64,16 +65,47 @@ namespace Assets.g3UnityUtils
                 return null;
             }
 
-            Mesh unityMesh = new Mesh();
-            unityMesh.vertices = dvector_to_vector3(m.VerticesBuffer);
+            Mesh unityMesh = new Mesh()
+            {
+                indexFormat = IndexFormat.UInt32
+            };
+            var vertices = new List<Vector3>();
+            var verticesAsVec3 = dvector_to_vector3(m.VerticesBuffer);
+            var triangles = new List<int>();
+            foreach (var triangle in m.Triangles())
+            {
+                vertices.Add(verticesAsVec3[triangle.a]);
+                vertices.Add(verticesAsVec3[triangle.b]);
+                vertices.Add(verticesAsVec3[triangle.c]);
+                var index = triangles.Count;
+                triangles.Add(index);
+                triangles.Add(index+1);
+                triangles.Add(index+2);
+            }
+
+            unityMesh.vertices = vertices.ToArray();
             if (m.HasVertexNormals)
                 unityMesh.normals = (m.HasVertexNormals) ? dvector_to_vector3(m.NormalsBuffer) : null;
-            if (m.HasVertexColors)
-                unityMesh.colors = dvector_to_color(m.ColorsBuffer);
+            //if (m.HasVertexColors)
+              //  unityMesh.colors = dvector_to_color(m.ColorsBuffer);
             if (m.HasVertexUVs)
                 unityMesh.uv = dvector_to_vector2(m.UVBuffer);
-            unityMesh.triangles = dvector_to_int(m.TrianglesBuffer);
-
+            //unityMesh.triangles = dvector_to_int(m.TrianglesBuffer);
+            unityMesh.triangles = triangles.ToArray();
+            if (colors != null)
+            {
+                if (colors.Count == unityMesh.vertexCount) unityMesh.colors = colors.ToArray();
+                else if(colors.Count*3==unityMesh.vertexCount)
+                {
+                    var tripleColors = colors.SelectMany(color => new List<Color>() {color, color, color}).ToArray();
+                    unityMesh.colors = tripleColors;
+                }
+                else
+                {
+                    Debug.Log($"Vertices: {unityMesh.vertices.Length} Colors: {colors.Count}");
+                }
+            }
+            else unityMesh.colors = Enumerable.Repeat(Color.white, unityMesh.vertexCount).ToArray();
             if (m.HasVertexNormals == false)
                 unityMesh.RecalculateNormals();
 

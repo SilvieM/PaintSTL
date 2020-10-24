@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Assets.g3UnityUtils;
+using Assets.Static_Classes;
 using g3;
 using Parabox.Stl;
 using UnityEditor;
@@ -25,24 +26,18 @@ public class Import : MonoBehaviour
         
     }
 
+
     public void ImportSTL()
     {
-        Debug.Log("Import Clicked");
         string path = EditorUtility.OpenFilePanel("Import STL File", "", "stl");
         GameObject created = null;
         if (path.Length == 0)
         {
             return;
         }
-
-        var name = Path.GetFileNameWithoutExtension(path);
         DMesh3 readMesh = StandardMeshReader.ReadMesh(path);
 
-
-        var obj = g3UnityUtils.CreateMeshGO("ImportedObject", readMesh, Color.white);
-        
-        Instantiate(obj);
-
+        StaticFunctions.SpawnNewObject(readMesh);
 
 
         //var meshes = Importer.Import(path, CoordinateSpace.Right).ToArray(); //TODO Check Coordinate Space
@@ -93,6 +88,6 @@ public class Import : MonoBehaviour
         //}
         //var cam = GameObject.FindGameObjectWithTag("MainCamera"); //TODO make this work
         //cam.transform.LookAt(created.transform);
-        
+
     }
 }

@@ -50,10 +50,12 @@ public class OnMeshClick : MonoBehaviour
                     colorsNew[meshtriangles[hit.triangleIndex * 3 + i]] = paintColor;
                 }
                 mesh.colors = colorsNew;
-                Debug.Log($"Painted {hit.triangleIndex}");
+                //Debug.Log($"Painted {hit.triangleIndex}");
                 
                 colors[hit.triangleIndex] = paintColor;
 
+                //var Dmesh = generate.mesh;
+                //Dmesh.SetTriangleGroup(hit.triangleIndex, 1);
                 ColorManager.Instance.FieldPainted(paintColor);
             }
         }

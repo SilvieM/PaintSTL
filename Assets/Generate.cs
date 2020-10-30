@@ -28,6 +28,7 @@ public class Generate : MonoBehaviour
     public void MyInit(DMesh3 mesh)
     {
         this.mesh = mesh;
+        mesh.EnableTriangleGroups();
         this.colorsPerTri = Enumerable.Repeat(Color.white, mesh.TriangleCount).ToList();
         spatial = new DMeshAABBTree3(mesh);
         spatial.Build();
@@ -75,35 +76,46 @@ public class Generate : MonoBehaviour
     public List<int> FindPaintedTriangles()
     {
         List<int> indices = new List<int>();
-        for (int i=0; i < colorsPerTri.Count; i++)
+        for (int i = 0; i < colorsPerTri.Count; i++)
         {
             if (colorsPerTri[i] == ColorManager.Instance.currentColor)
             {
                 indices.Add(i);
             }
         }
+        //foreach (var triangleIndex in mesh.TriangleIndices())
+        //{
+        //    if(mesh.GetTriangleGroup(triangleIndex) == 1)
+        //        indices.Add(triangleIndex);
+        //}
+        Debug.Log($"Painted Triangles: {indices.Count}");
         return indices;
     }
     public void MakeNewPartOnePointAlgo()
     {
-        //DMeshAABBTree3 spatial = new DMeshAABBTree3(mesh);
-        //spatial.Build();
-
         var painted = FindPaintedTriangles();
         painted.Reverse();
         var toDelete = new List<int>();
         var newMesh = new DMesh3();
+        var normals = new List<Vector3d>();
+        var vertices = new List<Vector3d>();
+        var verticesInNewMesh = new Dictionary<Vector3d, int>();
         foreach (var paintedTriNum in painted)
         {
             var tri = mesh.GetTriangle(paintedTriNum);
             var normal = mesh.GetTriNormal(paintedTriNum);
-            var orgA = mesh.GetVertex(tri.a)+normal;
-            var orgB = mesh.GetVertex(tri.b)+normal;
-            var orgC = mesh.GetVertex(tri.c)+normal;
-            var intA = newMesh.AppendVertex(new Vector3d(orgA));
-            var intB = newMesh.AppendVertex(new Vector3d(orgB));
-            var intC = newMesh.AppendVertex(new Vector3d(orgC));
-            
+            normals.Add(normal);
+            var orgA = mesh.GetVertex(tri.a);
+            vertices.Add(orgA);
+            var orgB = mesh.GetVertex(tri.b);
+            vertices.Add(orgB);
+            var orgC = mesh.GetVertex(tri.c);
+            vertices.Add(orgC);
+            //TODO Check if Vertex already exists!
+            var intA = AppendIfNotExists(verticesInNewMesh, orgA, newMesh);
+            var intB = AppendIfNotExists(verticesInNewMesh, orgB, newMesh);
+            var intC = AppendIfNotExists(verticesInNewMesh, orgC, newMesh);
+
             var result = mesh.RemoveTriangle(paintedTriNum);
             if(result!= MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
             else toDelete.Add(paintedTriNum);
@@ -113,33 +125,69 @@ public class Generate : MonoBehaviour
         {
             colorsPerTri.RemoveAt(paintedTriNum);
         }
-        g3UnityUtils.SetGOMesh(gameObject, mesh, colorsPerTri);
+
+        
+        var avgNormal = normals.Average();
+        var avgVertices = vertices.Average();
+        var newPoint = avgVertices - avgNormal;
+        var newPointId = newMesh.AppendVertex(newPoint);
+        var newPointIdInOldMesh = mesh.AppendVertex(newPoint);
+
+
+        var eids = FindBoundaryEdges(mesh);
+        MarkEdges(mesh, eids);
+        foreach (var openEdge in eids)
+        {
+            var edge = mesh.GetEdge(openEdge);
+            var v0 = mesh.GetVertex(edge.a);
+            var v1 = mesh.GetVertex(edge.b);
+            //TODO find out when triangle needs to be flipped
+            var tid = mesh.AppendTriangle(edge.a, edge.b, newPointIdInOldMesh);
+            if(tid>0)colorsPerTri.Add(ColorManager.Instance.currentColor);
+            else Debug.Log("Triangle in old mesh could not be inserted");
+        }
+
+        var eidsNewMesh = FindBoundaryEdges(newMesh);
+        MarkEdges(newMesh, eidsNewMesh);
+        foreach (var openEdge in eidsNewMesh)
+        {
+            var edge = newMesh.GetEdge(openEdge);
+            var v0 = newMesh.GetVertex(edge.a);
+            var v1 = newMesh.GetVertex(edge.b);
+            //TODO find out when triangle needs to be flipped
+            var tid = newMesh.AppendTriangle(edge.a, edge.b, newPointId);
+        }
+        mesh = g3UnityUtils.SetGOMesh(gameObject, mesh, colorsPerTri);
         spatial.Build();
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         newObj.transform.position += Vector3.forward;
-        //var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == ColorManager.Instance.currentColor).ToList();
-        //if (!paintedTriangles.Any()) return;
-        //var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
-        //var middlePointOfSelected = paintedTriangles.Select(tri => tri.middlePoint).Average();
-        //var newPoint = middlePointOfSelected - avgNormal *1; //Adjust here for depth
-        //allVertices.AddIfNotExists(newPoint, new Vertex(newPoint, 0, 0));
-        //var newVertex = allVertices[newPoint];
-        //var openEdges = CalcOpenEdges(paintedTriangles, true);
-        //var trianglesToDiplay = new List<Triangle>();
-        //foreach (var openEdge in openEdges)
-        //{
-        //    var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, newVertex, ColorManager.Instance.currentColor);
-        //    trianglesToDiplay.Add(newTriangle);
-        //}
-
-        //CutOutFromMain(trianglesToDiplay, paintedTriangles);
-
-        //trianglesToDiplay.AddRange(paintedTriangles);
-        //MakeNewObject(trianglesToDiplay, avgNormal);
-
-
     }
 
+    private static int AppendIfNotExists(Dictionary<Vector3d, int> verticesInNewMesh, Vector3d orgA, DMesh3 newMesh)
+    {
+        if (!verticesInNewMesh.TryGetValue(orgA, out var intA))
+        {
+            intA = newMesh.AppendVertex(orgA);
+            verticesInNewMesh.Add(orgA, intA);
+        }
+
+        return intA;
+    }
+
+    public List<int> FindBoundaryEdges(DMesh3 currentmesh)
+    {
+        var eids = new List<int>();
+        foreach (var edgeIndex in currentmesh.EdgeIndices())
+        {
+            if (currentmesh.IsBoundaryEdge(edgeIndex))
+            {
+                if(currentmesh.GetEdge(edgeIndex).c != currentmesh.GetEdge(edgeIndex).d) //Those can only be equal when the Edge is inside non triangles -> Should have been removed?!
+                    eids.Add(edgeIndex);
+                else Debug.Log("Boundary edge found that is an empty edge");
+            }
+        }
+        return eids;
+    }
 
     public void MakeNewPartMyAlgo()
     {
@@ -161,12 +209,16 @@ public class Generate : MonoBehaviour
         //MakeNewObject(paintedTriangles, avgNormal);
     }
 
-    private void MarkEdges(List<Edge> edges)
+    private void MarkEdges(DMesh3 currentmesh, List<int> eids)
     {
-        foreach (var openEdge in edges)
+
+        foreach (var openEdge in eids)
         {
-            Debug.DrawLine(transform.TransformPoint(openEdge.vertex1.pos),
-                transform.TransformPoint(openEdge.vertex2.pos), Color.red,
+            var edge = currentmesh.GetEdge(openEdge);
+            var v0 = currentmesh.GetVertex(edge.a);
+            var v1 = currentmesh.GetVertex(edge.b);
+            Debug.DrawLine(transform.TransformPoint(v0.toVector3()),
+                transform.TransformPoint(v1.toVector3()), Color.red,
                 5, false);
         }
     }

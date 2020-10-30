@@ -35,7 +35,7 @@ namespace Assets.g3UnityUtils
         }
 
 
-        public static void SetGOMesh(GameObject go, DMesh3 mesh, List<Color> colors = null)
+        public static DMesh3 SetGOMesh(GameObject go, DMesh3 mesh, List<Color> colors = null)
         {
             DMesh3 useMesh = mesh;
             if (!mesh.IsCompact)
@@ -51,6 +51,7 @@ namespace Assets.g3UnityUtils
             filter.sharedMesh = unityMesh;
             MeshCollider collider = go.GetComponent<MeshCollider>();
             if (collider != null) collider.sharedMesh = unityMesh;
+            return useMesh;
         }
 
 
@@ -86,8 +87,8 @@ namespace Assets.g3UnityUtils
             }
 
             unityMesh.vertices = vertices.ToArray();
-            if (m.HasVertexNormals)
-                unityMesh.normals = (m.HasVertexNormals) ? toVector3Array(m.NormalsBuffer) : null;
+            //if (m.HasVertexNormals)
+            //    unityMesh.normals = (m.HasVertexNormals) ? toVector3Array(m.NormalsBuffer) : null;
             //if (m.HasVertexColors)
               //  unityMesh.colors = dvector_to_color(m.ColorsBuffer);
             if (m.HasVertexUVs)
@@ -108,8 +109,8 @@ namespace Assets.g3UnityUtils
                 }
             }
             else unityMesh.colors = Enumerable.Repeat(Color.white, unityMesh.vertexCount).ToArray();
-            if (m.HasVertexNormals == false)
-                unityMesh.RecalculateNormals();
+            //if (m.HasVertexNormals == false)
+                unityMesh.RecalculateNormals(); //TODO
 
             return unityMesh;
         }
@@ -195,6 +196,10 @@ namespace Assets.g3UnityUtils
         public static Vector3d toVector3d(this Vector3 vec)
         {
             return new Vector3d(new double[] { vec.x, vec.y, vec.z });
+        }
+        public static Vector3 toVector3(this Vector3d vec)
+        {
+            return new Vector3((float)vec.x, (float)vec.y, (float)vec.z);
         }
 
         public static Vector3? toOneVector3(this DVector<double> vec)

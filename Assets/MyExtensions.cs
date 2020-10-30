@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Classes;
+using g3;
 
 namespace Assets
 {
@@ -30,9 +31,17 @@ namespace Assets
             var z = source.Average(vec => vec.z);
             return new Vector3(x,y,z);
         }
+
+        public static Vector3d Average(this System.Collections.Generic.IEnumerable<Vector3d> source)
+        {
+            var x = source.Average(vec => vec.x);
+            var y = source.Average(vec => vec.y);
+            var z = source.Average(vec => vec.z);
+            return new Vector3d(x, y, z);
+        }
         //public static Vector3 Average<TSource>(this System.Collections.Generic.IEnumerable<TSource> source, Func<TSource, Vector3> selector)
         //{
-            
+
         //    var x = source.Average(vec => vec.x);
         //    var y = source.Average(vec => vec.y);
         //    var z = source.Average(vec => vec.z);

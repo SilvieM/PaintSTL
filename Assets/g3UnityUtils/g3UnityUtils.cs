@@ -8,7 +8,7 @@ using UnityEngine.Rendering;
 namespace Assets.g3UnityUtils
 {
 
-    public class g3UnityUtils
+    public static class g3UnityUtils
     {
 
 
@@ -49,6 +49,8 @@ namespace Assets.g3UnityUtils
                 throw new Exception("g3UnityUtil.SetGOMesh: go " + go.name + " has no MeshFilter");
             Mesh unityMesh = DMeshToUnityMesh(useMesh, colors);
             filter.sharedMesh = unityMesh;
+            MeshCollider collider = go.GetComponent<MeshCollider>();
+            if (collider != null) collider.sharedMesh = unityMesh;
         }
 
 
@@ -70,7 +72,7 @@ namespace Assets.g3UnityUtils
                 indexFormat = IndexFormat.UInt32
             };
             var vertices = new List<Vector3>();
-            var verticesAsVec3 = dvector_to_vector3(m.VerticesBuffer);
+            var verticesAsVec3 = toVector3(m.VerticesBuffer);
             var triangles = new List<int>();
             foreach (var triangle in m.Triangles())
             {
@@ -85,11 +87,11 @@ namespace Assets.g3UnityUtils
 
             unityMesh.vertices = vertices.ToArray();
             if (m.HasVertexNormals)
-                unityMesh.normals = (m.HasVertexNormals) ? dvector_to_vector3(m.NormalsBuffer) : null;
+                unityMesh.normals = (m.HasVertexNormals) ? toVector3Array(m.NormalsBuffer) : null;
             //if (m.HasVertexColors)
               //  unityMesh.colors = dvector_to_color(m.ColorsBuffer);
             if (m.HasVertexUVs)
-                unityMesh.uv = dvector_to_vector2(m.UVBuffer);
+                unityMesh.uv = toVector2Array(m.UVBuffer);
             //unityMesh.triangles = dvector_to_int(m.TrianglesBuffer);
             unityMesh.triangles = triangles.ToArray();
             if (colors != null)
@@ -172,7 +174,7 @@ namespace Assets.g3UnityUtils
 
 
         // per-type conversion functions
-        public static Vector3[] dvector_to_vector3(DVector<double> vec)
+        public static Vector3[] toVector3(this DVector<double> vec)
         {
             int nLen = vec.Length / 3;
             Vector3[] result = new Vector3[nLen];
@@ -184,7 +186,28 @@ namespace Assets.g3UnityUtils
             }
             return result;
         }
-        public static Vector3[] dvector_to_vector3(DVector<float> vec)
+
+        public static DVector<double> to_dVector(this Vector3 vec)
+        {
+            return new DVector<double>(new double[]{vec.x, vec.y, vec.z});
+        }
+
+        public static Vector3d toVector3d(this Vector3 vec)
+        {
+            return new Vector3d(new double[] { vec.x, vec.y, vec.z });
+        }
+
+        public static Vector3? toOneVector3(this DVector<double> vec)
+        {
+            if (vec.Length != 3) return null;
+            Vector3 result = new Vector3();
+            result.x = (float)vec[0];
+            result.y = (float)vec[1];
+            result.z = (float)vec[2];
+            
+            return result;
+        }
+        public static Vector3[] toVector3Array(this DVector<float> vec)
         {
             int nLen = vec.Length / 3;
             Vector3[] result = new Vector3[nLen];
@@ -196,7 +219,7 @@ namespace Assets.g3UnityUtils
             }
             return result;
         }
-        public static Vector2[] dvector_to_vector2(DVector<float> vec)
+        public static Vector2[] toVector2Array(this DVector<float> vec)
         {
             int nLen = vec.Length / 2;
             Vector2[] result = new Vector2[nLen];
@@ -207,7 +230,7 @@ namespace Assets.g3UnityUtils
             }
             return result;
         }
-        public static Color[] dvector_to_color(DVector<float> vec)
+        public static Color[] dvector_to_color(this DVector<float> vec)
         {
             int nLen = vec.Length / 3;
             Color[] result = new Color[nLen];
@@ -219,7 +242,7 @@ namespace Assets.g3UnityUtils
             }
             return result;
         }
-        public static int[] dvector_to_int(DVector<int> vec)
+        public static int[] dvector_to_int(this DVector<int> vec)
         {
             // todo this could be faster because we can directly copy chunks...
             int nLen = vec.Length;

@@ -18,15 +18,19 @@ public class Generate : MonoBehaviour
 
     public List<Color> colorsPerTri;
 
+    public DMeshAABBTree3 spatial;
     public void Start()
     {
-        
+
     }
+
 
     public void MyInit(DMesh3 mesh)
     {
         this.mesh = mesh;
         this.colorsPerTri = Enumerable.Repeat(Color.white, mesh.TriangleCount).ToList();
+        spatial = new DMeshAABBTree3(mesh);
+        spatial.Build();
     }
 
 
@@ -82,10 +86,12 @@ public class Generate : MonoBehaviour
     }
     public void MakeNewPartOnePointAlgo()
     {
-        DMeshAABBTree3 spatial = new DMeshAABBTree3(mesh);
-        spatial.Build();
-        var painted = FindPaintedTriangles();
+        //DMeshAABBTree3 spatial = new DMeshAABBTree3(mesh);
+        //spatial.Build();
 
+        var painted = FindPaintedTriangles();
+        painted.Reverse();
+        var toDelete = new List<int>();
         var newMesh = new DMesh3();
         foreach (var paintedTriNum in painted)
         {
@@ -94,18 +100,23 @@ public class Generate : MonoBehaviour
             var orgA = mesh.GetVertex(tri.a)+normal;
             var orgB = mesh.GetVertex(tri.b)+normal;
             var orgC = mesh.GetVertex(tri.c)+normal;
-            var intA = mesh.AppendVertex(new Vector3d(orgA));
-            var intB = mesh.AppendVertex(new Vector3d(orgB));
-            var intC = mesh.AppendVertex(new Vector3d(orgC));
+            var intA = newMesh.AppendVertex(new Vector3d(orgA));
+            var intB = newMesh.AppendVertex(new Vector3d(orgB));
+            var intC = newMesh.AppendVertex(new Vector3d(orgC));
             
             var result = mesh.RemoveTriangle(paintedTriNum);
-            if(result == MeshResult.Ok) colorsPerTri.RemoveAt(paintedTriNum);
-            Debug.Log(result.ToString());
+            if(result!= MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
+            else toDelete.Add(paintedTriNum);
             newMesh.AppendTriangle(intA, intB, intC);
         }
+        foreach (var paintedTriNum in toDelete)
+        {
+            colorsPerTri.RemoveAt(paintedTriNum);
+        }
         g3UnityUtils.SetGOMesh(gameObject, mesh, colorsPerTri);
-        //StaticFunctions.SpawnNewObject(newMesh);
-
+        spatial.Build();
+        var newObj = StaticFunctions.SpawnNewObject(newMesh);
+        newObj.transform.position += Vector3.forward;
         //var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == ColorManager.Instance.currentColor).ToList();
         //if (!paintedTriangles.Any()) return;
         //var avgNormal = paintedTriangles.Select(tri => tri.n).Average();

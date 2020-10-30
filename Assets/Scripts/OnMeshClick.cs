@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using Assets;
+using Assets.g3UnityUtils;
+using g3;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 public class OnMeshClick : MonoBehaviour
 {
     //TODO make the colors be kept in sync with what the generate script builds!
-    private Collider _collider;
-    
+
     // Start is called before the first frame update
     public void Start()
     {
         //var thismesh = gameObject.GetComponent<MeshFilter>();
         //if (thismesh != null) thismesh.sharedMesh.colors = Enumerable.Repeat(Color.white, thismesh.sharedMesh.vertices.Length).ToArray();
-        _collider = gameObject.GetComponent<Collider>();
     }
 
 
@@ -42,16 +42,18 @@ public class OnMeshClick : MonoBehaviour
 
             if (Input.GetMouseButton(0))
             {
+                var generate = GetComponent<Generate>();
+                var colors = generate.colorsPerTri;
                 var colorsNew = mesh.colors;
                 for (int i = 0; i < 3; i++)
                 {
                     colorsNew[meshtriangles[hit.triangleIndex * 3 + i]] = paintColor;
                 }
                 mesh.colors = colorsNew;
-
-                var colors = GetComponent<Generate>().colorsPerTri;
-                colors[hit.triangleIndex] = paintColor;
+                Debug.Log($"Painted {hit.triangleIndex}");
                 
+                colors[hit.triangleIndex] = paintColor;
+
                 ColorManager.Instance.FieldPainted(paintColor);
             }
         }

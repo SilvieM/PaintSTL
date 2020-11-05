@@ -76,21 +76,32 @@ public class Generate : MonoBehaviour
     public List<int> FindPaintedTriangles()
     {
         List<int> indices = new List<int>();
-        for (int i = 0; i < colorsPerTri.Count; i++)
-        {
-            if (colorsPerTri[i] == ColorManager.Instance.currentColor)
-            {
-                indices.Add(i);
-            }
-        }
-        //foreach (var triangleIndex in mesh.TriangleIndices())
+        //for (int i = 0; i < colorsPerTri.Count; i++)
         //{
-        //    if(mesh.GetTriangleGroup(triangleIndex) == 1)
-        //        indices.Add(triangleIndex);
+        //    if (colorsPerTri[i] == ColorManager.Instance.currentColor)
+        //    {
+        //        indices.Add(i);
+        //    }
         //}
-        Debug.Log($"Painted Triangles: {indices.Count}");
+        var colorId = ColorManager.Instance.GetColorId(ColorManager.Instance.currentColor);
+        if (colorId != null)
+        {
+            foreach (var triangleIndex in mesh.TriangleIndices())
+            {
+                if (mesh.GetTriangleGroup(triangleIndex) == colorId)
+                    indices.Add(triangleIndex);
+            }
+
+            Debug.Log($"Painted Triangles: {indices.Count}");
+        }
+        else Debug.Log($"Color Id not found {ColorManager.Instance.currentColor}");
+        if(indices.Count <=0) Debug.Log("No colored triangles found");
         return indices;
     }
+
+    /// <summary>
+    /// TODO: The one point could be moved by UI controls!
+    /// </summary>
     public void MakeNewPartOnePointAlgo()
     {
         var painted = FindPaintedTriangles();
@@ -111,7 +122,6 @@ public class Generate : MonoBehaviour
             vertices.Add(orgB);
             var orgC = mesh.GetVertex(tri.c);
             vertices.Add(orgC);
-            //TODO Check if Vertex already exists!
             var intA = AppendIfNotExists(verticesInNewMesh, orgA, newMesh);
             var intB = AppendIfNotExists(verticesInNewMesh, orgB, newMesh);
             var intC = AppendIfNotExists(verticesInNewMesh, orgC, newMesh);
@@ -126,7 +136,6 @@ public class Generate : MonoBehaviour
             colorsPerTri.RemoveAt(paintedTriNum);
         }
 
-        
         var avgNormal = normals.Average();
         var avgVertices = vertices.Average();
         var newPoint = avgVertices - avgNormal;
@@ -134,26 +143,22 @@ public class Generate : MonoBehaviour
         var newPointIdInOldMesh = mesh.AppendVertex(newPoint);
 
 
-        var eids = FindBoundaryEdges(mesh);
+        var eids = mesh.BoundaryEdgeIndices().ToList();
         MarkEdges(mesh, eids);
         foreach (var openEdge in eids)
         {
             var edge = mesh.GetEdge(openEdge);
-            var v0 = mesh.GetVertex(edge.a);
-            var v1 = mesh.GetVertex(edge.b);
-            //TODO find out when triangle needs to be flipped
+            //TODO find out when triangle needs to be flipped. Maybe use GetEdgeNormal!
             var tid = mesh.AppendTriangle(edge.a, edge.b, newPointIdInOldMesh);
             if(tid>0)colorsPerTri.Add(ColorManager.Instance.currentColor);
             else Debug.Log("Triangle in old mesh could not be inserted");
         }
 
-        var eidsNewMesh = FindBoundaryEdges(newMesh);
+        var eidsNewMesh = newMesh.BoundaryEdgeIndices().ToList();
         MarkEdges(newMesh, eidsNewMesh);
         foreach (var openEdge in eidsNewMesh)
         {
             var edge = newMesh.GetEdge(openEdge);
-            var v0 = newMesh.GetVertex(edge.a);
-            var v1 = newMesh.GetVertex(edge.b);
             //TODO find out when triangle needs to be flipped
             var tid = newMesh.AppendTriangle(edge.a, edge.b, newPointId);
         }
@@ -170,7 +175,6 @@ public class Generate : MonoBehaviour
             intA = newMesh.AppendVertex(orgA);
             verticesInNewMesh.Add(orgA, intA);
         }
-
         return intA;
     }
 
@@ -252,44 +256,6 @@ public class Generate : MonoBehaviour
         return (meetPoint - point).sqrMagnitude;
     }
 
-    private void CutOutFromMain(List<Triangle> add, List<Triangle> remove)
-    {
-        //foreach (var triangle in remove)
-        //{
-        //    allTriangles.Remove(triangle);
-        //}
-        //allTriangles.AddRange(add);
-        //RedrawObject();
-    }
-
-    private void RedrawObject()
-    {
-        ////for each previously existing submeshes
-        //var subMeshes = new List<Mesh>();
-        //var meshFilters = transform.GetComponentsInChildren<MeshFilter>();
-        //subMeshes.AddRange(meshFilters.Select(meshFilter => meshFilter.sharedMesh));
-        //for (int i=0; i<subMeshes.Count;i++)
-        //{
-        //    var trianglesToPutHere = allTriangles.Where(tri => tri.subMeshNumber == i&&tri.isGenerated==false);
-
-        //    subMeshes[i] = MakeNewMeshFromTriangles(trianglesToPutHere, i);
-
-        //}
-        ////one new submesh for all newly generated triangles
-        //var newTriangles = allTriangles.Where(tri => tri.isGenerated == true);
-        //var mesh = MakeNewMeshFromTriangles(newTriangles, subMeshes.Count);
-
-        //var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        //Object.DestroyImmediate(go.GetComponent<BoxCollider>());
-        //go.transform.SetParent(transform, false);
-        //go.name = name + "(" + subMeshes.Count + ")";
-        //go.GetComponent<MeshFilter>().sharedMesh = mesh;
-        //var res = Resources.Load("STLMeshMaterial2") as Material;
-        //go.GetComponent<MeshRenderer>().material = res;
-        //go.AddComponent<MeshCollider>();
-        //go.transform.position = Vector3.zero;
-
-    }
 
     private static Mesh MakeNewMeshFromTriangles(IEnumerable<Triangle> newTriangles, int subMeshNumber)
     {
@@ -319,7 +285,6 @@ public class Generate : MonoBehaviour
         };
         return mesh;
     }
-
 
     private List<Triangle> CreateNewTriangles(List<Edge> openEdges)
     {
@@ -362,62 +327,6 @@ public class Generate : MonoBehaviour
         //return newTriangles;
         return null;
     }
-
-
-    private List<Edge> CalcOpenEdges(List<Triangle> triangles, bool colorFilter = false)
-    {
-        var openEdges = new List<Edge>();
-        foreach (var triangle in triangles)
-        {
-            if (!colorFilter || triangle.color == ColorManager.Instance.currentColor)
-            {
-                triangle.CalcDirectNeighbors();
-                if (triangle.abNeighbor == null || triangle.abNeighbor.color != triangle.color)
-                {
-                    openEdges.Add(triangle.EdgeAb);
-                }
-
-                if (triangle.bcNeighbor == null || triangle.bcNeighbor.color != triangle.color)
-                {
-                    openEdges.Add(triangle.EdgeBc);
-                }
-
-                if (triangle.caNeighbor == null || triangle.caNeighbor.color != triangle.color)
-                {
-                    openEdges.Add(triangle.EdgeCa);
-                }
-            }
-        }
-
-        return openEdges;
-    }
-
-    public void MakeNewObject(List<Triangle> triangles, Vector3 offset)
-    {
-        var mesh = MakeNewMeshFromTriangles(triangles, 0);
-        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        Object.DestroyImmediate(go.GetComponent<BoxCollider>());
-        go.name = "SplitObject";
-        go.GetComponent<MeshFilter>().sharedMesh = mesh;
-        var res = Resources.Load("STLMeshMaterial2") as Material;
-        go.GetComponent<MeshRenderer>().material = res;
-        //go.AddComponent<OnMeshClick>().Start();
-        //go.AddComponent<Generate>().GenerateMesh(); //Possibly can make the new splitted objects splittable too?
-        go.AddComponent<MeshCollider>();
-        go.transform.position = offset;
-        go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-    }
-
-    public void DisplayNormals(List<Triangle> triangles = null)
-    {
-        //if (triangles == null) triangles = allTriangles;
-        //foreach (var triangle in triangles)
-        //{
-        //    var mid = (triangle.a.pos + triangle.b.pos + triangle.c.pos) / 3;
-        //    DrawArrow.LineForDebug(transform.TransformPoint(mid), transform.TransformPoint(mid + triangle.n.normalized), Color.cyan);
-        //}
-    }
-
 
 
 }

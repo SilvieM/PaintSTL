@@ -58,7 +58,7 @@ public class InterfaceFunctions : MonoBehaviour
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
-            generate.DisplayNormals();
+            //generate.DisplayNormals();
         }
     }
 

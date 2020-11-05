@@ -34,6 +34,14 @@ public class InterfaceFunctions : MonoBehaviour
         }
     }
 
+    public void FixMyPaintJob()
+    {
+        var objects = GameObject.FindObjectsOfType<Generate>();
+        foreach (var generate in objects)
+        {
+            generate.FixMyPaintJob();
+        }
+    }
 
     public void Split()
     {

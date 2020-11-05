@@ -58,44 +58,30 @@ public class Generate : MonoBehaviour
 
     public void FixMyPaintJob()
     {
-        var percentage = 0.6;
         foreach (var triIndex in mesh.TriangleIndices())
         {
+            var thisTriGroup = mesh.GetTriangleGroup(triIndex);
             var neighbors = mesh.GetTriNeighbourTris(triIndex);
             var triGroup1 = mesh.GetTriangleGroup(neighbors[0]);
+            if (triGroup1 == thisTriGroup) continue;
             var triGroup2 = mesh.GetTriangleGroup(neighbors[1]);
+            if(triGroup2==thisTriGroup) continue;
             var triGroup3 = mesh.GetTriangleGroup(neighbors[2]);
             if (triGroup1 == triGroup2 && triGroup2 == triGroup3)
             {
                 mesh.SetTriangleGroup(triIndex, triGroup1);
+                var colors = gameObject.GetComponent<MeshFilter>().sharedMesh.colors;
+                colors[triIndex] = ColorManager.Instance.GetColorForId(triGroup1);
+                gameObject.GetComponent<MeshFilter>().sharedMesh.colors = colors;
             }
 
         }
         g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
 
-
-    private static Edge GetCorrespondingEdge(Edge openEdge)
-    {
-        Edge correspondingEdge;
-        if (openEdge.belongsTo.EdgeAb == openEdge)
-            correspondingEdge = openEdge.belongsTo.Original.EdgeBc;
-        else if (openEdge.belongsTo.EdgeCa == openEdge)
-            correspondingEdge = openEdge.belongsTo.Original.EdgeCa;
-        else correspondingEdge = openEdge.belongsTo.Original.EdgeAb;
-        return correspondingEdge;
-    }
-
     public List<int> FindPaintedTriangles()
     {
         List<int> indices = new List<int>();
-        //for (int i = 0; i < colorsPerTri.Count; i++)
-        //{
-        //    if (colorsPerTri[i] == ColorManager.Instance.currentColor)
-        //    {
-        //        indices.Add(i);
-        //    }
-        //}
         var colorId = ColorManager.Instance.GetColorId(ColorManager.Instance.currentColor);
         if (colorId != null)
         {
@@ -104,6 +90,7 @@ public class Generate : MonoBehaviour
                 if (mesh.GetTriangleGroup(triangleIndex) == colorId)
                     indices.Add(triangleIndex);
             }
+
 
             Debug.Log($"Painted Triangles: {indices.Count}");
         }
@@ -123,6 +110,7 @@ public class Generate : MonoBehaviour
     {
         var painted = FindPaintedTriangles();
         if (painted.Count <= 0) return;
+
         painted.Reverse();
         var currentGid = ColorManager.Instance.currentColorId ?? -1;
         var toDelete = new List<int>();
@@ -163,23 +151,31 @@ public class Generate : MonoBehaviour
         MarkEdges(mesh, eids);
         foreach (var openEdge in eids)
         {
-            var edge = mesh.GetEdge(openEdge);
-            //TODO find out when triangle needs to be flipped. Maybe use GetEdgeNormal!
-            var tid = mesh.AppendTriangle(edge.a, edge.b, newPointIdInOldMesh);
+            AddTriangle(mesh,openEdge, newPointIdInOldMesh, 0);
         }
 
         var eidsNewMesh = newMesh.BoundaryEdgeIndices().ToList();
         MarkEdges(newMesh, eidsNewMesh);
         foreach (var openEdge in eidsNewMesh)
         {
-            var edge = newMesh.GetEdge(openEdge);
-            //TODO find out when triangle needs to be flipped
-            var tid = newMesh.AppendTriangle(edge.a, edge.b, newPointId, currentGid);
+            AddTriangle(newMesh, openEdge, newPointId, currentGid, true);
         }
         mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
         spatial.Build();
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         newObj.transform.position += Vector3.forward;
+    }
+
+    private void AddTriangle(DMesh3 currentMesh, int openEdge, int centerPoint, int currentGid, bool reverse = false)
+    {
+        var edge = currentMesh.GetEdge(openEdge);
+        //TODO Normal calculation like this works most of the time but not in all cases
+        var normal = currentMesh.GetEdgeNormal(openEdge);
+        var triNormal = Vector3.Cross((currentMesh.GetVertex(edge.b) - currentMesh.GetVertex(edge.a)).toVector3(),
+            (currentMesh.GetVertex(centerPoint) - currentMesh.GetVertex(edge.a)).toVector3());
+        if (Vector3.Dot(normal.toVector3(), triNormal) > 0^reverse) //spitzer Winkel
+            currentMesh.AppendTriangle(edge.a, edge.b, centerPoint, currentGid);
+        else currentMesh.AppendTriangle(edge.b, edge.a, centerPoint, currentGid);
     }
 
     private static int AppendIfNotExists(Dictionary<Vector3d, int> verticesInNewMesh, Vector3d orgA, DMesh3 newMesh)
@@ -192,20 +188,6 @@ public class Generate : MonoBehaviour
         return intA;
     }
 
-    public List<int> FindBoundaryEdges(DMesh3 currentmesh)
-    {
-        var eids = new List<int>();
-        foreach (var edgeIndex in currentmesh.EdgeIndices())
-        {
-            if (currentmesh.IsBoundaryEdge(edgeIndex))
-            {
-                if(currentmesh.GetEdge(edgeIndex).c != currentmesh.GetEdge(edgeIndex).d) //Those can only be equal when the Edge is inside non triangles -> Should have been removed?!
-                    eids.Add(edgeIndex);
-                else Debug.Log("Boundary edge found that is an empty edge");
-            }
-        }
-        return eids;
-    }
 
     public void MakeNewPartMyAlgo()
     {

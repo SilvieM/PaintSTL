@@ -158,7 +158,7 @@ public class Generate : MonoBehaviour
         MarkEdges(newMesh, eidsNewMesh);
         foreach (var openEdge in eidsNewMesh)
         {
-            AddTriangle(newMesh, openEdge, newPointId, currentGid, true);
+            AddTriangle(newMesh, openEdge, newPointId, currentGid);
         }
         mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
         spatial.Build();
@@ -166,16 +166,10 @@ public class Generate : MonoBehaviour
         newObj.transform.position += Vector3.forward;
     }
 
-    private void AddTriangle(DMesh3 currentMesh, int openEdge, int centerPoint, int currentGid, bool reverse = false)
+    private void AddTriangle(DMesh3 currentMesh, int openEdge, int centerPoint, int currentGid)
     {
-        var edge = currentMesh.GetEdge(openEdge);
-        //TODO Normal calculation like this works most of the time but not in all cases
-        var normal = currentMesh.GetEdgeNormal(openEdge);
-        var triNormal = Vector3.Cross((currentMesh.GetVertex(edge.b) - currentMesh.GetVertex(edge.a)).toVector3(),
-            (currentMesh.GetVertex(centerPoint) - currentMesh.GetVertex(edge.a)).toVector3());
-        if (Vector3.Dot(normal.toVector3(), triNormal) > 0^reverse) //spitzer Winkel
-            currentMesh.AppendTriangle(edge.a, edge.b, centerPoint, currentGid);
-        else currentMesh.AppendTriangle(edge.b, edge.a, centerPoint, currentGid);
+        var edge = currentMesh.GetOrientedBoundaryEdgeV(openEdge);
+        currentMesh.AppendTriangle(edge.b, edge.a, centerPoint, currentGid);
     }
 
     private static int AppendIfNotExists(Dictionary<Vector3d, int> verticesInNewMesh, Vector3d orgA, DMesh3 newMesh)

@@ -52,12 +52,12 @@ public class InterfaceFunctions : MonoBehaviour
         }
     }
 
-    public void MakeNewPartMyAlgo()
+    public void MovePoint()
     {
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
-            generate.MakeNewPartMyAlgo();
+            //generate.MovePoint();
         }
     }
 
@@ -87,5 +87,7 @@ public class InterfaceFunctions : MonoBehaviour
             generate.MakeNewPartOnePointAlgo();
         }
     }
+
+
 
 }

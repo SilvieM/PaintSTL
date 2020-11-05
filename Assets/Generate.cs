@@ -17,9 +17,44 @@ public class Generate : MonoBehaviour
     public DMesh3 mesh;
 
     public DMeshAABBTree3 spatial;
+
+    public int? PointOldPart = null;
+    public Vector3d normalMiddle;
+    public int? PointNewPart = null;
+
+
     public void Start()
     {
 
+    }
+
+    public void Update()
+    {
+        if (PointOldPart == null || PointNewPart == null) return;
+        if (Input.GetKey(KeyCode.UpArrow))
+        {
+            var tri = mesh.GetVertex((int)PointOldPart);
+            mesh.SetVertex((int)PointOldPart, tri + normalMiddle * 0.1);
+            g3UnityUtils.SetGOMesh(gameObject, mesh);
+        }
+
+        if (Input.GetKey(KeyCode.DownArrow))
+        {
+            var tri = mesh.GetVertex((int)PointOldPart);
+            mesh.SetVertex((int)PointOldPart, tri - normalMiddle * 0.1);
+            g3UnityUtils.SetGOMesh(gameObject, mesh);
+        }
+        //move down
+        if (Input.GetKey(KeyCode.RightArrow))
+        {
+
+        }
+        //move right
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+
+        }
+        //move left
     }
 
 
@@ -65,7 +100,7 @@ public class Generate : MonoBehaviour
             var triGroup1 = mesh.GetTriangleGroup(neighbors[0]);
             if (triGroup1 == thisTriGroup) continue;
             var triGroup2 = mesh.GetTriangleGroup(neighbors[1]);
-            if(triGroup2==thisTriGroup) continue;
+            if (triGroup2 == thisTriGroup) continue;
             var triGroup3 = mesh.GetTriangleGroup(neighbors[2]);
             if (triGroup1 == triGroup2 && triGroup2 == triGroup3)
             {
@@ -135,7 +170,7 @@ public class Generate : MonoBehaviour
             var intC = AppendIfNotExists(verticesInNewMesh, orgC, newMesh);
 
             var result = mesh.RemoveTriangle(paintedTriNum);
-            if(result!= MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
+            if (result != MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
             else toDelete.Add(paintedTriNum);
             newMesh.AppendTriangle(intA, intB, intC, currentGid);
         }
@@ -151,7 +186,7 @@ public class Generate : MonoBehaviour
         MarkEdges(mesh, eids);
         foreach (var openEdge in eids)
         {
-            AddTriangle(mesh,openEdge, newPointIdInOldMesh, 0);
+            AddTriangle(mesh, openEdge, newPointIdInOldMesh, 0);
         }
 
         var eidsNewMesh = newMesh.BoundaryEdgeIndices().ToList();
@@ -164,6 +199,9 @@ public class Generate : MonoBehaviour
         spatial.Build();
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         newObj.transform.position += Vector3.forward;
+        PointNewPart = newPointId;
+        normalMiddle = -avgNormal;
+        PointOldPart = newPointIdInOldMesh;
     }
 
     private void AddTriangle(DMesh3 currentMesh, int openEdge, int centerPoint, int currentGid)
@@ -181,7 +219,6 @@ public class Generate : MonoBehaviour
         }
         return intA;
     }
-
 
     public void MakeNewPartMyAlgo()
     {
@@ -259,9 +296,9 @@ public class Generate : MonoBehaviour
             var index = trianglesInts1.Count;
             trianglesInts1.AddRange(new List<int>()
                 {index + 1, index, index + 2}); //they need to be flipped for some reason
-            vertices1.AddRange(new List<Vector3>() {triangle.a.pos, triangle.b.pos, triangle.c.pos});
-            colors1.AddRange(new List<Color>() {triangle.color, triangle.color, triangle.color});
-            normals1.AddRange(new List<Vector3>() {triangle.n, triangle.n, triangle.n});
+            vertices1.AddRange(new List<Vector3>() { triangle.a.pos, triangle.b.pos, triangle.c.pos });
+            colors1.AddRange(new List<Color>() { triangle.color, triangle.color, triangle.color });
+            normals1.AddRange(new List<Vector3>() { triangle.n, triangle.n, triangle.n });
         }
 
         var mesh = new Mesh()

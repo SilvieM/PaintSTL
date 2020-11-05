@@ -11,9 +11,6 @@ namespace Assets.Static_Classes
             var res = Resources.Load("STLMeshMaterial2") as Material;
             var obj = g3UnityUtils.g3UnityUtils.CreateMeshGO("ImportedObject", mesh, null, res);
             obj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            //var instance = Instantiate(obj);
-            //instance.AddComponent<OnMeshClick>();
-            //instance.AddComponent<Generate>().MyInit(mesh);
             obj.AddComponent<OnMeshClick>();
             obj.AddComponent<Generate>().MyInit(mesh);
             return obj;

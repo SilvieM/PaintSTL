@@ -75,8 +75,10 @@ namespace Assets.g3UnityUtils
             var vertices = new List<Vector3>();
             var verticesAsVec3 = toVector3(m.VerticesBuffer);
             var triangles = new List<int>();
-            foreach (var triangle in m.Triangles())
+            var colorsToAdd = new List<Color>();
+            foreach (var triangleIndex in m.TriangleIndices())
             {
+                var triangle = m.GetTriangle(triangleIndex);
                 vertices.Add(verticesAsVec3[triangle.a]);
                 vertices.Add(verticesAsVec3[triangle.b]);
                 vertices.Add(verticesAsVec3[triangle.c]);
@@ -84,6 +86,11 @@ namespace Assets.g3UnityUtils
                 triangles.Add(index);
                 triangles.Add(index+1);
                 triangles.Add(index+2);
+                var colorNum = m.GetTriangleGroup(triangleIndex);
+                var color = ColorManager.Instance.GetColorForId(colorNum);
+                colorsToAdd.Add(color);
+                colorsToAdd.Add(color);
+                colorsToAdd.Add(color);
             }
 
             unityMesh.vertices = vertices.ToArray();
@@ -95,12 +102,13 @@ namespace Assets.g3UnityUtils
                 unityMesh.uv = toVector2Array(m.UVBuffer);
             //unityMesh.triangles = dvector_to_int(m.TrianglesBuffer);
             unityMesh.triangles = triangles.ToArray();
+            unityMesh.colors = colorsToAdd.ToArray();
             if (colors != null)
             {
                 if (colors.Count == unityMesh.vertexCount) unityMesh.colors = colors.ToArray();
-                else if(colors.Count*3==unityMesh.vertexCount)
+                else if (colors.Count * 3 == unityMesh.vertexCount)
                 {
-                    var tripleColors = colors.SelectMany(color => new List<Color>() {color, color, color}).ToArray();
+                    var tripleColors = colors.SelectMany(color => new List<Color>() { color, color, color }).ToArray();
                     unityMesh.colors = tripleColors;
                 }
                 else
@@ -108,9 +116,9 @@ namespace Assets.g3UnityUtils
                     Debug.Log($"Vertices: {unityMesh.vertices.Length} Colors: {colors.Count}");
                 }
             }
-            else unityMesh.colors = Enumerable.Repeat(Color.white, unityMesh.vertexCount).ToArray();
+            else unityMesh.colors = colorsToAdd.ToArray();
             //if (m.HasVertexNormals == false)
-                unityMesh.RecalculateNormals(); //TODO
+            unityMesh.RecalculateNormals(); //TODO
 
             return unityMesh;
         }

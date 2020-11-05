@@ -16,8 +16,6 @@ public class Generate : MonoBehaviour
 {
     public DMesh3 mesh;
 
-    public List<Color> colorsPerTri;
-
     public DMeshAABBTree3 spatial;
     public void Start()
     {
@@ -28,8 +26,6 @@ public class Generate : MonoBehaviour
     public void MyInit(DMesh3 mesh)
     {
         this.mesh = mesh;
-        mesh.EnableTriangleGroups();
-        this.colorsPerTri = Enumerable.Repeat(Color.white, mesh.TriangleCount).ToList();
         spatial = new DMeshAABBTree3(mesh);
         spatial.Build();
     }
@@ -60,7 +56,24 @@ public class Generate : MonoBehaviour
 
     }
 
-    
+    public void FixMyPaintJob()
+    {
+        var percentage = 0.6;
+        foreach (var triIndex in mesh.TriangleIndices())
+        {
+            var neighbors = mesh.GetTriNeighbourTris(triIndex);
+            var triGroup1 = mesh.GetTriangleGroup(neighbors[0]);
+            var triGroup2 = mesh.GetTriangleGroup(neighbors[1]);
+            var triGroup3 = mesh.GetTriangleGroup(neighbors[2]);
+            if (triGroup1 == triGroup2 && triGroup2 == triGroup3)
+            {
+                mesh.SetTriangleGroup(triIndex, triGroup1);
+            }
+
+        }
+        g3UnityUtils.SetGOMesh(gameObject, mesh);
+    }
+
 
     private static Edge GetCorrespondingEdge(Edge openEdge)
     {
@@ -95,7 +108,11 @@ public class Generate : MonoBehaviour
             Debug.Log($"Painted Triangles: {indices.Count}");
         }
         else Debug.Log($"Color Id not found {ColorManager.Instance.currentColor}");
-        if(indices.Count <=0) Debug.Log("No colored triangles found");
+
+        if (indices.Count <= 0)
+        {
+            Debug.Log("No colored triangles found");
+        }
         return indices;
     }
 
@@ -105,9 +122,12 @@ public class Generate : MonoBehaviour
     public void MakeNewPartOnePointAlgo()
     {
         var painted = FindPaintedTriangles();
+        if (painted.Count <= 0) return;
         painted.Reverse();
+        var currentGid = ColorManager.Instance.currentColorId ?? -1;
         var toDelete = new List<int>();
         var newMesh = new DMesh3();
+        newMesh.EnableTriangleGroups();
         var normals = new List<Vector3d>();
         var vertices = new List<Vector3d>();
         var verticesInNewMesh = new Dictionary<Vector3d, int>();
@@ -129,11 +149,7 @@ public class Generate : MonoBehaviour
             var result = mesh.RemoveTriangle(paintedTriNum);
             if(result!= MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
             else toDelete.Add(paintedTriNum);
-            newMesh.AppendTriangle(intA, intB, intC);
-        }
-        foreach (var paintedTriNum in toDelete)
-        {
-            colorsPerTri.RemoveAt(paintedTriNum);
+            newMesh.AppendTriangle(intA, intB, intC, currentGid);
         }
 
         var avgNormal = normals.Average();
@@ -150,8 +166,6 @@ public class Generate : MonoBehaviour
             var edge = mesh.GetEdge(openEdge);
             //TODO find out when triangle needs to be flipped. Maybe use GetEdgeNormal!
             var tid = mesh.AppendTriangle(edge.a, edge.b, newPointIdInOldMesh);
-            if(tid>0)colorsPerTri.Add(ColorManager.Instance.currentColor);
-            else Debug.Log("Triangle in old mesh could not be inserted");
         }
 
         var eidsNewMesh = newMesh.BoundaryEdgeIndices().ToList();
@@ -160,9 +174,9 @@ public class Generate : MonoBehaviour
         {
             var edge = newMesh.GetEdge(openEdge);
             //TODO find out when triangle needs to be flipped
-            var tid = newMesh.AppendTriangle(edge.a, edge.b, newPointId);
+            var tid = newMesh.AppendTriangle(edge.a, edge.b, newPointId, currentGid);
         }
-        mesh = g3UnityUtils.SetGOMesh(gameObject, mesh, colorsPerTri);
+        mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
         spatial.Build();
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         newObj.transform.position += Vector3.forward;

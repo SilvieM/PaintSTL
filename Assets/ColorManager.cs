@@ -18,12 +18,14 @@ namespace Assets
 
         private ColorManager()
         {
+            usedColors.Add(Color.white, 0);
         }
 
         public static ColorManager Instance
         {
             get
             {
+
                 return instance;
             }
         }
@@ -32,12 +34,21 @@ namespace Assets
 
         public Color currentColor; //int
 
+        public int? currentColorId => GetColorId(currentColor);
+
         private readonly Dictionary<Color, int> usedColors = new Dictionary<Color, int>();
 
         public int? GetColorId(Color color)
         {
             if (usedColors.ContainsKey(color)) return usedColors[color];
             else return null;
+        }
+
+        public Color GetColorForId(int id)
+        {
+            if (usedColors.ContainsValue(id)) return usedColors.First(pair => pair.Value == id).Key;
+            else return Color.white;
+
         }
         public int FieldPainted(Color color)
         {
@@ -47,7 +58,7 @@ namespace Assets
             }
             else
             {
-                int number = usedColors.Count+1; //indices will start with 1 for now, as 0 is "not colored"
+                int number = usedColors.Count; //indices will start with 1 for now, as 0 is "not colored"
                 usedColors.Add(color, number);
                 OnColorsChanged?.Invoke(usedColors.Keys.ToList());
                 return number;

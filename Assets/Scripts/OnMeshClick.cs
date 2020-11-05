@@ -43,7 +43,6 @@ public class OnMeshClick : MonoBehaviour
             if (Input.GetMouseButton(0))
             {
                 var generate = GetComponent<Generate>();
-                var colors = generate.colorsPerTri;
                 var colorsNew = mesh.colors;
                 for (int i = 0; i < 3; i++)
                 {
@@ -52,7 +51,6 @@ public class OnMeshClick : MonoBehaviour
                 mesh.colors = colorsNew;
                 //Debug.Log($"Painted {hit.triangleIndex}");
                 
-                colors[hit.triangleIndex] = paintColor;
                 var colorIndex = ColorManager.Instance.FieldPainted(paintColor);
                 var dmesh = generate.mesh;
                 dmesh.SetTriangleGroup(hit.triangleIndex, colorIndex);

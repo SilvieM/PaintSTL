@@ -70,14 +70,6 @@ public class InterfaceFunctions : MonoBehaviour
         }
     }
 
-    public void MakeNewPartPeprAlgo()
-    {
-        var objects = GameObject.FindObjectsOfType<Generate>();
-        foreach (var generate in objects)
-        {
-            generate.MakeNewPartPeprAlgo();
-        }
-    }
 
     public void MakeNewPartOnePointAlgo()
     {

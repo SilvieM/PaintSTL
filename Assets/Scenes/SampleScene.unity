@@ -2982,7 +2982,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: MakeNewPartsMyAlgo
+  m_Text: Move Point
 --- !u!222 &1054996991
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4671,7 +4671,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: MakeNewPartOnePointAlgo
+  m_Text: Cut Current Color
 --- !u!222 &1810579531
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5378,7 +5378,7 @@ GameObject:
   - component: {fileID: 2077031545}
   - component: {fileID: 2077031544}
   m_Layer: 5
-  m_Name: MakeNewPartMyAlgo
+  m_Name: MovePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5456,7 +5456,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: MakeNewPartMyAlgo
+          m_StringArgument: MovePoint
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &2077031545

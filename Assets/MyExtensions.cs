@@ -47,6 +47,5 @@ namespace Assets
         //    var z = source.Average(vec => vec.z);
         //    return new Vector3(x, y, z);
         //}
-
     }
 }

@@ -265,6 +265,14 @@ namespace Assets.g3UnityUtils
             return result;
         }
 
+        public static Vector3f toVector3f(this Color color)
+        {
+            return new Vector3f(color.r, color.g, color.b);
+        }
 
+        public static Vector3d toVector3d(this Vector3f vec)
+        {
+            return new Vector3d(vec.x, vec.y, vec.z);
+        }
     }
 }

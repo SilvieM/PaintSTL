@@ -37,6 +37,7 @@ public class Import : MonoBehaviour
         }
         DMesh3 readMesh = StandardMeshReader.ReadMesh(path);
         readMesh.EnableTriangleGroups();
+        readMesh.EnableVertexColors(new Vector3f(1,1,1));
         StaticFunctions.SpawnNewObject(readMesh);
 
     }

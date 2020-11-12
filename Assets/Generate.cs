@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Assets;
 using Assets.Classes;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
 using g3;
-using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Object = UnityEngine.Object;
 
 public class Generate : MonoBehaviour
 {
@@ -20,8 +16,7 @@ public class Generate : MonoBehaviour
 
     public int? PointOldPart = null;
     public Vector3d normalMiddle;
-    public int? PointNewPart = null;
-
+    public int? ThisObjectsPoint = null;
 
     public void Start()
     {
@@ -30,31 +25,36 @@ public class Generate : MonoBehaviour
 
     public void Update()
     {
-        if (PointOldPart == null || PointNewPart == null) return;
-        if (Input.GetKey(KeyCode.UpArrow))
+        var PointsToMove = mesh.VertexIndices().Where(index =>
+            mesh.GetVertexColor(index) == ColorManager.Instance.currentColor.toVector3f()); //Ressource-hungry??
+        foreach (var PointToMove in PointsToMove)
         {
-            var tri = mesh.GetVertex((int)PointOldPart);
-            mesh.SetVertex((int)PointOldPart, tri + normalMiddle * 0.1);
-            g3UnityUtils.SetGOMesh(gameObject, mesh);
+            var normal = mesh.GetVertexNormal(PointToMove);
+            if (Input.GetKey(KeyCode.UpArrow))
+            {
+                var tri = mesh.GetVertex(PointToMove);
+                mesh.SetVertex(PointToMove, tri + normal.toVector3d() * 0.1);
+                g3UnityUtils.SetGOMesh(gameObject, mesh);
+            }
+            if (Input.GetKey(KeyCode.DownArrow))
+            {
+                var tri = mesh.GetVertex(PointToMove);
+                mesh.SetVertex(PointToMove, tri - normal.toVector3d() * 0.1);
+                g3UnityUtils.SetGOMesh(gameObject, mesh);
+            }
+            if (Input.GetKey(KeyCode.RightArrow))
+            {
+                var tri = mesh.GetVertex(PointToMove);
+                mesh.SetVertex(PointToMove, tri + Camera.main.transform.right.toVector3d() * 0.1);
+                g3UnityUtils.SetGOMesh(gameObject, mesh);
+            }
+            if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                var tri = mesh.GetVertex(PointToMove);
+                mesh.SetVertex(PointToMove, tri - Camera.main.transform.right.toVector3d() * 0.1);
+                g3UnityUtils.SetGOMesh(gameObject, mesh);
+            }
         }
-
-        if (Input.GetKey(KeyCode.DownArrow))
-        {
-            var tri = mesh.GetVertex((int)PointOldPart);
-            mesh.SetVertex((int)PointOldPart, tri - normalMiddle * 0.1);
-            g3UnityUtils.SetGOMesh(gameObject, mesh);
-        }
-        //move down
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
-
-        }
-        //move right
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-
-        }
-        //move left
     }
 
 
@@ -66,31 +66,6 @@ public class Generate : MonoBehaviour
     }
 
 
-    public void MakeNewPartPeprAlgo()
-    {
-        //var paintedTriangles = allTriangles.Where(tri => tri.color!= null &&tri.color==ColorManager.Instance.currentColor).ToList();
-        ////somehow because models are usually imported from right coordinate space, they need to be flipped to get correct normals displaying
-        //if(!paintedTriangles.Any()) return;
-        //var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
-        //var newTrianglesInsideFace = paintedTriangles.Select(tri => tri.GetShiftedCopy(avgNormal, allVertices)).ToList();
-        //var openEdges = CalcOpenEdges(newTrianglesInsideFace);
-        //var newTrianglesSideFaces = new List<Triangle>();
-        //foreach (var openEdge in openEdges)
-        //{
-        //    var correspondingEdge = GetCorrespondingEdge(openEdge);
-
-        //    var triangle1 = new Triangle(allVertices[openEdge.vertex2.pos], allVertices[openEdge.vertex1.pos], allVertices[correspondingEdge.vertex2.pos], ColorManager.Instance.currentColor);
-        //    newTrianglesSideFaces.Add(triangle1);
-        //    var triangle2 = new Triangle(allVertices[correspondingEdge.vertex2.pos], allVertices[correspondingEdge.vertex1.pos], allVertices[openEdge.vertex2.pos], ColorManager.Instance.currentColor);
-        //    newTrianglesSideFaces.Add(triangle2);
-        //}
-
-        //paintedTriangles.AddRange(newTrianglesInsideFace);
-        //paintedTriangles.AddRange(newTrianglesSideFaces);
-        //MakeNewObject(paintedTriangles, avgNormal);
-
-    }
-
     public void FixMyPaintJob()
     {
         foreach (var triIndex in mesh.TriangleIndices())
@@ -100,6 +75,7 @@ public class Generate : MonoBehaviour
             var triGroup1 = mesh.GetTriangleGroup(neighbors[0]);
             if (triGroup1 == thisTriGroup) continue;
             var triGroup2 = mesh.GetTriangleGroup(neighbors[1]);
+
             if (triGroup2 == thisTriGroup) continue;
             var triGroup3 = mesh.GetTriangleGroup(neighbors[2]);
             if (triGroup1 == triGroup2 && triGroup2 == triGroup3)
@@ -138,9 +114,6 @@ public class Generate : MonoBehaviour
         return indices;
     }
 
-    /// <summary>
-    /// TODO: The one point could be moved by UI controls!
-    /// </summary>
     public void MakeNewPartOnePointAlgo()
     {
         var painted = FindPaintedTriangles();
@@ -151,6 +124,7 @@ public class Generate : MonoBehaviour
         var toDelete = new List<int>();
         var newMesh = new DMesh3();
         newMesh.EnableTriangleGroups();
+        newMesh.EnableVertexColors(new Vector3f(1,1,1));
         var normals = new List<Vector3d>();
         var vertices = new List<Vector3d>();
         var verticesInNewMesh = new Dictionary<Vector3d, int>();
@@ -195,13 +169,17 @@ public class Generate : MonoBehaviour
         {
             AddTriangle(newMesh, openEdge, newPointId, currentGid);
         }
+        mesh.SetVertexColor(newPointIdInOldMesh, ColorManager.Instance.currentColor.toVector3f());
         mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
         spatial.Build();
+        newMesh.SetVertexColor(newPointId, ColorManager.Instance.currentColor.toVector3f());
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         newObj.transform.position += Vector3.forward;
-        PointNewPart = newPointId;
+        newObj.GetComponent<Generate>().ThisObjectsPoint = newPointId;
+        newObj.GetComponent<Generate>().normalMiddle = -avgNormal;
         normalMiddle = -avgNormal;
         PointOldPart = newPointIdInOldMesh;
+        
     }
 
     private void AddTriangle(DMesh3 currentMesh, int openEdge, int centerPoint, int currentGid)
@@ -220,25 +198,6 @@ public class Generate : MonoBehaviour
         return intA;
     }
 
-    public void MakeNewPartMyAlgo()
-    {
-        //var paintedTriangles = allTriangles.Where(tri => tri.color != null && tri.color == ColorManager.Instance.currentColor).ToList();
-        //if (!paintedTriangles.Any()) return;
-        //var avgNormal = paintedTriangles.Select(tri => tri.n).Average();
-        //var lastNumOpenEdges = 0;
-        //while (true)
-        //{
-        //    var openEdges = CalcOpenEdges(paintedTriangles, true);
-        //    Debug.Log("Open Edges found: "+openEdges.Count);
-        //    if (openEdges.Count == 0||openEdges.Count == lastNumOpenEdges) break;
-        //    lastNumOpenEdges = openEdges.Count;
-        //    var newTriangles = CreateNewTriangles(openEdges);
-        //    paintedTriangles.AddRange(newTriangles);
-
-        //}
-        //paintedTriangles.AddRange(paintedTriangles.Select(tri => tri.GetFlippedCopy()).ToList()); //TODO hacky bugfix as now both directions are displayed
-        //MakeNewObject(paintedTriangles, avgNormal);
-    }
 
     private void MarkEdges(DMesh3 currentmesh, List<int> eids)
     {
@@ -253,107 +212,4 @@ public class Generate : MonoBehaviour
                 5, false);
         }
     }
-
-    public void DistanceTesting()
-    {
-        //var triangle = allTriangles.Find(tri => tri.color == ColorManager.Instance.currentColor);
-        //if (triangle != null)
-        //{
-        //    var points = new List<Vector3>()
-        //    {
-        //        new Vector3(1, 3, 5),
-        //        new Vector3(30, 30, 30),
-        //        new Vector3(15, 30, 12),
-        //        new Vector3(50, 0, 0)
-        //    };
-        //    foreach (var point in points)
-        //    {
-        //        var meetPoint = triangle.ClosestPointTo(point);
-        //        Debug.DrawLine(transform.TransformPoint(point), transform.TransformPoint(meetPoint), Color.magenta,
-        //            5, false);
-        //    }
-        //}
-    }
-
-
-
-    public float SquaredDistance(Triangle triangle, Vector3 point)
-    {
-        var meetPoint = triangle.ClosestPointTo(point);
-        return (meetPoint - point).sqrMagnitude;
-    }
-
-
-    private static Mesh MakeNewMeshFromTriangles(IEnumerable<Triangle> newTriangles, int subMeshNumber)
-    {
-        var trianglesInts1 = new List<int>();
-        var vertices1 = new List<Vector3>();
-        var colors1 = new List<Color>();
-        var normals1 = new List<Vector3>();
-
-        foreach (var triangle in newTriangles)
-        {
-            var index = trianglesInts1.Count;
-            trianglesInts1.AddRange(new List<int>()
-                {index + 1, index, index + 2}); //they need to be flipped for some reason
-            vertices1.AddRange(new List<Vector3>() { triangle.a.pos, triangle.b.pos, triangle.c.pos });
-            colors1.AddRange(new List<Color>() { triangle.color, triangle.color, triangle.color });
-            normals1.AddRange(new List<Vector3>() { triangle.n, triangle.n, triangle.n });
-        }
-
-        var mesh = new Mesh()
-        {
-            vertices = vertices1.ToArray(),
-            triangles = trianglesInts1.ToArray(),
-            colors = colors1.ToArray(),
-            normals = normals1.ToArray(),
-            name = subMeshNumber.ToString(),
-            indexFormat = IndexFormat.UInt16
-        };
-        return mesh;
-    }
-
-    private List<Triangle> CreateNewTriangles(List<Edge> openEdges)
-    {
-        //var newTriangles = new List<Triangle>();
-        //while (openEdges.Any())
-        //{
-        //    var openEdge = openEdges.First();
-        //    openEdges.RemoveAt(0); //basically Dequeue
-        //    if (openEdge.belongsTo2 != null) //This is the case for first order triangles: Create new triangle for each free edge
-        //    {
-        //        var dir = (-openEdge.belongsTo.n.normalized + -openEdge.belongsTo2.n.normalized).normalized;
-        //        var edgeLength = openEdge.Delta.magnitude;
-        //        var thirdPoint = openEdge.Middlepoint + dir * edgeLength / 2;
-        //        var newVertex = new Vertex(thirdPoint, 0, 0);
-        //        allVertices.AddIfNotExists(thirdPoint, newVertex);
-        //        var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, allVertices[thirdPoint], ColorManager.Instance.currentColor);
-        //        newTriangle.color = openEdge.belongsTo.color;
-        //        newTriangles.Add(newTriangle);
-        //    }
-        //    else //This will happen for all non-firstorder triangles: Create new triangle out of 2 existing edges
-        //    {
-        //        //which side of edge is more connected already
-        //        var moreConnectedVertex = openEdge.vertex2.belongsTo.Count > openEdge.vertex1.belongsTo.Count
-        //            ? openEdge.vertex2
-        //            : openEdge.vertex1;
-        //        var lessConnectedVertex = openEdge.vertex1 == moreConnectedVertex ? openEdge.vertex2 : openEdge.vertex1;
-        //        //Find second open edge
-        //        var brotherEdge = openEdges.FirstOrDefault(edge => edge != openEdge && edge.vertex1 == moreConnectedVertex || edge.vertex2 == moreConnectedVertex) ??
-        //                          openEdges.FirstOrDefault(edge => edge != openEdge && edge.vertex1 == lessConnectedVertex || edge.vertex2 == lessConnectedVertex);
-        //        if(brotherEdge == null) continue;
-        //        //make sure that the edges are not used twice, that is why brother is removed too
-        //        openEdges.Remove(brotherEdge);
-        //        var openVertexOnBrother = brotherEdge.vertex1 == openEdge.vertex1 ? brotherEdge.vertex2 : brotherEdge.vertex1;
-        //        var newTriangle = new Triangle(openEdge.vertex2, openEdge.vertex1, openVertexOnBrother, ColorManager.Instance.currentColor); //TODO respect order!
-        //        newTriangle.color = openEdge.belongsTo.color;
-        //        newTriangles.Add(newTriangle);
-        //    }
-        //}
-
-        //return newTriangles;
-        return null;
-    }
-
-
 }

@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Assets.g3UnityUtils;
-using Assets.Static_Classes;
+﻿using Assets.Static_Classes;
 using g3;
-using Parabox.Stl;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Windows;
-using Object = UnityEngine.Object;
 
 public class Import : MonoBehaviour
 {

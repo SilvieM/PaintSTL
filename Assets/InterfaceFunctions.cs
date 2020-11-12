@@ -28,8 +28,14 @@ public class InterfaceFunctions : MonoBehaviour
             var meshRenderers = onMeshClick.transform.GetComponentsInChildren<MeshRenderer>();
             foreach (var meshRenderer in meshRenderers)
             {
-                meshRenderer.material.SetFloat("Vector1", mainSlider.value);
-                meshRenderer.material.SetFloat("Alpha", mainSlider.value);
+                if(mainSlider.value>=1) meshRenderer.material = Resources.Load("STLMeshMaterial2") as Material;
+                if (mainSlider.value < 1)
+                {
+                    meshRenderer.material = Resources.Load("SeeThruSTLMeshMaterial") as Material;
+                    meshRenderer.material.SetFloat("Vector1", mainSlider.value);
+                    meshRenderer.material.SetFloat("Alpha", mainSlider.value);
+
+                }
             }
         }
     }

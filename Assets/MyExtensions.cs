@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEngine;
-using System.Collections;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Classes;
@@ -39,13 +37,6 @@ namespace Assets
             var z = source.Average(vec => vec.z);
             return new Vector3d(x, y, z);
         }
-        //public static Vector3 Average<TSource>(this System.Collections.Generic.IEnumerable<TSource> source, Func<TSource, Vector3> selector)
-        //{
 
-        //    var x = source.Average(vec => vec.x);
-        //    var y = source.Average(vec => vec.y);
-        //    var z = source.Average(vec => vec.z);
-        //    return new Vector3(x, y, z);
-        //}
     }
 }

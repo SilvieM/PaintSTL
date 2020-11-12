@@ -1,6 +1,5 @@
 ﻿using g3;
 using UnityEngine;
-using UnityEditor;
 
 namespace Assets.Static_Classes
 {

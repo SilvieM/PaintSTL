@@ -9,13 +9,10 @@ using UnityEngine.Rendering;
 
 public class OnMeshClick : MonoBehaviour
 {
-    //TODO make the colors be kept in sync with what the generate script builds!
 
     // Start is called before the first frame update
     public void Start()
     {
-        //var thismesh = gameObject.GetComponent<MeshFilter>();
-        //if (thismesh != null) thismesh.sharedMesh.colors = Enumerable.Repeat(Color.white, thismesh.sharedMesh.vertices.Length).ToArray();
     }
 
 

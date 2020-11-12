@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEditor;
 
 namespace Assets
 {
@@ -32,7 +31,7 @@ namespace Assets
 
         public event Action<List<Color>> OnColorsChanged;
 
-        public Color currentColor; //int
+        public Color currentColor;
 
         public int? currentColorId => GetColorId(currentColor);
 

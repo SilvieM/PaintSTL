@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Assets;
-using HSVPicker;
+﻿using HSVPicker;
 using UnityEngine;
 using UnityEngine.UI;
 

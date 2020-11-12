@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Assets;
-using Assets.Classes;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
 using g3;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class Generate : MonoBehaviour
 {

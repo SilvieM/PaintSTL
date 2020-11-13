@@ -1,7 +1,9 @@
-﻿using Assets.Static_Classes;
+﻿using Assets.g3UnityUtils;
+using Assets.Static_Classes;
 using g3;
 using UnityEditor;
 using UnityEngine;
+using UnityTemplateProjects;
 
 public class Import : MonoBehaviour
 {
@@ -30,6 +32,8 @@ public class Import : MonoBehaviour
         readMesh.EnableTriangleGroups();
         readMesh.EnableVertexColors(new Vector3f(1,1,1));
         StaticFunctions.SpawnNewObject(readMesh);
-
+        var bounds = readMesh.GetBounds();
+        Camera.main.transform.LookAt(bounds.Center.toVector3());
+        Camera.main.GetComponent<SimpleCameraController>().m_TargetCameraState.SetFromTransform(Camera.main.transform);
     }
 }

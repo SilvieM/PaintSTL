@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using Assets;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
@@ -112,72 +114,115 @@ public class Generate : MonoBehaviour
         return indices;
     }
 
+    public List<List<int>> FindGroups(List<int> paintedTriangles)
+    {
+        var allGroups = new List<List<int>>();
+        while (paintedTriangles.Any())
+        {
+            var group = new List<int>() { paintedTriangles.First() };
+            if(paintedTriangles.Count>1)
+                for (var index = 1; index < paintedTriangles.Count; index++) //start with second element
+                {
+                    var paintedTriangle = paintedTriangles[index];
+                    var neigborsOfGroup = group.SelectMany(tri => mesh.GetTriNeighbourTris(tri).array);
+                    if (neigborsOfGroup.Contains(paintedTriangle))
+                    {
+                        group.Add(paintedTriangle);
+                    }
+                }
+            paintedTriangles.RemoveAll(index => group.Contains(index)); //Remove found ones
+            //Second pass
+            if (paintedTriangles.Count > 1)
+                for (var index = 1; index < paintedTriangles.Count; index++) //start with second element
+                {
+                    var paintedTriangle = paintedTriangles[index];
+                    var neigborsOfGroup = group.SelectMany(tri => mesh.GetTriNeighbourTris(tri).array);
+                    if (neigborsOfGroup.Contains(paintedTriangle))
+                    {
+                        group.Add(paintedTriangle);
+                    }
+
+                }
+            allGroups.Add(group);
+        }
+
+        return allGroups;
+    }
+
     public void MakeNewPartOnePointAlgo()
     {
         var painted = FindPaintedTriangles();
         if (painted.Count <= 0) return;
 
-        painted.Reverse();
-        var currentGid = ColorManager.Instance.currentColorId ?? -1;
-        var toDelete = new List<int>();
-        var newMesh = new DMesh3();
-        newMesh.EnableTriangleGroups();
-        newMesh.EnableVertexColors(new Vector3f(1,1,1));
-        var normals = new List<Vector3d>();
-        var vertices = new List<Vector3d>();
-        var verticesInNewMesh = new Dictionary<Vector3d, int>();
-        foreach (var paintedTriNum in painted)
+        var groups = FindGroups(painted);
+        Debug.Log($"Groups: {groups.Count}");
+
+        foreach (var group in groups)
         {
-            var tri = mesh.GetTriangle(paintedTriNum);
-            var normal = mesh.GetTriNormal(paintedTriNum);
-            normals.Add(normal);
-            var orgA = mesh.GetVertex(tri.a);
-            vertices.Add(orgA);
-            var orgB = mesh.GetVertex(tri.b);
-            vertices.Add(orgB);
-            var orgC = mesh.GetVertex(tri.c);
-            vertices.Add(orgC);
-            var intA = AppendIfNotExists(verticesInNewMesh, orgA, newMesh);
-            var intB = AppendIfNotExists(verticesInNewMesh, orgB, newMesh);
-            var intC = AppendIfNotExists(verticesInNewMesh, orgC, newMesh);
+            group.Reverse();
+            var currentGid = ColorManager.Instance.currentColorId ?? -1;
+            var toDelete = new List<int>();
+            var newMesh = new DMesh3();
+            newMesh.EnableTriangleGroups();
+            newMesh.EnableVertexColors(new Vector3f(1, 1, 1));
+            var normals = new List<Vector3d>();
+            var vertices = new List<Vector3d>();
+            var verticesInNewMesh = new Dictionary<Vector3d, int>();
+            foreach (var paintedTriNum in group)
+            {
+                var tri = mesh.GetTriangle(paintedTriNum);
+                var normal = mesh.GetTriNormal(paintedTriNum);
+                normals.Add(normal);
+                var orgA = mesh.GetVertex(tri.a);
+                vertices.Add(orgA);
+                var orgB = mesh.GetVertex(tri.b);
+                vertices.Add(orgB);
+                var orgC = mesh.GetVertex(tri.c);
+                vertices.Add(orgC);
+                var intA = AppendIfNotExists(verticesInNewMesh, orgA, newMesh);
+                var intB = AppendIfNotExists(verticesInNewMesh, orgB, newMesh);
+                var intC = AppendIfNotExists(verticesInNewMesh, orgC, newMesh);
 
-            var result = mesh.RemoveTriangle(paintedTriNum);
-            if (result != MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
-            else toDelete.Add(paintedTriNum);
-            newMesh.AppendTriangle(intA, intB, intC, currentGid);
+                var result = mesh.RemoveTriangle(paintedTriNum);
+                if (result != MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
+                else toDelete.Add(paintedTriNum);
+                newMesh.AppendTriangle(intA, intB, intC, currentGid);
+            }
+
+            var avgNormal = normals.Average();
+            var avgVertices = vertices.Average();
+            var newPoint = avgVertices - avgNormal;
+            var newPointId = newMesh.AppendVertex(newPoint);
+            var newPointIdInOldMesh = mesh.AppendVertex(newPoint);
+
+
+            var eids = mesh.BoundaryEdgeIndices().ToList();
+            MarkEdges(mesh, eids);
+            foreach (var openEdge in eids)
+            {
+                AddTriangle(mesh, openEdge, newPointIdInOldMesh, 0);
+            }
+
+            var eidsNewMesh = newMesh.BoundaryEdgeIndices().ToList();
+            MarkEdges(newMesh, eidsNewMesh);
+            foreach (var openEdge in eidsNewMesh)
+            {
+                AddTriangle(newMesh, openEdge, newPointId, currentGid);
+            }
+            mesh.SetVertexColor(newPointIdInOldMesh, ColorManager.Instance.currentColor.toVector3f());
+            
+            spatial.Build();
+            newMesh.SetVertexColor(newPointId, ColorManager.Instance.currentColor.toVector3f());
+            var newObj = StaticFunctions.SpawnNewObject(newMesh);
+            newObj.transform.position += Vector3.forward;
+            newObj.GetComponent<Generate>().ThisObjectsPoint = newPointId;
+            newObj.GetComponent<Generate>().normalMiddle = -avgNormal;
+            normalMiddle = -avgNormal;
+            PointOldPart = newPointIdInOldMesh;
         }
-
-        var avgNormal = normals.Average();
-        var avgVertices = vertices.Average();
-        var newPoint = avgVertices - avgNormal;
-        var newPointId = newMesh.AppendVertex(newPoint);
-        var newPointIdInOldMesh = mesh.AppendVertex(newPoint);
-
-
-        var eids = mesh.BoundaryEdgeIndices().ToList();
-        MarkEdges(mesh, eids);
-        foreach (var openEdge in eids)
-        {
-            AddTriangle(mesh, openEdge, newPointIdInOldMesh, 0);
-        }
-
-        var eidsNewMesh = newMesh.BoundaryEdgeIndices().ToList();
-        MarkEdges(newMesh, eidsNewMesh);
-        foreach (var openEdge in eidsNewMesh)
-        {
-            AddTriangle(newMesh, openEdge, newPointId, currentGid);
-        }
-        mesh.SetVertexColor(newPointIdInOldMesh, ColorManager.Instance.currentColor.toVector3f());
         mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
-        spatial.Build();
-        newMesh.SetVertexColor(newPointId, ColorManager.Instance.currentColor.toVector3f());
-        var newObj = StaticFunctions.SpawnNewObject(newMesh);
-        newObj.transform.position += Vector3.forward;
-        newObj.GetComponent<Generate>().ThisObjectsPoint = newPointId;
-        newObj.GetComponent<Generate>().normalMiddle = -avgNormal;
-        normalMiddle = -avgNormal;
-        PointOldPart = newPointIdInOldMesh;
-        
+
+
     }
 
     private void AddTriangle(DMesh3 currentMesh, int openEdge, int centerPoint, int currentGid)
@@ -186,12 +231,12 @@ public class Generate : MonoBehaviour
         currentMesh.AppendTriangle(edge.b, edge.a, centerPoint, currentGid);
     }
 
-    private static int AppendIfNotExists(Dictionary<Vector3d, int> verticesInNewMesh, Vector3d orgA, DMesh3 newMesh)
+    private static int AppendIfNotExists(Dictionary<Vector3d, int> verticesInNewMesh, Vector3d position, DMesh3 newMesh)
     {
-        if (!verticesInNewMesh.TryGetValue(orgA, out var intA))
+        if (!verticesInNewMesh.TryGetValue(position, out var intA))
         {
-            intA = newMesh.AppendVertex(orgA);
-            verticesInNewMesh.Add(orgA, intA);
+            intA = newMesh.AppendVertex(position);
+            verticesInNewMesh.Add(position, intA);
         }
         return intA;
     }
@@ -209,5 +254,72 @@ public class Generate : MonoBehaviour
                 transform.TransformPoint(v1.toVector3()), Color.red,
                 5, false);
         }
+    }
+
+    public void CutPeprAlgo()
+    {
+        var painted = FindPaintedTriangles();
+        if (painted.Count <= 0) return;
+
+        var newMesh = new DMesh3();
+        newMesh.EnableTriangleGroups();
+        newMesh.EnableVertexColors(new Vector3f(1, 1, 1));
+
+        var verticesInNewMesh = new Dictionary<Vector3d, int>();
+        var InnerToOuter = new Dictionary<int, int>();
+        foreach (var triIndex in painted)
+        {
+            var triangle = mesh.GetTriangle(triIndex);
+            var vertex1 = mesh.GetVertex(triangle.a);
+            var vertex2 = mesh.GetVertex(triangle.b);
+            var vertex3 = mesh.GetVertex(triangle.c);
+
+            var intAOuter = AppendIfNotExists(verticesInNewMesh, vertex1, newMesh);
+            var intBOuter = AppendIfNotExists(verticesInNewMesh, vertex2, newMesh); 
+            var intCOuter = AppendIfNotExists(verticesInNewMesh, vertex3, newMesh);
+
+            var newTriOuter = newMesh.AppendTriangle(intAOuter, intBOuter, intCOuter);
+
+            var normal1 = mesh.GetVertexNormal(triangle.a); //TODO debug
+            var normal2 = mesh.GetVertexNormal(triangle.b);
+            var normal3 = mesh.GetVertexNormal(triangle.c);
+
+            var intAInner = AppendIfNotExists(verticesInNewMesh, vertex1 - normal1*4, newMesh);
+            var intBInner = AppendIfNotExists(verticesInNewMesh, vertex3 - normal3*4, newMesh); //swapping to mirror
+            var intCInner = AppendIfNotExists(verticesInNewMesh, vertex2 - normal2*4, newMesh);
+
+            var newTriInner = newMesh.AppendTriangle(intAInner, intBInner, intCInner);
+            InnerToOuter.Add(newTriInner, newTriOuter);
+            mesh.RemoveTriangle(triIndex);
+        }
+
+        var openEdges = newMesh.BoundaryEdgeIndices();
+        foreach (var openEdge in openEdges)
+        {
+            var edge = newMesh.GetEdge(openEdge);
+            var triIndex = edge.c;
+            var correspondingTriIndex = CorrespondingTri(InnerToOuter, triIndex);
+            var edgeOriented = newMesh.GetOrientedBoundaryEdgeV(openEdge);
+            int thirdPoint = 0;
+            if (edgeOriented.a == newMesh.GetTriangle(triIndex).a) thirdPoint = newMesh.GetTriangle(correspondingTriIndex).a;
+            if (edgeOriented.a == newMesh.GetTriangle(triIndex).b) thirdPoint = newMesh.GetTriangle(correspondingTriIndex).c;
+            if (edgeOriented.a == newMesh.GetTriangle(triIndex).c) thirdPoint = newMesh.GetTriangle(correspondingTriIndex).b;
+            var newTriSide = newMesh.AppendTriangle(edgeOriented.a, edgeOriented.b, thirdPoint);
+
+        }
+
+
+        var newObj = StaticFunctions.SpawnNewObject(newMesh);
+        newObj.transform.position += Vector3.forward;
+        mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
+    }
+
+    private int CorrespondingTri(Dictionary<int, int> InnerToOuter, int searchFor)
+    {
+        if (InnerToOuter.ContainsKey(searchFor)) return InnerToOuter[searchFor];
+        if (InnerToOuter.ContainsValue(searchFor))
+            return InnerToOuter.First(tuple => tuple.Value == searchFor).Key;
+        else return Int32.MaxValue;
+        
     }
 }

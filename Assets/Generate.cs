@@ -280,9 +280,10 @@ public class Generate : MonoBehaviour
 
             var newTriOuter = newMesh.AppendTriangle(intAOuter, intBOuter, intCOuter);
 
-            var normal1 = mesh.GetVertexNormal(triangle.a); //TODO debug
-            var normal2 = mesh.GetVertexNormal(triangle.b);
-            var normal3 = mesh.GetVertexNormal(triangle.c);
+            var normal = mesh.GetTriNormal(triIndex);
+            var normal1 = mesh.CalcVertexNormal(triangle.a); //TODO debug
+            var normal2 = mesh.CalcVertexNormal(triangle.b);
+            var normal3 = mesh.CalcVertexNormal(triangle.c);
 
             var intAInner = AppendIfNotExists(verticesInNewMesh, vertex1 - normal1*4, newMesh);
             var intBInner = AppendIfNotExists(verticesInNewMesh, vertex3 - normal3*4, newMesh); //swapping to mirror
@@ -290,8 +291,8 @@ public class Generate : MonoBehaviour
 
             var newTriInner = newMesh.AppendTriangle(intAInner, intBInner, intCInner);
             InnerToOuter.Add(newTriInner, newTriOuter);
-            mesh.RemoveTriangle(triIndex);
         }
+        painted.ForEach(index => mesh.RemoveTriangle(index));
 
         var openEdges = newMesh.BoundaryEdgeIndices();
         foreach (var openEdge in openEdges)
@@ -304,7 +305,7 @@ public class Generate : MonoBehaviour
             if (edgeOriented.a == newMesh.GetTriangle(triIndex).a) thirdPoint = newMesh.GetTriangle(correspondingTriIndex).a;
             if (edgeOriented.a == newMesh.GetTriangle(triIndex).b) thirdPoint = newMesh.GetTriangle(correspondingTriIndex).c;
             if (edgeOriented.a == newMesh.GetTriangle(triIndex).c) thirdPoint = newMesh.GetTriangle(correspondingTriIndex).b;
-            var newTriSide = newMesh.AppendTriangle(edgeOriented.a, edgeOriented.b, thirdPoint);
+            var newTriSide = newMesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint);
 
         }
 

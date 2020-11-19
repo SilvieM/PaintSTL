@@ -29,6 +29,13 @@ namespace Assets
             var z = source.Average(vec => vec.z);
             return new Vector3(x,y,z);
         }
+        public static Vector3d AverageVec3d(this System.Collections.Generic.IEnumerable<Vector3d> source)
+        {
+            var x = source.Average(vec => vec.x);
+            var y = source.Average(vec => vec.y);
+            var z = source.Average(vec => vec.z);
+            return new Vector3d(x, y, z);
+        }
 
         public static Vector3d Average(this System.Collections.Generic.IEnumerable<Vector3d> source)
         {
@@ -37,6 +44,14 @@ namespace Assets
             var z = source.Average(vec => vec.z);
             return new Vector3d(x, y, z);
         }
+
+        public static Vector3d CalcVertexNormal(this DMesh3 mesh, int vid)
+        {
+            var tris = mesh.VtxTrianglesItr(vid);
+            var normals = tris.Select(mesh.GetTriNormal);
+            var avg = normals.ToList().Average();
+            return avg;
+        } 
 
     }
 }

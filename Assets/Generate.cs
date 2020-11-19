@@ -25,6 +25,8 @@ public class Generate : MonoBehaviour
 
     public void Update()
     {
+        if (!(Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.RightArrow) ||
+              Input.GetKey(KeyCode.LeftArrow))) return;
         var PointsToMove = mesh.VertexIndices().Where(index =>
             mesh.GetVertexColor(index) == ColorManager.Instance.currentColor.toVector3f()); //Ressource-hungry??
         foreach (var PointToMove in PointsToMove)
@@ -33,28 +35,25 @@ public class Generate : MonoBehaviour
             if (Input.GetKey(KeyCode.UpArrow))
             {
                 var tri = mesh.GetVertex(PointToMove);
-                mesh.SetVertex(PointToMove, tri + normal.toVector3d() * 0.1);
-                g3UnityUtils.SetGOMesh(gameObject, mesh);
+                mesh.SetVertex(PointToMove, tri + normal*0.1f);
             }
             if (Input.GetKey(KeyCode.DownArrow))
             {
                 var tri = mesh.GetVertex(PointToMove);
-                mesh.SetVertex(PointToMove, tri - normal.toVector3d() * 0.1);
-                g3UnityUtils.SetGOMesh(gameObject, mesh);
+                mesh.SetVertex(PointToMove, tri - normal+0.1f);
             }
             if (Input.GetKey(KeyCode.RightArrow))
             {
                 var tri = mesh.GetVertex(PointToMove);
-                mesh.SetVertex(PointToMove, tri + Camera.main.transform.right.toVector3d() * 0.1);
-                g3UnityUtils.SetGOMesh(gameObject, mesh);
+                mesh.SetVertex(PointToMove, tri + Camera.main.transform.right.toVector3d()*0.1);
             }
             if (Input.GetKey(KeyCode.LeftArrow))
             {
                 var tri = mesh.GetVertex(PointToMove);
-                mesh.SetVertex(PointToMove, tri - Camera.main.transform.right.toVector3d() * 0.1);
-                g3UnityUtils.SetGOMesh(gameObject, mesh);
+                mesh.SetVertex(PointToMove, tri - Camera.main.transform.right.toVector3d()*0.1);
             }
         }
+        g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
 
 
@@ -288,7 +287,9 @@ public class Generate : MonoBehaviour
             var intAInner = AppendIfNotExists(verticesInNewMesh, vertex1 - normal1*4, newMesh);
             var intBInner = AppendIfNotExists(verticesInNewMesh, vertex3 - normal3*4, newMesh); //swapping to mirror
             var intCInner = AppendIfNotExists(verticesInNewMesh, vertex2 - normal2*4, newMesh);
-
+            newMesh.SetVertexColor(intAInner, ColorManager.Instance.currentColor.toVector3f());
+            newMesh.SetVertexColor(intBInner, ColorManager.Instance.currentColor.toVector3f());
+            newMesh.SetVertexColor(intCInner, ColorManager.Instance.currentColor.toVector3f());
             var newTriInner = newMesh.AppendTriangle(intAInner, intBInner, intCInner);
             InnerToOuter.Add(newTriInner, newTriOuter);
         }

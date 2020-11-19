@@ -265,7 +265,9 @@ public class Generate : MonoBehaviour
         newMesh.EnableVertexColors(new Vector3f(1, 1, 1));
 
         var verticesInNewMesh = new Dictionary<Vector3d, int>();
+        var verticesInOldMesh = new Dictionary<Vector3d, int>();
         var InnerToOuter = new Dictionary<int, int>();
+        var InnerToOuterOldMesh = new Dictionary<int, int>();
         foreach (var triIndex in painted)
         {
             var triangle = mesh.GetTriangle(triIndex);
@@ -287,11 +289,19 @@ public class Generate : MonoBehaviour
             var intAInner = AppendIfNotExists(verticesInNewMesh, vertex1 - normal1*4, newMesh);
             var intBInner = AppendIfNotExists(verticesInNewMesh, vertex3 - normal3*4, newMesh); //swapping to mirror
             var intCInner = AppendIfNotExists(verticesInNewMesh, vertex2 - normal2*4, newMesh);
+            var intAInnerOldMesh = AppendIfNotExists(verticesInOldMesh, vertex1 - normal1 * 4, mesh);
+            var intBInnerOldMesh = AppendIfNotExists(verticesInOldMesh, vertex2 - normal2 * 4, mesh);
+            var intCInnerOldMesh = AppendIfNotExists(verticesInOldMesh, vertex3 - normal3 * 4, mesh);
             newMesh.SetVertexColor(intAInner, ColorManager.Instance.currentColor.toVector3f());
             newMesh.SetVertexColor(intBInner, ColorManager.Instance.currentColor.toVector3f());
             newMesh.SetVertexColor(intCInner, ColorManager.Instance.currentColor.toVector3f());
+            mesh.SetVertexColor(intAInnerOldMesh, ColorManager.Instance.currentColor.toVector3f());
+            mesh.SetVertexColor(intBInnerOldMesh, ColorManager.Instance.currentColor.toVector3f());
+            mesh.SetVertexColor(intCInnerOldMesh, ColorManager.Instance.currentColor.toVector3f());
             var newTriInner = newMesh.AppendTriangle(intAInner, intBInner, intCInner);
+            var newTriInnerOldMesh = mesh.AppendTriangle(intAInnerOldMesh, intBInnerOldMesh, intCInnerOldMesh);
             InnerToOuter.Add(newTriInner, newTriOuter);
+            InnerToOuterOldMesh.Add(newTriInnerOldMesh, triIndex); ;
         }
         painted.ForEach(index => mesh.RemoveTriangle(index));
 
@@ -307,14 +317,28 @@ public class Generate : MonoBehaviour
             if (edgeOriented.a == newMesh.GetTriangle(triIndex).b) thirdPoint = newMesh.GetTriangle(correspondingTriIndex).c;
             if (edgeOriented.a == newMesh.GetTriangle(triIndex).c) thirdPoint = newMesh.GetTriangle(correspondingTriIndex).b;
             var newTriSide = newMesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint);
-
         }
 
+        //var openEdgesOldMesh = mesh.BoundaryEdgeIndices();
+        //foreach (var openEdge in openEdgesOldMesh)
+        //{
+        //    var edge = mesh.GetEdge(openEdge);
+        //    var triIndex = edge.c;
+        //    var correspondingTriIndex = CorrespondingTri(InnerToOuter, triIndex);
+        //    var edgeOriented = mesh.GetOrientedBoundaryEdgeV(openEdge);
+        //    int thirdPoint = 0;
+        //    if (edgeOriented.a == mesh.GetTriangle(triIndex).a) thirdPoint = mesh.GetTriangle(correspondingTriIndex).a;
+        //    if (edgeOriented.a == mesh.GetTriangle(triIndex).b) thirdPoint = mesh.GetTriangle(correspondingTriIndex).b;
+        //    if (edgeOriented.a == mesh.GetTriangle(triIndex).c) thirdPoint = mesh.GetTriangle(correspondingTriIndex).c;
+        //    var newTriSide = mesh.AppendTriangle(edgeOriented.a, edgeOriented.b, thirdPoint);
+        //}
 
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         newObj.transform.position += Vector3.forward;
         mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
+
+
 
     private int CorrespondingTri(Dictionary<int, int> InnerToOuter, int searchFor)
     {

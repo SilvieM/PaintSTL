@@ -300,38 +300,30 @@ public class Generate : MonoBehaviour
             mesh.SetVertexColor(intCInnerOldMesh, ColorManager.Instance.currentColor.toVector3f());
             var newTriInner = newMesh.AppendTriangle(intAInner, intBInner, intCInner);
             var newTriInnerOldMesh = mesh.AppendTriangle(intAInnerOldMesh, intBInnerOldMesh, intCInnerOldMesh);
-            InnerToOuter.Add(newTriInner, newTriOuter);
-            InnerToOuterOldMesh.Add(newTriInnerOldMesh, triIndex); ;
+            InnerToOuter.AddIfNotExists(intAOuter, intAInner);
+            InnerToOuter.AddIfNotExists(intBOuter, intCInner);
+            InnerToOuter.AddIfNotExists(intCOuter, intBInner);
+            InnerToOuterOldMesh.AddIfNotExists(triangle.a, intAInnerOldMesh);
+            InnerToOuterOldMesh.AddIfNotExists(triangle.b, intBInnerOldMesh);
+            InnerToOuterOldMesh.AddIfNotExists(triangle.c, intCInnerOldMesh);
         }
         painted.ForEach(index => mesh.RemoveTriangle(index));
 
         var openEdges = newMesh.BoundaryEdgeIndices();
         foreach (var openEdge in openEdges)
         {
-            var edge = newMesh.GetEdge(openEdge);
-            var triIndex = edge.c;
-            var correspondingTriIndex = CorrespondingTri(InnerToOuter, triIndex);
             var edgeOriented = newMesh.GetOrientedBoundaryEdgeV(openEdge);
-            int thirdPoint = 0;
-            if (edgeOriented.a == newMesh.GetTriangle(triIndex).a) thirdPoint = newMesh.GetTriangle(correspondingTriIndex).a;
-            if (edgeOriented.a == newMesh.GetTriangle(triIndex).b) thirdPoint = newMesh.GetTriangle(correspondingTriIndex).c;
-            if (edgeOriented.a == newMesh.GetTriangle(triIndex).c) thirdPoint = newMesh.GetTriangle(correspondingTriIndex).b;
+            int thirdPoint = Corresponding(InnerToOuter,edgeOriented.a);
             var newTriSide = newMesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint);
         }
 
-        //var openEdgesOldMesh = mesh.BoundaryEdgeIndices();
-        //foreach (var openEdge in openEdgesOldMesh)
-        //{
-        //    var edge = mesh.GetEdge(openEdge);
-        //    var triIndex = edge.c;
-        //    var correspondingTriIndex = CorrespondingTri(InnerToOuter, triIndex);
-        //    var edgeOriented = mesh.GetOrientedBoundaryEdgeV(openEdge);
-        //    int thirdPoint = 0;
-        //    if (edgeOriented.a == mesh.GetTriangle(triIndex).a) thirdPoint = mesh.GetTriangle(correspondingTriIndex).a;
-        //    if (edgeOriented.a == mesh.GetTriangle(triIndex).b) thirdPoint = mesh.GetTriangle(correspondingTriIndex).b;
-        //    if (edgeOriented.a == mesh.GetTriangle(triIndex).c) thirdPoint = mesh.GetTriangle(correspondingTriIndex).c;
-        //    var newTriSide = mesh.AppendTriangle(edgeOriented.a, edgeOriented.b, thirdPoint);
-        //}
+        var openEdgesOldMesh = mesh.BoundaryEdgeIndices();
+        foreach (var openEdge in openEdgesOldMesh)
+        {
+            var edgeOriented = mesh.GetOrientedBoundaryEdgeV(openEdge);
+            int thirdPoint = Corresponding(InnerToOuterOldMesh, edgeOriented.a);
+            var newTriSide = mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint);
+        }
 
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         newObj.transform.position += Vector3.forward;
@@ -340,7 +332,7 @@ public class Generate : MonoBehaviour
 
 
 
-    private int CorrespondingTri(Dictionary<int, int> InnerToOuter, int searchFor)
+    private int Corresponding(Dictionary<int, int> InnerToOuter, int searchFor)
     {
         if (InnerToOuter.ContainsKey(searchFor)) return InnerToOuter[searchFor];
         if (InnerToOuter.ContainsValue(searchFor))

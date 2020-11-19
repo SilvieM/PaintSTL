@@ -21,6 +21,11 @@ namespace Assets
             if (!dictionary.ContainsKey(key))
                 dictionary[key] = value;
         }
+        public static void AddIfNotExists(this Dictionary<int, int> dictionary, int key, int value)
+        {
+            if (!dictionary.ContainsKey(key))
+                dictionary[key] = value;
+        }
 
         public static Vector3 Average(this System.Collections.Generic.IEnumerable<Vector3> source)
         {

@@ -11,7 +11,7 @@ using UnityEngine;
 public class Generate : MonoBehaviour
 {
     public DMesh3 mesh;
-
+    public DMesh3 originalMesh;
     public DMeshAABBTree3 spatial;
 
     public int? PointOldPart = null;
@@ -32,35 +32,35 @@ public class Generate : MonoBehaviour
         foreach (var PointToMove in PointsToMove)
         {
             var normal = mesh.GetVertexNormal(PointToMove);
+            var tri = mesh.GetVertex(PointToMove);
+            var newPos= tri;
             if (Input.GetKey(KeyCode.UpArrow))
             {
-                var tri = mesh.GetVertex(PointToMove);
-                mesh.SetVertex(PointToMove, tri + normal*0.1f);
+                newPos = tri + normal * 0.1f;
             }
             if (Input.GetKey(KeyCode.DownArrow))
             {
-                var tri = mesh.GetVertex(PointToMove);
-                mesh.SetVertex(PointToMove, tri - normal+0.1f);
+                newPos = tri - normal * 0.1f;
             }
             if (Input.GetKey(KeyCode.RightArrow))
             {
-                var tri = mesh.GetVertex(PointToMove);
-                mesh.SetVertex(PointToMove, tri + Camera.main.transform.right.toVector3d()*0.1);
+                newPos = tri + Camera.main.transform.right.toVector3d() * 0.1;
             }
             if (Input.GetKey(KeyCode.LeftArrow))
             {
-                var tri = mesh.GetVertex(PointToMove);
-                mesh.SetVertex(PointToMove, tri - Camera.main.transform.right.toVector3d()*0.1);
+                newPos = tri - Camera.main.transform.right.toVector3d() * 0.1;
             }
+            if (CheckPositionValid(originalMesh, newPos)) mesh.SetVertex(PointToMove, newPos);
         }
         g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
 
 
-    public void MyInit(DMesh3 mesh)
+    public void MyInit(DMesh3 mesh, DMesh3 originalMesh = null)
     {
         this.mesh = mesh;
-        spatial = new DMeshAABBTree3(mesh);
+        this.originalMesh = originalMesh ?? new DMesh3(this.mesh);
+        spatial = new DMeshAABBTree3(originalMesh);
         spatial.Build();
     }
 
@@ -140,7 +140,6 @@ public class Generate : MonoBehaviour
                     {
                         group.Add(paintedTriangle);
                     }
-
                 }
             allGroups.Add(group);
         }
@@ -212,7 +211,7 @@ public class Generate : MonoBehaviour
             
             spatial.Build();
             newMesh.SetVertexColor(newPointId, ColorManager.Instance.currentColor.toVector3f());
-            var newObj = StaticFunctions.SpawnNewObject(newMesh);
+            var newObj = StaticFunctions.SpawnNewObject(newMesh, originalMesh);
             newObj.transform.position += Vector3.forward;
             newObj.GetComponent<Generate>().ThisObjectsPoint = newPointId;
             newObj.GetComponent<Generate>().normalMiddle = -avgNormal;
@@ -282,7 +281,7 @@ public class Generate : MonoBehaviour
             var newTriOuter = newMesh.AppendTriangle(intAOuter, intBOuter, intCOuter);
 
             var normal = mesh.GetTriNormal(triIndex);
-            var normal1 = mesh.CalcVertexNormal(triangle.a); //TODO debug
+            var normal1 = mesh.CalcVertexNormal(triangle.a);
             var normal2 = mesh.CalcVertexNormal(triangle.b);
             var normal3 = mesh.CalcVertexNormal(triangle.c);
 
@@ -316,7 +315,6 @@ public class Generate : MonoBehaviour
             int thirdPoint = Corresponding(InnerToOuter,edgeOriented.a);
             var newTriSide = newMesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint);
         }
-
         var openEdgesOldMesh = mesh.BoundaryEdgeIndices();
         foreach (var openEdge in openEdgesOldMesh)
         {
@@ -325,12 +323,29 @@ public class Generate : MonoBehaviour
             var newTriSide = mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint);
         }
 
-        var newObj = StaticFunctions.SpawnNewObject(newMesh);
+        var newObj = StaticFunctions.SpawnNewObject(newMesh, originalMesh);
         newObj.transform.position += Vector3.forward;
         mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
 
+    private bool CheckPositionValid(DMesh3 mesh, Vector3d position)
+    {
+        if (spatial.Mesh == null)
+        {
+            spatial = new DMeshAABBTree3(originalMesh);
+            spatial.Build();
+        }
+        int near_tid = spatial.FindNearestTriangle(position);
+        if (near_tid != DMesh3.InvalidID)
+        {
+            DistPoint3Triangle3 dist = MeshQueries.TriangleDistance(mesh, near_tid, position);
+            Vector3d nearest_pt = dist.TriangleClosest;
+            if (dist.DistanceSquared > 1) return true;
+            else return false;
+        }
 
+        return true;
+    }
 
     private int Corresponding(Dictionary<int, int> InnerToOuter, int searchFor)
     {

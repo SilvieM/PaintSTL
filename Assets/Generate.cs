@@ -152,12 +152,12 @@ public class Generate : MonoBehaviour
         var painted = FindPaintedTriangles();
         if (painted.Count <= 0) return;
 
-        var groups = FindGroups(painted);
-        Debug.Log($"Groups: {groups.Count}");
+        //var groups = FindGroups(painted);
+        //Debug.Log($"Groups: {groups.Count}");
 
-        foreach (var group in groups)
-        {
-            group.Reverse();
+        //foreach (var group in groups)
+        //{
+            painted.Reverse();
             var currentGid = ColorManager.Instance.currentColorId ?? -1;
             var toDelete = new List<int>();
             var newMesh = new DMesh3();
@@ -166,7 +166,7 @@ public class Generate : MonoBehaviour
             var normals = new List<Vector3d>();
             var vertices = new List<Vector3d>();
             var verticesInNewMesh = new Dictionary<Vector3d, int>();
-            foreach (var paintedTriNum in group)
+            foreach (var paintedTriNum in painted)
             {
                 var tri = mesh.GetTriangle(paintedTriNum);
                 var normal = mesh.GetTriNormal(paintedTriNum);
@@ -217,7 +217,7 @@ public class Generate : MonoBehaviour
             newObj.GetComponent<Generate>().normalMiddle = -avgNormal;
             normalMiddle = -avgNormal;
             PointOldPart = newPointIdInOldMesh;
-        }
+        //}
         mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
 
 
@@ -324,7 +324,7 @@ public class Generate : MonoBehaviour
         }
 
         var newObj = StaticFunctions.SpawnNewObject(newMesh, originalMesh);
-        newObj.transform.position += Vector3.forward;
+        //newObj.transform.position += Vector3.forward;
         mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
 
@@ -340,7 +340,7 @@ public class Generate : MonoBehaviour
         {
             DistPoint3Triangle3 dist = MeshQueries.TriangleDistance(mesh, near_tid, position);
             Vector3d nearest_pt = dist.TriangleClosest;
-            if (dist.DistanceSquared > 1) return true;
+            if (dist.DistanceSquared > 3) return true;
             else return false;
         }
 

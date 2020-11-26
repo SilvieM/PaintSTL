@@ -80,7 +80,7 @@ public class InterfaceFunctions : MonoBehaviour
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
-            generate.MakeNewPartOnePointAlgo();
+            generate.Cut(Algorithm.AlgorithmType.OnePoint);
         }
     }
 
@@ -89,7 +89,7 @@ public class InterfaceFunctions : MonoBehaviour
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
-            generate.CutPeprAlgo();
+            generate.Cut(Algorithm.AlgorithmType.Pepr);
         }
     }
 

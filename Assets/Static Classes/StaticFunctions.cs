@@ -1,4 +1,5 @@
-﻿using g3;
+﻿using System.Collections.Generic;
+using g3;
 using UnityEngine;
 
 namespace Assets.Static_Classes
@@ -13,6 +14,16 @@ namespace Assets.Static_Classes
             obj.AddComponent<OnMeshClick>();
             obj.AddComponent<Generate>().MyInit(mesh, originalMesh);
             return obj;
+        }
+
+        public static int AppendIfNotExists(Dictionary<Vector3d, int> verticesInNewMesh, Vector3d position, DMesh3 newMesh)
+        {
+            if (!verticesInNewMesh.TryGetValue(position, out var intA))
+            {
+                intA = newMesh.AppendVertex(position);
+                verticesInNewMesh.Add(position, intA);
+            }
+            return intA;
         }
     }
 }

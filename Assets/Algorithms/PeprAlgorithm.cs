@@ -5,6 +5,7 @@ using Assets;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
 using g3;
+using UnityEngine;
 
 public class PeprAlgorithm : Algorithm
 {
@@ -77,8 +78,7 @@ public class PeprAlgorithm : Algorithm
             var newTriSide = mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, 0);
         }
 
-        var newObj = StaticFunctions.SpawnNewObject(newMesh); //TODO originalMesh?
-        //newObj.transform.position += Vector3.forward;
+        var newObj = StaticFunctions.SpawnNewObject(newMesh);
         return mesh;
     }
 

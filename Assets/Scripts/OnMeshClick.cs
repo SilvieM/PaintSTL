@@ -1,15 +1,17 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Assets;
 using Assets.g3UnityUtils;
 using g3;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 public class OnMeshClick : MonoBehaviour
 {
-
+    public double range = 1f;
     // Start is called before the first frame update
     public void Start()
     {
@@ -39,22 +41,62 @@ public class OnMeshClick : MonoBehaviour
 
             if (Input.GetMouseButton(0))
             {
+                var triIndices = new List<int>();
                 var generate = GetComponent<Generate>();
-                var colorsNew = mesh.colors;
-                for (int i = 0; i < 3; i++)
+                triIndices.Add(hit.triangleIndex);
+                var dmesh = generate.mesh;
+                bool foundNewTriangle = true;
+                while (foundNewTriangle)
                 {
-                    colorsNew[meshtriangles[hit.triangleIndex * 3 + i]] = paintColor;
+                    foundNewTriangle = false;
+                    var newTriIndices = new List<int>();
+                    foreach (var triIndexAlreadyFound in triIndices)
+                    {
+                        var neighborTris = dmesh.GetTriNeighbourTris(triIndexAlreadyFound);
+
+                        foreach (var triIndex in neighborTris.array)
+                        {
+                            if (!triIndices.Contains(triIndex)&&!newTriIndices.Contains(triIndex) && IsInRange(dmesh, hit.triangleIndex, triIndex, range))
+                            {
+                                newTriIndices.Add(triIndex);
+                                foundNewTriangle = true;
+                            }
+                        }
+                    }
+                    triIndices.AddRange(newTriIndices);
+                    
+                }
+
+                var colorIndex = ColorManager.Instance.FieldPainted(paintColor);
+
+                var colorsNew = mesh.colors;
+
+                foreach (var triIndex in triIndices)
+                {
+                    dmesh.SetTriangleGroup(triIndex, colorIndex);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        colorsNew[meshtriangles[triIndex * 3 + i]] = paintColor;
+                    }
                 }
                 mesh.colors = colorsNew;
-                //Debug.Log($"Painted {hit.triangleIndex}");
-                
-                var colorIndex = ColorManager.Instance.FieldPainted(paintColor);
-                var dmesh = generate.mesh;
-                dmesh.SetTriangleGroup(hit.triangleIndex, colorIndex);
-                
-                
+
             }
         }
+    }
+
+    private bool IsInRange(DMesh3 mesh,int triIndexOriginal, int triIndex, double range)
+    {
+        var triOriginal = mesh.GetTriCentroid(triIndexOriginal);
+        var tri = mesh.GetTriangle(triIndex);
+        var v1 = mesh.GetVertex(tri.a);
+        var v2 = mesh.GetVertex(tri.b);
+        var v3 = mesh.GetVertex(tri.c);
+        var rangeSquared = Math.Pow(range, 2);
+        if (v1.DistanceSquared(triOriginal) < rangeSquared) return true;
+        if (v2.DistanceSquared(triOriginal) < rangeSquared) return true;
+        if (v3.DistanceSquared(triOriginal) < rangeSquared) return true;
+        return false;
     }
 
 }

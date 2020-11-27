@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using Assets;
 using Assets.g3UnityUtils;
 using g3;
@@ -8,22 +9,27 @@ using UnityEngine;
 public class Generate : MonoBehaviour
 {
     public DMesh3 mesh;
-    public DMesh3 originalMesh;
     public DMeshAABBTree3 spatial;
-
-
+    private List<int> PointsToMove;
+    public bool isImported;
 
     public void Start()
     {
+        
+    }
 
+    public void RefreshPointsToMove()
+    {
+        var color = ColorManager.Instance.currentColor.toVector3f();
+        PointsToMove = mesh.VertexIndices().Where(index =>
+            mesh.GetVertexColor(index) == color).ToList(); //Ressource-hungry??
     }
 
     public void Update()
     {
         if (!(Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.RightArrow) ||
               Input.GetKey(KeyCode.LeftArrow))) return;
-        var PointsToMove = mesh.VertexIndices().Where(index =>
-            mesh.GetVertexColor(index) == ColorManager.Instance.currentColor.toVector3f()); //Ressource-hungry??
+        Debug.Log(PointsToMove.Count);
         foreach (var PointToMove in PointsToMove)
         {
             var normal = mesh.GetVertexNormal(PointToMove);
@@ -45,26 +51,29 @@ public class Generate : MonoBehaviour
             {
                 newPos = tri - Camera.main.transform.right.toVector3d() * 0.1;
             }
-            //if (CheckPositionValid(originalMesh, newPos)) 
+            if (CheckPositionValid(mesh, newPos)) 
                 mesh.SetVertex(PointToMove, newPos);
         }
         g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
 
 
-    public void MyInit(DMesh3 mesh, DMesh3 originalMesh = null)
+    public void MyInit(DMesh3 mesh, bool isImported = false)
     {
         this.mesh = mesh;
-        this.originalMesh = originalMesh ?? new DMesh3(this.mesh);
-        spatial = new DMeshAABBTree3(originalMesh);
+        spatial = new DMeshAABBTree3(mesh);
         spatial.Build();
+        RefreshPointsToMove();
+        ColorManager.Instance.OnCurrentColorChanged += RefreshPointsToMove;
+        this.isImported = isImported;
     }
 
     public void Cut(Algorithm.AlgorithmType type)
     {
         var algorithm = Algorithm.BuildAlgo(type);
         var newMesh = algorithm.Cut(mesh);
-        g3UnityUtils.SetGOMesh(gameObject, newMesh);
+        mesh = g3UnityUtils.SetGOMesh(gameObject, newMesh);
+        RefreshPointsToMove();
     }
 
     public void FixMyPaintJob()
@@ -89,6 +98,16 @@ public class Generate : MonoBehaviour
 
         }
         g3UnityUtils.SetGOMesh(gameObject, mesh);
+    }
+
+    public void Explode()
+    {
+        if (!isImported)
+        {
+            var dir = mesh.GetBounds().Center.Normalized;
+            Debug.Log($"{dir.x}, {dir.y}, {dir.z}");
+            transform.position += dir.toVector3();
+        }
     }
 
     public List<List<int>> FindGroups(List<int> paintedTriangles)
@@ -130,17 +149,22 @@ public class Generate : MonoBehaviour
     {
         //if (spatial.Mesh == null)
         {
-            spatial = new DMeshAABBTree3(originalMesh);
+            spatial = new DMeshAABBTree3(mesh);
             spatial.Build();
         }
-        int near_tid = spatial.FindNearestTriangle(position);
+        spatial.TriangleFilterF = i => mesh.GetTriangleGroup(i) == 0;
+        //TODO:
+        //Filter über VertexColor??
+        // Oder ausgeschnittene Löcher doch einfärben?
+        // Was passiert dann wenn man mehrmals ausschneidet?
+        int near_tid = spatial.FindNearestTriangle(position, 9f);
         if (near_tid != DMesh3.InvalidID)
-
         {
-            DistPoint3Triangle3 dist = MeshQueries.TriangleDistance(mesh, near_tid, position);
-            Vector3d nearest_pt = dist.TriangleClosest;
-            if (dist.DistanceSquared > 3) return true;
-            else return false;
+            return false;
+            //DistPoint3Triangle3 dist = MeshQueries.TriangleDistance(mesh, near_tid, position);
+            //Vector3d nearest_pt = dist.TriangleClosest;
+            //if (dist.DistanceSquared > 3) return true;
+            //else return false;
         }
 
         return true;

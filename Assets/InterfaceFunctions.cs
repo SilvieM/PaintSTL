@@ -7,8 +7,7 @@ public class InterfaceFunctions : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        mainSlider = GetComponentInChildren<Slider>();
-        mainSlider.onValueChanged.AddListener(delegate { OnSliderWasChanged(); });
+        
     }
 
     // Update is called once per frame
@@ -17,26 +16,7 @@ public class InterfaceFunctions : MonoBehaviour
 
     }
 
-    private void OnSliderWasChanged()
-    {
-        //Debug.Log(mainSlider.value);
-        OnMeshClick[] components = GameObject.FindObjectsOfType<OnMeshClick>();
-        foreach (var onMeshClick in components)
-        {
-            var meshRenderers = onMeshClick.transform.GetComponentsInChildren<MeshRenderer>();
-            foreach (var meshRenderer in meshRenderers)
-            {
-                if(mainSlider.value>=1) meshRenderer.material = Resources.Load("STLMeshMaterial2") as Material;
-                if (mainSlider.value < 1)
-                {
-                    meshRenderer.material = Resources.Load("SeeThruSTLMeshMaterial") as Material;
-                    meshRenderer.material.SetFloat("Vector1", mainSlider.value);
-                    meshRenderer.material.SetFloat("Alpha", mainSlider.value);
-
-                }
-            }
-        }
-    }
+    
 
     public void FixMyPaintJob()
     {
@@ -47,12 +27,12 @@ public class InterfaceFunctions : MonoBehaviour
         }
     }
 
-    public void Split()
+    public void ExplodedView()
     {
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
-            //generate.Split();
+            generate.Explode();
         }
     }
 

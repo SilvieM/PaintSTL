@@ -30,12 +30,22 @@ namespace Assets
         }
 
         public event Action<List<Color>> OnColorsChanged;
+        public event Action OnCurrentColorChanged = delegate {  };
 
-        public Color currentColor;
+        public Color currentColor
+        {
+            get => _currentColor;
+            set
+            {
+                _currentColor = value;
+                OnCurrentColorChanged.Invoke();
+            }
+        }
 
         public int? currentColorId => GetColorId(currentColor);
 
         private readonly Dictionary<Color, int> usedColors = new Dictionary<Color, int>();
+        private Color _currentColor;
 
         public int? GetColorId(Color color)
         {

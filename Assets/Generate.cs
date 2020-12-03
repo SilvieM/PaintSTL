@@ -12,6 +12,7 @@ public class Generate : MonoBehaviour
     public DMeshAABBTree3 spatial;
     private List<int> PointsToMove;
     public bool isImported;
+    public DMesh3 originalMesh;
 
     public void Start()
     {
@@ -66,6 +67,10 @@ public class Generate : MonoBehaviour
         RefreshPointsToMove();
         ColorManager.Instance.OnCurrentColorChanged += RefreshPointsToMove;
         this.isImported = isImported;
+        if (isImported)
+        {
+            originalMesh = new DMesh3(mesh);
+        }
     }
 
     public void Cut(Algorithm.AlgorithmType type)
@@ -168,6 +173,24 @@ public class Generate : MonoBehaviour
         }
 
         return true;
+    }
+
+    public void SaveColored()
+    {
+        if (isImported)
+        {
+            originalMesh.Copy(mesh);
+        }
+    }
+
+    public void Revert()
+    {
+        if (isImported)
+        {
+            this.mesh = new DMesh3(originalMesh);
+            g3UnityUtils.SetGOMesh(gameObject, mesh);
+        }
+        else Destroy(gameObject);
     }
 
     

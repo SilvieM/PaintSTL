@@ -38,4 +38,9 @@ public class OpacitySlider : MonoBehaviour
     {
         
     }
+
+    public void ResetToOpaque()
+    {
+        mainSlider.value = 1;
+    }
 }

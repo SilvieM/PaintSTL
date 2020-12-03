@@ -9,11 +9,10 @@ using UnityEngine;
 
 public class PeprAlgorithm : Algorithm
 {
-    public override DMesh3 Cut(DMesh3 mesh)
+    public override DMesh3 Cut(DMesh3 mesh, int colorId)
     {
-        var painted = FindPaintedTriangles(mesh);
+        var painted = FindPaintedTriangles(mesh, colorId);
         if (painted.Count <= 0) return mesh;
-        var currentGid = ColorManager.Instance.currentColorId ?? -1;
         var newMesh = new DMesh3();
         newMesh.EnableTriangleGroups();
         newMesh.EnableVertexColors(new Vector3f(1, 1, 1));
@@ -33,7 +32,7 @@ public class PeprAlgorithm : Algorithm
             var intBOuter = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex2, newMesh); 
             var intCOuter = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex3, newMesh);
 
-            var newTriOuter = newMesh.AppendTriangle(intAOuter, intBOuter, intCOuter, currentGid);
+            var newTriOuter = newMesh.AppendTriangle(intAOuter, intBOuter, intCOuter, colorId);
 
             var normal = mesh.GetTriNormal(triIndex);
             var normal1 = mesh.CalcVertexNormal(triangle.a);
@@ -46,13 +45,14 @@ public class PeprAlgorithm : Algorithm
             var intAInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex1 - normal1 * 4, mesh);
             var intBInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex2 - normal2 * 4, mesh);
             var intCInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex3 - normal3 * 4, mesh);
-            newMesh.SetVertexColor(intAInner, ColorManager.Instance.currentColor.toVector3f());
-            newMesh.SetVertexColor(intBInner, ColorManager.Instance.currentColor.toVector3f());
-            newMesh.SetVertexColor(intCInner, ColorManager.Instance.currentColor.toVector3f());
-            mesh.SetVertexColor(intAInnerOldMesh, ColorManager.Instance.currentColor.toVector3f());
-            mesh.SetVertexColor(intBInnerOldMesh, ColorManager.Instance.currentColor.toVector3f());
-            mesh.SetVertexColor(intCInnerOldMesh, ColorManager.Instance.currentColor.toVector3f());
-            var newTriInner = newMesh.AppendTriangle(intAInner, intBInner, intCInner, currentGid);
+            var color = ColorManager.Instance.GetColorForId(colorId).toVector3f();
+            newMesh.SetVertexColor(intAInner, color);
+            newMesh.SetVertexColor(intBInner, color);
+            newMesh.SetVertexColor(intCInner, color);
+            mesh.SetVertexColor(intAInnerOldMesh, color);
+            mesh.SetVertexColor(intBInnerOldMesh, color);
+            mesh.SetVertexColor(intCInnerOldMesh, color);
+            var newTriInner = newMesh.AppendTriangle(intAInner, intBInner, intCInner, colorId);
             var newTriInnerOldMesh = mesh.AppendTriangle(intAInnerOldMesh, intBInnerOldMesh, intCInnerOldMesh, 0);
             InnerToOuter.AddIfNotExists(intAOuter, intAInner);
             InnerToOuter.AddIfNotExists(intBOuter, intCInner);
@@ -68,7 +68,7 @@ public class PeprAlgorithm : Algorithm
         {
             var edgeOriented = newMesh.GetOrientedBoundaryEdgeV(openEdge);
             int thirdPoint = Corresponding(InnerToOuter,edgeOriented.a);
-            var newTriSide = newMesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, currentGid);
+            var newTriSide = newMesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, colorId);
         }
         var openEdgesOldMesh = mesh.BoundaryEdgeIndices();
         foreach (var openEdge in openEdgesOldMesh)

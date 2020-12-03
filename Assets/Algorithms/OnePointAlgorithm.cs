@@ -10,13 +10,12 @@ public class OnePointAlgorithm : Algorithm
 {
 
 
-    public override DMesh3 Cut(DMesh3 mesh)
+    public override DMesh3 Cut(DMesh3 mesh, int colorId)
     {
-        var painted = FindPaintedTriangles(mesh);
+        var painted = FindPaintedTriangles(mesh, colorId);
         if (painted.Count <= 0) return mesh;
 
         painted.Reverse();
-        var currentGid = ColorManager.Instance.currentColorId ?? -1;
         var toDelete = new List<int>();
         var newMesh = new DMesh3();
         newMesh.EnableTriangleGroups();
@@ -42,7 +41,7 @@ public class OnePointAlgorithm : Algorithm
             var result = mesh.RemoveTriangle(paintedTriNum);
             if (result != MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
             else toDelete.Add(paintedTriNum);
-            newMesh.AppendTriangle(intA, intB, intC, currentGid);
+            newMesh.AppendTriangle(intA, intB, intC, colorId);
         }
 
         var avgNormal = normals.Average();
@@ -61,13 +60,13 @@ public class OnePointAlgorithm : Algorithm
         var eidsNewMesh = newMesh.BoundaryEdgeIndices().ToList();
         foreach (var openEdge in eidsNewMesh)
         {
-            AddTriangle(newMesh, openEdge, newPointId, currentGid);
+            AddTriangle(newMesh, openEdge, newPointId, colorId);
         }
 
-        mesh.SetVertexColor(newPointIdInOldMesh, ColorManager.Instance.currentColor.toVector3f());
+        mesh.SetVertexColor(newPointIdInOldMesh, ColorManager.Instance.GetColorForId(colorId).toVector3f());
 
-        newMesh.SetVertexColor(newPointId, ColorManager.Instance.currentColor.toVector3f());
-        var newObj = StaticFunctions.SpawnNewObject(newMesh); //TODO originalMesh?
+        newMesh.SetVertexColor(newPointId, ColorManager.Instance.GetColorForId(colorId).toVector3f());
+        var newObj = StaticFunctions.SpawnNewObject(newMesh);
 
         return mesh;
     }

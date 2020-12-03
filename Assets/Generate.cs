@@ -73,10 +73,10 @@ public class Generate : MonoBehaviour
         }
     }
 
-    public void Cut(Algorithm.AlgorithmType type)
+    public void Cut(Algorithm.AlgorithmType type, int colorId)
     {
         var algorithm = Algorithm.BuildAlgo(type);
-        var newMesh = algorithm.Cut(mesh);
+        var newMesh = algorithm.Cut(mesh, colorId);
         mesh = g3UnityUtils.SetGOMesh(gameObject, newMesh);
         RefreshPointsToMove();
     }

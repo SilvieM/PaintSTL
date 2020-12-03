@@ -18,22 +18,16 @@ public class Algorithm
         return null;
     }
 
-    public List<int> FindPaintedTriangles(DMesh3 mesh)
+    public List<int> FindPaintedTriangles(DMesh3 mesh, int colorId)
     {
         List<int> indices = new List<int>();
-        var colorId = ColorManager.Instance.GetColorId(ColorManager.Instance.currentColor);
-        if (colorId != null)
+        foreach (var triangleIndex in mesh.TriangleIndices())
         {
-            foreach (var triangleIndex in mesh.TriangleIndices())
-            {
                 if (mesh.GetTriangleGroup(triangleIndex) == colorId)
                     indices.Add(triangleIndex);
-            }
-
-
-            Debug.Log($"Painted Triangles: {indices.Count}");
         }
-        else Debug.Log($"Color Id not found {ColorManager.Instance.currentColor}");
+
+        Debug.Log($"Painted Triangles: {indices.Count}");
 
         if (indices.Count <= 0)
         {
@@ -42,7 +36,7 @@ public class Algorithm
         return indices;
     }
 
-    public virtual DMesh3 Cut(DMesh3 mesh)
+    public virtual DMesh3 Cut(DMesh3 mesh, int colorId)
     {
         return mesh;
     }

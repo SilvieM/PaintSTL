@@ -16,7 +16,7 @@ public class OpacitySlider : MonoBehaviour
     private void OnSliderWasChanged()
     {
         //Debug.Log(mainSlider.value);
-        OnMeshClick[] components = GameObject.FindObjectsOfType<OnMeshClick>();
+        var components = GameObject.FindObjectsOfType<Generate>();
         foreach (var onMeshClick in components)
         {
             var meshRenderers = onMeshClick.transform.GetComponentsInChildren<MeshRenderer>();

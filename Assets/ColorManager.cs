@@ -73,5 +73,15 @@ namespace Assets
                 return number;
             }
         }
+
+        public Dictionary<Color, int> GetUsedColors()
+        {
+            return usedColors;
+        }
+
+        public List<Color> GetUsedColorsWithoutBase()
+        {
+            return usedColors.Keys.ToList().Skip(1).ToList();
+        }
     }
 }

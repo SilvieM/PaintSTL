@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Assets;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class InterfaceFunctions : MonoBehaviour
@@ -6,6 +7,7 @@ public class InterfaceFunctions : MonoBehaviour
     private GameObject cuttingUI;
 
     private GameObject paintingUI;
+    private GameObject cutSettings;
 
     // Start is called before the first frame update
     void Start()
@@ -14,6 +16,7 @@ public class InterfaceFunctions : MonoBehaviour
         paintingUI = transform.Find("Painting UI").gameObject;
         cuttingUI.SetActive(false);
         paintingUI.SetActive(true);
+        cutSettings = cuttingUI.transform.Find("CutSettings").gameObject;
     }
 
     
@@ -38,11 +41,14 @@ public class InterfaceFunctions : MonoBehaviour
         {
             generate.SaveColored();
         }
+        cutSettings.GetComponent<CutSettings>().Populate();
 
     }
 
     public void SwitchToPaintingUI()
     {
+        var slider = GameObject.FindObjectOfType<OpacitySlider>();
+        slider.ResetToOpaque();
         cuttingUI.SetActive(false);
         paintingUI.SetActive(true);
         var paintables = GameObject.FindObjectsOfType<OnMeshClick>();
@@ -56,8 +62,7 @@ public class InterfaceFunctions : MonoBehaviour
             generate.Revert();
         }
 
-        var slider = GameObject.FindObjectOfType<OpacitySlider>();
-        slider.ResetToOpaque();
+
     }
 
     public void FixMyPaintJob()
@@ -74,7 +79,8 @@ public class InterfaceFunctions : MonoBehaviour
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
-            generate.Explode();
+            if(!generate.isImported)
+                generate.Explode();
         }
     }
 
@@ -96,23 +102,21 @@ public class InterfaceFunctions : MonoBehaviour
         }
     }
 
-
-    public void MakeNewPartOnePointAlgo()
+    public void Cut()
     {
         var objects = GameObject.FindObjectsOfType<Generate>();
-        foreach (var generate in objects)
+        var settings = cutSettings.GetComponent<CutSettings>().GetSettings();
+        foreach (var cutSettingData in settings)
         {
-            generate.Cut(Algorithm.AlgorithmType.OnePoint);
+            foreach (var generate in objects)
+            {
+                generate.Cut(cutSettingData.algo, cutSettingData.ColorNum);
+                Debug.Log($"Cutting {cutSettingData.ColorNum} with Algo {cutSettingData.algo}");
+            }
         }
-    }
-
-    public void MakeNewPartPeprAlgo()
-    {
-        var objects = GameObject.FindObjectsOfType<Generate>();
-        foreach (var generate in objects)
-        {
-            generate.Cut(Algorithm.AlgorithmType.Pepr);
-        }
+        //TODO get all colors and their settings
+        
+        
     }
 
     public void ExportSTL()
@@ -121,5 +125,5 @@ public class InterfaceFunctions : MonoBehaviour
         //TODO call export on all Generate from here
     }
 
-
+    
 }

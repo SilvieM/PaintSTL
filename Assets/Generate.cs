@@ -160,30 +160,7 @@ public class Generate : MonoBehaviour
     }
 
 
-    private bool CheckPositionValid(DMesh3 mesh, Vector3d position)
-    {
-        //if (spatial.Mesh == null)
-        {
-            spatial = new DMeshAABBTree3(mesh);
-            spatial.Build();
-        }
-        spatial.TriangleFilterF = i => mesh.GetTriangleGroup(i) == 0;
-        //TODO:
-        //Filter über VertexColor??
-        // Oder ausgeschnittene Löcher doch einfärben?
-        // Was passiert dann wenn man mehrmals ausschneidet?
-        int near_tid = spatial.FindNearestTriangle(position, 9f);
-        if (near_tid != DMesh3.InvalidID)
-        {
-            return false;
-            //DistPoint3Triangle3 dist = MeshQueries.TriangleDistance(mesh, near_tid, position);
-            //Vector3d nearest_pt = dist.TriangleClosest;
-            //if (dist.DistanceSquared > 3) return true;
-            //else return false;
-        }
-
-        return true;
-    }
+    
 
     public void SaveColored()
     {

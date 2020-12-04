@@ -16,7 +16,6 @@ public class OnePointAlgorithm : Algorithm
         if (painted.Count <= 0) return mesh;
 
         painted.Reverse();
-        var toDelete = new List<int>();
         var newMesh = new DMesh3();
         newMesh.EnableTriangleGroups();
         newMesh.EnableVertexColors(new Vector3f(1, 1, 1));
@@ -40,13 +39,19 @@ public class OnePointAlgorithm : Algorithm
 
             var result = mesh.RemoveTriangle(paintedTriNum);
             if (result != MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
-            else toDelete.Add(paintedTriNum);
             newMesh.AppendTriangle(intA, intB, intC, colorId);
         }
 
         var avgNormal = normals.Average();
         var avgVertices = vertices.Average();
-        var newPoint = avgVertices - avgNormal*depth; //TODO scale?
+        var newPoint = avgVertices - avgNormal*depth;
+
+        //TODO also check if point is inside model first!
+        newPoint = MoveUntilAwayFromShell(mesh, newPoint, colorId); 
+        
+        
+
+
         var newPointId = newMesh.AppendVertex(newPoint);
         var newPointIdInOldMesh = mesh.AppendVertex(newPoint);
 
@@ -74,6 +79,8 @@ public class OnePointAlgorithm : Algorithm
     private void AddTriangle(DMesh3 currentMesh, int openEdge, int centerPoint, int currentGid)
     {
         var edge = currentMesh.GetOrientedBoundaryEdgeV(openEdge);
+        //var triangle = new Triangle3d(currentMesh.GetVertex(edge.b), currentMesh.GetVertex(edge.a), currentMesh.GetVertex(centerPoint));
+        //if(this.CheckIntersection(currentMesh, triangle)) Debug.Log("Intersection found");
         currentMesh.AppendTriangle(edge.b, edge.a, centerPoint, currentGid);
     }
 }

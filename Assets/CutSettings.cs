@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Assets;
 using Assets.Classes;
@@ -27,7 +28,7 @@ public class CutSettings : MonoBehaviour
         for (var index = 0; index < children.Count; index++)
         {
             var child = children[index];
-            var depth = child.GetComponentInChildren<Slider>().value;
+            var depth = Double.Parse(child.GetComponentInChildren<InputField>().text);
             var dropdown = child.GetComponentInChildren<TMPro.TMP_Dropdown>();
             var algo = (Algorithm.AlgorithmType) dropdown.value;
             data.Add(new CutSettingData(index+1, algo, depth )); //because the base color was left out

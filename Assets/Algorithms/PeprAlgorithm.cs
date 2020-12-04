@@ -34,7 +34,6 @@ public class PeprAlgorithm : Algorithm
 
             var newTriOuter = newMesh.AppendTriangle(intAOuter, intBOuter, intCOuter, colorId);
 
-            var normal = mesh.GetTriNormal(triIndex);
             var normal1 = mesh.CalcVertexNormal(triangle.a);
             var normal2 = mesh.CalcVertexNormal(triangle.b);
             var normal3 = mesh.CalcVertexNormal(triangle.c);

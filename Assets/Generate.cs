@@ -13,10 +13,10 @@ public class Generate : MonoBehaviour
     private List<int> PointsToMove;
     public bool isImported;
     public DMesh3 originalMesh;
+    public Vector3d center;
 
     public void Start()
     {
-        
     }
 
     public void RefreshPointsToMove()
@@ -69,6 +69,7 @@ public class Generate : MonoBehaviour
         {
             originalMesh = new DMesh3(mesh);
         }
+        center = mesh.GetBounds().Center;
     }
 
     public void Cut(Algorithm.AlgorithmType type, int colorId, double depth)
@@ -102,14 +103,26 @@ public class Generate : MonoBehaviour
         g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
 
+    private bool isInExplodedMode;
     public void Explode()
     {
         if (!isImported)
         {
-            var dir = mesh.GetBounds().Center.Normalized;
-            Debug.Log($"{dir.x}, {dir.y}, {dir.z}");
-            transform.position += dir.toVector3();
+            if (!isInExplodedMode)
+            {
+                var mainObject = FindObjectsOfType<Generate>().First(gen => gen.isImported);
+                var dir = (this.center - mainObject.center).Normalized;
+                Debug.Log($"{dir.x}, {dir.y}, {dir.z}");
+                isInExplodedMode = true;
+                transform.position += dir.toVector3();
+            }
+            else
+            {
+                transform.position = Vector3.zero;
+                isInExplodedMode = false;
+            }
         }
+       
     }
 
     public List<List<int>> FindGroups(List<int> paintedTriangles)

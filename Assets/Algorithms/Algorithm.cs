@@ -36,7 +36,7 @@ public class Algorithm
         return indices;
     }
 
-    public virtual DMesh3 Cut(DMesh3 mesh, int colorId)
+    public virtual DMesh3 Cut(DMesh3 mesh, int colorId, double depth)
     {
         return mesh;
     }

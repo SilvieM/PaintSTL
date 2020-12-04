@@ -10,7 +10,7 @@ public class OnePointAlgorithm : Algorithm
 {
 
 
-    public override DMesh3 Cut(DMesh3 mesh, int colorId)
+    public override DMesh3 Cut(DMesh3 mesh, int colorId, double depth)
     {
         var painted = FindPaintedTriangles(mesh, colorId);
         if (painted.Count <= 0) return mesh;
@@ -46,7 +46,7 @@ public class OnePointAlgorithm : Algorithm
 
         var avgNormal = normals.Average();
         var avgVertices = vertices.Average();
-        var newPoint = avgVertices - avgNormal;
+        var newPoint = avgVertices - avgNormal*depth; //TODO scale?
         var newPointId = newMesh.AppendVertex(newPoint);
         var newPointIdInOldMesh = mesh.AppendVertex(newPoint);
 

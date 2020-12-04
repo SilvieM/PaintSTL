@@ -28,34 +28,34 @@ public class Generate : MonoBehaviour
 
     public void Update()
     {
-        if (!(Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.RightArrow) ||
-              Input.GetKey(KeyCode.LeftArrow))) return;
-        Debug.Log(PointsToMove.Count);
-        foreach (var PointToMove in PointsToMove)
-        {
-            var normal = mesh.GetVertexNormal(PointToMove);
-            var tri = mesh.GetVertex(PointToMove);
-            var newPos= tri;
-            if (Input.GetKey(KeyCode.UpArrow))
-            {
-                newPos = tri + normal * 0.1f;
-            }
-            if (Input.GetKey(KeyCode.DownArrow))
-            {
-                newPos = tri - normal * 0.1f;
-            }
-            if (Input.GetKey(KeyCode.RightArrow))
-            {
-                newPos = tri + Camera.main.transform.right.toVector3d() * 0.1;
-            }
-            if (Input.GetKey(KeyCode.LeftArrow))
-            {
-                newPos = tri - Camera.main.transform.right.toVector3d() * 0.1;
-            }
-            if (CheckPositionValid(mesh, newPos)) 
-                mesh.SetVertex(PointToMove, newPos);
-        }
-        g3UnityUtils.SetGOMesh(gameObject, mesh);
+        //if (!(Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.RightArrow) ||
+        //      Input.GetKey(KeyCode.LeftArrow))) return;
+        //Debug.Log(PointsToMove.Count);
+        //foreach (var PointToMove in PointsToMove)
+        //{
+        //    var normal = mesh.GetVertexNormal(PointToMove);
+        //    var tri = mesh.GetVertex(PointToMove);
+        //    var newPos= tri;
+        //    if (Input.GetKey(KeyCode.UpArrow))
+        //    {
+        //        newPos = tri + normal * 0.1f;
+        //    }
+        //    if (Input.GetKey(KeyCode.DownArrow))
+        //    {
+        //        newPos = tri - normal * 0.1f;
+        //    }
+        //    if (Input.GetKey(KeyCode.RightArrow))
+        //    {
+        //        newPos = tri + Camera.main.transform.right.toVector3d() * 0.1;
+        //    }
+        //    if (Input.GetKey(KeyCode.LeftArrow))
+        //    {
+        //        newPos = tri - Camera.main.transform.right.toVector3d() * 0.1;
+        //    }
+        //    if (CheckPositionValid(mesh, newPos)) 
+        //        mesh.SetVertex(PointToMove, newPos);
+        //}
+        //g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
 
 
@@ -64,8 +64,6 @@ public class Generate : MonoBehaviour
         this.mesh = mesh;
         spatial = new DMeshAABBTree3(mesh);
         spatial.Build();
-        RefreshPointsToMove();
-        ColorManager.Instance.OnCurrentColorChanged += RefreshPointsToMove;
         this.isImported = isImported;
         if (isImported)
         {
@@ -73,12 +71,11 @@ public class Generate : MonoBehaviour
         }
     }
 
-    public void Cut(Algorithm.AlgorithmType type, int colorId)
+    public void Cut(Algorithm.AlgorithmType type, int colorId, double depth)
     {
         var algorithm = Algorithm.BuildAlgo(type);
-        var newMesh = algorithm.Cut(mesh, colorId);
+        var newMesh = algorithm.Cut(mesh, colorId, depth);
         mesh = g3UnityUtils.SetGOMesh(gameObject, newMesh);
-        RefreshPointsToMove();
     }
 
     public void FixMyPaintJob()

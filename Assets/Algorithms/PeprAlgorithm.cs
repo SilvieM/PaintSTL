@@ -9,7 +9,7 @@ using UnityEngine;
 
 public class PeprAlgorithm : Algorithm
 {
-    public override DMesh3 Cut(DMesh3 mesh, int colorId)
+    public override DMesh3 Cut(DMesh3 mesh, int colorId, double depth)
     {
         var painted = FindPaintedTriangles(mesh, colorId);
         if (painted.Count <= 0) return mesh;
@@ -38,13 +38,13 @@ public class PeprAlgorithm : Algorithm
             var normal1 = mesh.CalcVertexNormal(triangle.a);
             var normal2 = mesh.CalcVertexNormal(triangle.b);
             var normal3 = mesh.CalcVertexNormal(triangle.c);
-
-            var intAInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex1 - normal1*4, newMesh);
-            var intBInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex3 - normal3*4, newMesh); //swapping to mirror
-            var intCInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex2 - normal2*4, newMesh);
-            var intAInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex1 - normal1 * 4, mesh);
-            var intBInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex2 - normal2 * 4, mesh);
-            var intCInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex3 - normal3 * 4, mesh);
+            
+            var intAInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex1 - normal1*depth, newMesh);
+            var intBInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex3 - normal3*depth, newMesh); //swapping to mirror
+            var intCInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex2 - normal2*depth, newMesh);
+            var intAInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex1 - normal1 * depth, mesh);
+            var intBInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex2 - normal2 * depth, mesh);
+            var intCInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex3 - normal3 * depth, mesh);
             var color = ColorManager.Instance.GetColorForId(colorId).toVector3f();
             newMesh.SetVertexColor(intAInner, color);
             newMesh.SetVertexColor(intBInner, color);

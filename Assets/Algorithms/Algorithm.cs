@@ -63,7 +63,7 @@ public class Algorithm
 
         tree.TriangleFilterF = i => tree.Mesh.GetTriangleGroup(i) != colorToExclude;
 
-        int near_tid = tree.FindNearestTriangle(position, 3f);
+        int near_tid = tree.FindNearestTriangle(position, 3f); //TODO scale the max dist by SDF or so
         if (near_tid != DMesh3.InvalidID)
         {
             //var nearTri = mesh.
@@ -79,7 +79,7 @@ public class Algorithm
 
         tree.TriangleFilterF = i => tree.Mesh.GetTriangleGroup(i) != colorToExclude;
 
-        int near_tid = tree.FindNearestTriangle(position, 20f);
+        int near_tid = tree.FindNearestTriangle(position, 30f);
         if (near_tid != DMesh3.InvalidID)
         {
             //var nearTri = mesh.GetTriangle(near_tid);
@@ -98,19 +98,15 @@ public class Algorithm
         var tree = new DMeshAABBTree3(info.oldMesh, true);
         if (!tree.IsInside(position))
         {
-            var countInside = 0;
             Debug.Log("Point outside of mesh");
             var getInside = GetInsideShell(tree, position, info.colorId);
-            while (getInside != null && !tree.IsInside(position))
+            if (getInside != null){
+                position += getInside.Value;
+            Debug.Log($"GetInside. New Pos: {position} ");
+            }
+            else
             {
-                position += getInside.Value.Normalized;
-                Debug.Log($"GetInside. New Pos: {position} ");
-                getInside = GetInsideShell(tree, position, info.colorId);
-                countInside++;
-                if (countInside >= 100)
-                {
-                    Debug.Log("MoveInside could not find a suitable position, count 100 exceeded");
-                }
+                Debug.Log("Point too far away from shell");
             }
 
         }
@@ -118,13 +114,13 @@ public class Algorithm
         int count = 0;
         while (getAway != null)
         {
-            position += getAway.Value.Normalized * 0.4;
+            position += getAway.Value.Normalized * 0.4; //TODO scale this with SDF??
             Debug.Log($"Getaway. New Pos: {position} ");
             getAway = GetAwayFromShellDirection(tree, position, info.colorId);
             count++;
-            if (count >= 100)
+            if (count >= 10)
             {
-                Debug.Log("MoveAway could not find a suitable position, count 100 exceeded");
+                Debug.Log("MoveAway could not find a suitable position, count exceeded");
             }
         }
         return position;

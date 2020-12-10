@@ -1495,7 +1495,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &665423900
 Transform:
   m_ObjectHideFlags: 0
@@ -1525,6 +1525,7 @@ GameObject:
   - component: {fileID: 698444189}
   - component: {fileID: 698444188}
   - component: {fileID: 698444187}
+  - component: {fileID: 698444190}
   m_Layer: 5
   m_Name: Export
   m_TagString: Untagged
@@ -1597,7 +1598,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 698444185}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SendMessageUpwards
+        m_MethodName: SendMessage
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1645,6 +1646,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 698444185}
   m_CullTransparentMesh: 0
+--- !u!114 &698444190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 698444185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5905871bb36d39a4e8ff838a38d73276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &718217611
 GameObject:
   m_ObjectHideFlags: 0
@@ -7740,7 +7753,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Back to Painting
+  m_Text: "\u2190 Back to Painting"
 --- !u!222 &930197929
 CanvasRenderer:
   m_ObjectHideFlags: 0

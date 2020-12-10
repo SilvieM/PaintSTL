@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using Assets;
@@ -76,8 +77,15 @@ public class Generate : MonoBehaviour
     public void Cut(Algorithm.AlgorithmType type, int colorId, double depth)
     {
         var algorithm = Algorithm.BuildAlgo(type);
-        var newMesh = algorithm.Cut(new CuttingInfo(){mesh = mesh, colorId = colorId, depth = depth, oldMesh = originalMesh});
+        StartCoroutine(CutCoroutine(colorId, depth, algorithm));
+    }
+
+    private IEnumerator CutCoroutine(int colorId, double depth, Algorithm algorithm)
+    {
+        var newMesh = algorithm.Cut(new CuttingInfo()
+            {mesh = mesh, colorId = colorId, depth = depth, oldMesh = originalMesh});
         mesh = g3UnityUtils.SetGOMesh(gameObject, newMesh);
+        yield return null;
     }
 
     public void FixMyPaintJob()

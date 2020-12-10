@@ -77,9 +77,22 @@ public class PeprAlgorithm : Algorithm
             int thirdPoint = Corresponding(InnerToOuterOldMesh, edgeOriented.a);
             var newTriSide = info.mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, 0);
         }
-
+        MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh);
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         return info.mesh;
+    }
+
+    private void MoveVerticesToValidPositions(CuttingInfo info, DMesh3 newMesh, Dictionary<Vector3d, int> verticesInNewMesh, Dictionary<Vector3d, int> verticesInOldMesh)
+    {
+        foreach (var keyValuePair in verticesInOldMesh)
+        {
+            var pos = keyValuePair.Key;
+            var newPos = MovePointInsideAndAwayFromShell(info, pos);
+            info.mesh.SetVertex(keyValuePair.Value, newPos);
+            var vidInNewMesh =verticesInNewMesh[pos];
+            newMesh.SetVertex(vidInNewMesh, newPos);
+
+        }
     }
 
     private int Corresponding(Dictionary<int, int> InnerToOuter, int searchFor)

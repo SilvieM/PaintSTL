@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using Assets;
+using Assets.Algorithms;
 using Assets.g3UnityUtils;
 using g3;
 using UnityEngine;
@@ -75,7 +76,7 @@ public class Generate : MonoBehaviour
     public void Cut(Algorithm.AlgorithmType type, int colorId, double depth)
     {
         var algorithm = Algorithm.BuildAlgo(type);
-        var newMesh = algorithm.Cut(mesh, colorId, depth);
+        var newMesh = algorithm.Cut(new CuttingInfo(){mesh = mesh, colorId = colorId, depth = depth, oldMesh = originalMesh});
         mesh = g3UnityUtils.SetGOMesh(gameObject, newMesh);
     }
 

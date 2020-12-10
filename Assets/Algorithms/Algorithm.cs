@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Assets;
+using Assets.Algorithms;
 using g3;
 using UnityEngine;
 
@@ -75,6 +76,7 @@ public class Algorithm
     internal Vector3d MoveUntilAwayFromShell(DMesh3 mesh, Vector3d position, int colorToExclude)
     {
         var tree = new DMeshAABBTree3(mesh, true);
+        if(!tree.IsInside(position)) Debug.Log("Point outside of mesh");
         var getAway = this.GetAwayFromShellDirection(tree, position, colorToExclude);
         int count = 0;
         while (getAway != null)
@@ -100,8 +102,8 @@ public class Algorithm
 
     }
 
-    public virtual DMesh3 Cut(DMesh3 mesh, int colorId, double depth)
+    public virtual DMesh3 Cut(CuttingInfo info)
     {
-        return mesh;
+        return info.mesh;
     }
 }

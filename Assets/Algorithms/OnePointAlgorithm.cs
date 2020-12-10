@@ -48,7 +48,7 @@ public class OnePointAlgorithm : Algorithm
         var newPoint = avgVertices - avgNormal* info.depth;
 
         //TODO also check if point is inside model first!
-        newPoint = MoveUntilAwayFromShell(info.mesh, newPoint, info.colorId); 
+        newPoint = MovePointInsideAndAwayFromShell(info, newPoint); 
         
         
 

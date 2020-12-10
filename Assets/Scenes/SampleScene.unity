@@ -7827,6 +7827,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70074e9b6dbeab84e8ffc02816048af1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  children: []
 --- !u!114 &940140844
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8216,7 +8217,6 @@ RectTransform:
   - {fileID: 1361741585}
   - {fileID: 1915968397}
   - {fileID: 133441666}
-  - {fileID: 1173212011}
   m_Father: {fileID: 6327307}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -8256,8 +8256,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 930197927}
-  m_Father: {fileID: 1164016001}
-  m_RootOrder: 5
+  m_Father: {fileID: 1445963848}
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -8809,6 +8809,7 @@ RectTransform:
   - {fileID: 28964144}
   - {fileID: 698444186}
   - {fileID: 940140841}
+  - {fileID: 1173212011}
   m_Father: {fileID: 6327307}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

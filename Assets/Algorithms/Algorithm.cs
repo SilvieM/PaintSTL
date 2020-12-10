@@ -66,24 +66,61 @@ public class Algorithm
         int near_tid = tree.FindNearestTriangle(position, 3f);
         if (near_tid != DMesh3.InvalidID)
         {
-            //var nearTri = mesh.GetTriangle(near_tid);
+            //var nearTri = mesh.
+            //GetTriangle(near_tid);
             return -tree.Mesh.GetTriNormal(near_tid);
         }
 
         return null;
     }
 
-    internal Vector3d MoveUntilAwayFromShell(DMesh3 mesh, Vector3d position, int colorToExclude)
+    internal Vector3d? GetInsideShell(DMeshAABBTree3 tree, Vector3d position, int colorToExclude)
     {
-        var tree = new DMeshAABBTree3(mesh, true);
-        if(!tree.IsInside(position)) Debug.Log("Point outside of mesh");
-        var getAway = this.GetAwayFromShellDirection(tree, position, colorToExclude);
+
+        tree.TriangleFilterF = i => tree.Mesh.GetTriangleGroup(i) != colorToExclude;
+
+        int near_tid = tree.FindNearestTriangle(position, 20f);
+        if (near_tid != DMesh3.InvalidID)
+        {
+            //var nearTri = mesh.GetTriangle(near_tid);
+            return tree.Mesh.GetTriCentroid(near_tid)-position;
+        }
+        else
+        {
+            Debug.Log("Get Inside: Too far away");
+        }
+
+        return null;
+    }
+
+    internal Vector3d MovePointInsideAndAwayFromShell(CuttingInfo info, Vector3d position)
+    {
+        var tree = new DMeshAABBTree3(info.oldMesh, true);
+        if (!tree.IsInside(position))
+        {
+            var countInside = 0;
+            Debug.Log("Point outside of mesh");
+            var getInside = GetInsideShell(tree, position, info.colorId);
+            while (getInside != null && !tree.IsInside(position))
+            {
+                position += getInside.Value.Normalized;
+                Debug.Log($"GetInside. New Pos: {position} ");
+                getInside = GetInsideShell(tree, position, info.colorId);
+                countInside++;
+                if (countInside >= 100)
+                {
+                    Debug.Log("MoveInside could not find a suitable position, count 100 exceeded");
+                }
+            }
+
+        }
+        var getAway = this.GetAwayFromShellDirection(tree, position, info.colorId);
         int count = 0;
         while (getAway != null)
         {
             position += getAway.Value.Normalized * 0.4;
             Debug.Log($"Getaway. New Pos: {position} ");
-            getAway = GetAwayFromShellDirection(tree, position, colorToExclude);
+            getAway = GetAwayFromShellDirection(tree, position, info.colorId);
             count++;
             if (count >= 100)
             {

@@ -15,10 +15,11 @@ public class Generate : MonoBehaviour
     private List<int> PointsToMove;
     public bool isImported;
     public DMesh3 originalMesh;
-    public Vector3d center;
+    public Vector3 center;
 
     public void Start()
     {
+
     }
 
     public void RefreshPointsToMove()
@@ -30,6 +31,7 @@ public class Generate : MonoBehaviour
 
     public void Update()
     {
+        DrawArrow.DrawBoundingBox(mesh.GetBounds(), transform);
         //if (!(Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.RightArrow) ||
         //      Input.GetKey(KeyCode.LeftArrow))) return;
         //Debug.Log(PointsToMove.Count);
@@ -71,7 +73,7 @@ public class Generate : MonoBehaviour
         {
             originalMesh = new DMesh3(mesh);
         }
-        center = mesh.GetBounds().Center;
+        center = transform.TransformPoint(mesh.GetBounds().Center.toVector3());
     }
 
     public void Cut(Algorithm.AlgorithmType type, int colorId, double depth)
@@ -120,10 +122,10 @@ public class Generate : MonoBehaviour
             if (!isInExplodedMode)
             {
                 var mainObject = FindObjectsOfType<Generate>().First(gen => gen.isImported);
-                var dir = (this.center - mainObject.center).Normalized;
+                var dir = (this.center - mainObject.center).normalized;
                 Debug.Log($"{dir.x}, {dir.y}, {dir.z}");
                 isInExplodedMode = true;
-                transform.position += dir.toVector3();
+                transform.position += dir;
             }
             else
             {

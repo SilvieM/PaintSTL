@@ -25,5 +25,10 @@ namespace Assets.Static_Classes
             }
             return intA;
         }
+
+        public static void ErrorMessage(string message)
+        {
+            GameObject.FindObjectOfType<InterfaceFunctions>().ErrorMessage(message);
+        }
     }
 }

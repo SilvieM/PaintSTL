@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Assets;
 using Assets.Algorithms;
+using Assets.Static_Classes;
 using g3;
 using UnityEngine;
 
@@ -88,6 +89,7 @@ public class Algorithm
         else
         {
             Debug.Log("Get Inside: Too far away");
+            StaticFunctions.ErrorMessage("Extrusion/Depth setting of a color is too much, might extrude outside of shell");
         }
 
         return null;
@@ -121,6 +123,7 @@ public class Algorithm
             if (count >= 10)
             {
                 Debug.Log("MoveAway could not find a suitable position, count exceeded");
+                StaticFunctions.ErrorMessage("The object is too thin to find a suitable position. Might cause intersections.");
             }
         }
         return position;

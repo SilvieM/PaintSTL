@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Assets;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
 using g3;
@@ -41,6 +42,7 @@ public class Import : MonoBehaviour
         StaticFunctions.SpawnNewObject(readMesh, true);
         var bounds = readMesh.GetBounds();
         Camera.main.transform.LookAt(bounds.Center.toVector3());
+
         Camera.main.GetComponent<SimpleCameraController>().m_TargetCameraState.SetFromTransform(Camera.main.transform);
         yield return null;
     }

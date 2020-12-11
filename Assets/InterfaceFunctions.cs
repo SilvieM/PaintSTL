@@ -1,4 +1,5 @@
-﻿using Assets;
+﻿using System.Collections;
+using Assets;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,6 +9,7 @@ public class InterfaceFunctions : MonoBehaviour
 
     private GameObject paintingUI;
     private GameObject cutSettings;
+    private static GameObject ErrorMsgCanvas;
 
     // Start is called before the first frame update
     void Start()
@@ -17,6 +19,8 @@ public class InterfaceFunctions : MonoBehaviour
         cuttingUI.SetActive(false);
         paintingUI.SetActive(true);
         cutSettings = cuttingUI.transform.Find("CutSettings").gameObject;
+        ErrorMsgCanvas = transform.Find("MsgCanvas").gameObject;
+        ErrorMsgCanvas.SetActive(false);
     }
 
     
@@ -86,11 +90,7 @@ public class InterfaceFunctions : MonoBehaviour
 
     public void MovePoint()
     {
-        var objects = GameObject.FindObjectsOfType<Generate>();
-        foreach (var generate in objects)
-        {
-            //generate.MovePoint();
-        }
+        ErrorMessage("abc");
     }
 
     public void DisplayNormals()
@@ -119,10 +119,18 @@ public class InterfaceFunctions : MonoBehaviour
         
     }
 
-    public void ExportSTL()
+
+    public void ErrorMessage(string message)
     {
-        //TODO open file dialog
-        //TODO call export on all Generate from here
+        ErrorMsgCanvas.GetComponentInChildren<Text>().text = message;
+        ErrorMsgCanvas.SetActive(true);
+        StartCoroutine(waitAndDeactivate());
+    }
+
+    private IEnumerator waitAndDeactivate()
+    {
+        yield return new WaitForSeconds(5);
+        ErrorMsgCanvas.SetActive(false);
     }
 
     

@@ -47,9 +47,8 @@ public class OnePointAlgorithm : Algorithm
         var avgVertices = vertices.Average();
         var newPoint = avgVertices - avgNormal* info.depth;
 
-        //TODO also check if point is inside model first!
-        newPoint = MovePointInsideAndAwayFromShell(info, newPoint); 
-        
+        if(info.computeCorrectPosition) newPoint = MovePointInsideAndAwayFromShell(info, newPoint);
+        if (info.modelDepthDependantDepth) newPoint = MovePointDepthDependant(info, avgVertices, avgNormal);
         
 
 

@@ -13,5 +13,7 @@ namespace Assets.Algorithms
         public DMesh3 oldMesh;
         public int colorId;
         public double depth;
+        public bool computeCorrectPosition=false;
+        public bool modelDepthDependantDepth = true;
     }
 }

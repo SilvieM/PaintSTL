@@ -38,13 +38,24 @@ public class PeprAlgorithm : Algorithm
             var normal1 = info.mesh.CalcVertexNormal(triangle.a);
             var normal2 = info.mesh.CalcVertexNormal(triangle.b);
             var normal3 = info.mesh.CalcVertexNormal(triangle.c);
+
             
-            var intAInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex1 - normal1* info.depth, newMesh);
-            var intBInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex3 - normal3* info.depth, newMesh); //swapping to mirror
-            var intCInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex2 - normal2* info.depth, newMesh);
-            var intAInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex1 - normal1 * info.depth, info.mesh);
-            var intBInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex2 - normal2 * info.depth, info.mesh);
-            var intCInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, vertex3 - normal3 * info.depth, info.mesh);
+            var pos1 = vertex1 - normal1 * info.depth;
+            var pos2 = vertex2 - normal2 * info.depth;
+            var pos3 = vertex3 - normal3 * info.depth;
+            //if (info.modelDepthDependantDepth)
+            //{
+            //    pos1 = MovePointDepthDependant(info, vertex1, normal1);
+            //    pos2 = MovePointDepthDependant(info, vertex2, normal2);
+            //    pos3 = MovePointDepthDependant(info, vertex3, normal3);
+            //}
+
+            var intAInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, pos1, newMesh);
+            var intBInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, pos3, newMesh); //swapping to mirror
+            var intCInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, pos2, newMesh);
+            var intAInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, pos1, info.mesh);
+            var intBInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, pos2, info.mesh);
+            var intCInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, pos3, info.mesh);
             var color = ColorManager.Instance.GetColorForId(info.colorId).toVector3f();
             newMesh.SetVertexColor(intAInner, color);
             newMesh.SetVertexColor(intBInner, color);
@@ -77,7 +88,7 @@ public class PeprAlgorithm : Algorithm
             int thirdPoint = Corresponding(InnerToOuterOldMesh, edgeOriented.a);
             var newTriSide = info.mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, 0);
         }
-        MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh);
+        if (info.computeCorrectPosition) MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh);
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         return info.mesh;
     }
@@ -86,11 +97,11 @@ public class PeprAlgorithm : Algorithm
     {
         foreach (var keyValuePair in verticesInOldMesh)
         {
-            var pos = keyValuePair.Key;
-            var newPos = MovePointInsideAndAwayFromShell(info, pos);
-            info.mesh.SetVertex(keyValuePair.Value, newPos);
-            var vidInNewMesh =verticesInNewMesh[pos];
-            newMesh.SetVertex(vidInNewMesh, newPos);
+            var point = keyValuePair.Key;
+            var newPoint = MovePointInsideAndAwayFromShell(info, point);
+            info.mesh.SetVertex(keyValuePair.Value, newPoint);
+            var vidInNewMesh =verticesInNewMesh[point];
+            newMesh.SetVertex(vidInNewMesh, newPoint);
 
         }
     }

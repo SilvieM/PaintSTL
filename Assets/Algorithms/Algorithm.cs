@@ -117,26 +117,52 @@ public class Algorithm
         while (getAway != null)
         {
             var howFar = 0.1;
-            Ray3d ray = new Ray3d(position, getAway.Value);
+            Ray3d ray = new Ray3d(position, getAway.Value.Normalized);
             int hit_tid = tree.FindNearestHitTriangle(ray);
+            Debug.Log("Hit "+hit_tid);
             if (hit_tid != DMesh3.InvalidID)
             {
                 IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(info.oldMesh, hit_tid, ray);
                 double hit_dist = position.Distance(ray.PointAt(intr.RayParameter));
-                howFar = hit_dist * 0.3; //going 1/3 the way we can go
+                howFar = hit_dist * 0.2; //going 1/5 the way we can go
                 Debug.Log($"How far: {howFar}");
             }
 
             position += getAway.Value.Normalized * howFar; 
             Debug.Log($"Getaway. New Pos: {position} ");
             count++;
+
             if (count >= 5)
             {
                 Debug.Log("MoveAway could not find a suitable position, count exceeded");
                 StaticFunctions.ErrorMessage("The object is too thin to find a suitable position. Might cause intersections.");
+                break;
             }
             getAway = GetAwayFromShellDirection(tree, position, info.colorId);
         }
+        return position;
+    }
+
+    internal Vector3d MovePointDepthDependant(CuttingInfo info, Vector3d shellPoint, Vector3d normal)
+    {
+        normal = normal.Normalized;
+        var position = shellPoint;
+        var tree = new DMeshAABBTree3(info.oldMesh, true);
+        Ray3d ray = new Ray3d(shellPoint, -normal);
+        int hit_tid = tree.FindNearestHitTriangle(ray);
+        Debug.Log("Hit " + hit_tid);
+        if (hit_tid != DMesh3.InvalidID)
+        {
+            IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(info.oldMesh, hit_tid, ray);
+            double hit_dist = shellPoint.Distance(ray.PointAt(intr.RayParameter));
+            position = shellPoint-normal * hit_dist * (info.depth / 100);
+            Debug.Log($"Hit Dist: {hit_dist}");
+        }
+        else
+        {
+            StaticFunctions.ErrorMessage("Depth Dependant Calculation failed");
+        }
+
         return position;
     }
 

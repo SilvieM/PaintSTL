@@ -116,15 +116,26 @@ public class Algorithm
         int count = 0;
         while (getAway != null)
         {
-            position += getAway.Value.Normalized * 0.4; //TODO scale this with SDF??
+            var howFar = 0.1;
+            Ray3d ray = new Ray3d(position, getAway.Value);
+            int hit_tid = tree.FindNearestHitTriangle(ray);
+            if (hit_tid != DMesh3.InvalidID)
+            {
+                IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(info.oldMesh, hit_tid, ray);
+                double hit_dist = position.Distance(ray.PointAt(intr.RayParameter));
+                howFar = hit_dist * 0.3; //going 1/3 the way we can go
+                Debug.Log($"How far: {howFar}");
+            }
+
+            position += getAway.Value.Normalized * howFar; 
             Debug.Log($"Getaway. New Pos: {position} ");
-            getAway = GetAwayFromShellDirection(tree, position, info.colorId);
             count++;
-            if (count >= 10)
+            if (count >= 5)
             {
                 Debug.Log("MoveAway could not find a suitable position, count exceeded");
                 StaticFunctions.ErrorMessage("The object is too thin to find a suitable position. Might cause intersections.");
             }
+            getAway = GetAwayFromShellDirection(tree, position, info.colorId);
         }
         return position;
     }

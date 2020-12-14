@@ -60,6 +60,7 @@
     <Compile Include="Assets\Scripts\OnMeshClick.cs" />
     <Compile Include="Assets\Scripts\SimpleCameraController.cs" />
     <Compile Include="Assets\Classes\Triangle.cs" />
+    <Compile Include="Assets\Algorithms\CuttingInfo.cs" />
     <Compile Include="Assets\ColorManager.cs" />
     <Compile Include="Assets\ColorChange.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark03.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Assets\UsedColorsDisplay.cs" />
     <Compile Include="Assets\g3UnityUtils\g3UnityUtils.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SimpleScript.cs" />
+    <Compile Include="Assets\Export.cs" />
     <Compile Include="Assets\ColorBox.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_FrameRateCounter.cs" />
@@ -115,8 +117,6 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeA.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\EnvMapAnimator.cs" />
     <Compile Include="Assets\Classes\Vertex.cs" />
-    <Compile Include="Assets\Algorithms\CuttingInfo.cs" />
-    <Compile Include="Assets\Export.cs" />
   </ItemGroup>
   <ItemGroup>
      <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

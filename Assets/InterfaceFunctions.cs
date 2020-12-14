@@ -1,17 +1,29 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
+using Assets;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class InterfaceFunctions : MonoBehaviour
 {
-    Slider mainSlider;
+    private GameObject cuttingUI;
+
+    private GameObject paintingUI;
+    private GameObject cutSettings;
+    private static GameObject ErrorMsgCanvas;
+
     // Start is called before the first frame update
     void Start()
     {
-        mainSlider = GetComponentInChildren<Slider>();
-        mainSlider.onValueChanged.AddListener(delegate { OnSliderWasChanged(); });
+        cuttingUI = transform.Find("Cutting UI").gameObject;
+        paintingUI = transform.Find("Painting UI").gameObject;
+        cuttingUI.SetActive(false);
+        paintingUI.SetActive(true);
+        cutSettings = cuttingUI.transform.Find("CutSettings").gameObject;
+        ErrorMsgCanvas = transform.Find("MsgCanvas").gameObject;
+        ErrorMsgCanvas.SetActive(false);
     }
+
+    
 
     // Update is called once per frame
     void Update()
@@ -19,46 +31,66 @@ public class InterfaceFunctions : MonoBehaviour
 
     }
 
-    private void OnSliderWasChanged()
+    public void SwitchToCuttingUI()
     {
-        //Debug.Log(mainSlider.value);
-        OnMeshClick[] components = GameObject.FindObjectsOfType<OnMeshClick>();
-        foreach (var onMeshClick in components)
+        paintingUI.SetActive(false);
+        cuttingUI.SetActive(true);
+        var paintables = GameObject.FindObjectsOfType<OnMeshClick>();
+        foreach (var onMeshClick in paintables)
         {
-            var meshRenderers = onMeshClick.transform.GetComponentsInChildren<MeshRenderer>();
-            foreach (var meshRenderer in meshRenderers)
-            {
-                meshRenderer.material.SetFloat("Vector1", mainSlider.value);
-                meshRenderer.material.SetFloat("Alpha", mainSlider.value);
-            }
+            onMeshClick.enabled = false;
         }
+        var objects = GameObject.FindObjectsOfType<Generate>();
+        foreach (var generate in objects)
+        {
+            generate.SaveColored();
+        }
+        cutSettings.GetComponent<CutSettings>().Populate();
+
     }
 
-    public void Generate()
+    public void SwitchToPaintingUI()
+    {
+        var slider = GameObject.FindObjectOfType<OpacitySlider>();
+        slider.ResetToOpaque();
+        cuttingUI.SetActive(false);
+        paintingUI.SetActive(true);
+        var paintables = GameObject.FindObjectsOfType<OnMeshClick>();
+        foreach (var onMeshClick in paintables)
+        {
+            onMeshClick.enabled=true;
+        }
+        var objects = GameObject.FindObjectsOfType<Generate>();
+        foreach (var generate in objects)
+        {
+            generate.Revert();
+        }
+
+
+    }
+
+    public void FixMyPaintJob()
     {
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
-            generate.GenerateMesh();
+            generate.FixMyPaintJob();
         }
     }
 
-    public void Split()
+    public void ExplodedView()
     {
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
-            //generate.Split();
+            if(!generate.isImported)
+                generate.Explode();
         }
     }
 
-    public void MakeNewPartMyAlgo()
+    public void MovePoint()
     {
-        var objects = GameObject.FindObjectsOfType<Generate>();
-        foreach (var generate in objects)
-        {
-            generate.MakeNewPartMyAlgo();
-        }
+        ErrorMessage("abc");
     }
 
     public void DisplayNormals()
@@ -66,26 +98,40 @@ public class InterfaceFunctions : MonoBehaviour
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
-            generate.DisplayNormals();
+            //generate.DisplayNormals();
         }
     }
 
-    public void MakeNewPartPeprAlgo()
+    public void Cut()
     {
         var objects = GameObject.FindObjectsOfType<Generate>();
-        foreach (var generate in objects)
+        var settings = cutSettings.GetComponent<CutSettings>().GetSettings();
+        foreach (var cutSettingData in settings)
         {
-            generate.MakeNewPartPeprAlgo();
+            foreach (var generate in objects)
+            {
+                generate.Cut(cutSettingData.algo, cutSettingData.ColorNum, cutSettingData.depth);
+                Debug.Log($"Cutting {cutSettingData.ColorNum} with Algo {cutSettingData.algo}");
+            }
         }
+        //TODO get all colors and their settings
+        
+        
     }
 
-    public void MakeNewPartOnePointAlgo()
+
+    public void ErrorMessage(string message)
     {
-        var objects = GameObject.FindObjectsOfType<Generate>();
-        foreach (var generate in objects)
-        {
-            generate.MakeNewPartOnePointAlgo();
-        }
+        ErrorMsgCanvas.GetComponentInChildren<Text>().text = message;
+        ErrorMsgCanvas.SetActive(true);
+        StartCoroutine(waitAndDeactivate());
     }
 
+    private IEnumerator waitAndDeactivate()
+    {
+        yield return new WaitForSeconds(5);
+        ErrorMsgCanvas.SetActive(false);
+    }
+
+    
 }

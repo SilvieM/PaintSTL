@@ -1,37 +1,27 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Assets;
+using Assets.g3UnityUtils;
+using g3;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 public class OnMeshClick : MonoBehaviour
 {
-    //TODO make the colors be kept in sync with what the generate script builds!
-    private List<Collider> childrenColliders;
+    public double range = 1f;
     // Start is called before the first frame update
     public void Start()
     {
-        var thismesh = gameObject.GetComponent<MeshFilter>();
-        if (thismesh != null) thismesh.sharedMesh.colors = Enumerable.Repeat(Color.white, thismesh.sharedMesh.vertices.Length).ToArray();
-        childrenColliders = new List<Collider>();
-        foreach (Transform childTransform in transform)
-        {
-            childrenColliders.Add(childTransform.GetComponent<Collider>());
-            var mesh = childTransform.gameObject.GetComponent<MeshFilter>().sharedMesh;
-            Vector3[] vertices = mesh.vertices;
-            Color[] colors = Enumerable.Repeat(Color.white, vertices.Length).ToArray();
-            //Color32[] colors32 = Enumerable.Repeat(new Color32(), vertices.Length).ToArray();
-            mesh.colors = colors;
-            //mesh.colors32 = colors32;
-        }
-
     }
 
 
     // Update is called once per frame
     void Update()
     {
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, 100) && (hit.transform == transform || hit.transform.parent == transform))
@@ -52,23 +42,62 @@ public class OnMeshClick : MonoBehaviour
 
             if (Input.GetMouseButton(0))
             {
-                var colorsNew = mesh.colors;
-                for (int i = 0; i < 3; i++)
+                var triIndices = new List<int>();
+                var generate = GetComponent<Generate>();
+                triIndices.Add(hit.triangleIndex);
+                var dmesh = generate.mesh;
+                bool foundNewTriangle = true;
+                while (foundNewTriangle)
                 {
-                    colorsNew[hit.triangleIndex * 3 + i] = paintColor;
+                    foundNewTriangle = false;
+                    var newTriIndices = new List<int>();
+                    foreach (var triIndexAlreadyFound in triIndices)
+                    {
+                        var neighborTris = dmesh.GetTriNeighbourTris(triIndexAlreadyFound);
+
+                        foreach (var triIndex in neighborTris.array)
+                        {
+                            if (!triIndices.Contains(triIndex)&&!newTriIndices.Contains(triIndex) && IsInRange(dmesh, hit.triangleIndex, triIndex, range))
+                            {
+                                newTriIndices.Add(triIndex);
+                                foundNewTriangle = true;
+                            }
+                        }
+                    }
+                    triIndices.AddRange(newTriIndices);
+                    
+                }
+
+                var colorIndex = ColorManager.Instance.FieldPainted(paintColor);
+
+                var colorsNew = mesh.colors;
+
+                foreach (var triIndex in triIndices)
+                {
+                    dmesh.SetTriangleGroup(triIndex, colorIndex);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        colorsNew[meshtriangles[triIndex * 3 + i]] = paintColor;
+                    }
                 }
                 mesh.colors = colorsNew;
 
-                var triangles = GetComponent<Generate>().allTriangles;
-
-                var submeshIndex = int.Parse(mesh.name);
-                var paintedTri = triangles.Where(tri =>
-                    tri.subMeshNumber == submeshIndex
-                && tri.vertexNumberOfA == hit.triangleIndex * 3);
-                paintedTri.First().color = paintColor;
-                ColorManager.Instance.FieldPainted(paintColor);
             }
         }
+    }
+
+    private bool IsInRange(DMesh3 mesh,int triIndexOriginal, int triIndex, double range)
+    {
+        var triOriginal = mesh.GetTriCentroid(triIndexOriginal);
+        var tri = mesh.GetTriangle(triIndex);
+        var v1 = mesh.GetVertex(tri.a);
+        var v2 = mesh.GetVertex(tri.b);
+        var v3 = mesh.GetVertex(tri.c);
+        var rangeSquared = Math.Pow(range, 2);
+        if (v1.DistanceSquared(triOriginal) < rangeSquared) return true;
+        if (v2.DistanceSquared(triOriginal) < rangeSquared) return true;
+        if (v3.DistanceSquared(triOriginal) < rangeSquared) return true;
+        return false;
     }
 
 }

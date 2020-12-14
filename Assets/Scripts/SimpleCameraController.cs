@@ -10,7 +10,7 @@ namespace UnityTemplateProjects
 {
     public class SimpleCameraController : MonoBehaviour
     {
-        class CameraState
+        public class CameraState
         {
             public float yaw;
             public float pitch;
@@ -56,7 +56,7 @@ namespace UnityTemplateProjects
             }
         }
         
-        CameraState m_TargetCameraState = new CameraState();
+        public CameraState m_TargetCameraState = new CameraState();
         CameraState m_InterpolatingCameraState = new CameraState();
 
         [Header("Movement Settings")]

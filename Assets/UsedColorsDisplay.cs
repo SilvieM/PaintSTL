@@ -9,9 +9,6 @@ public class UsedColorsDisplay : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //var colorBox = Resources.Load<GameObject>("ColorBox");
-        //var instantiated = Instantiate(colorBox, transform);
-        //instantiated.GetComponent<Image>().color = Color.cyan;
         ColorManager.Instance.OnColorsChanged += OnColorsChange;
     }
 

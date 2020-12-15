@@ -94,13 +94,8 @@ namespace Assets.g3UnityUtils
             }
 
             unityMesh.vertices = vertices.ToArray();
-            //if (m.HasVertexNormals)
-            //    unityMesh.normals = (m.HasVertexNormals) ? toVector3Array(m.NormalsBuffer) : null;
-            //if (m.HasVertexColors)
-              //  unityMesh.colors = dvector_to_color(m.ColorsBuffer);
             if (m.HasVertexUVs)
                 unityMesh.uv = toVector2Array(m.UVBuffer);
-            //unityMesh.triangles = dvector_to_int(m.TrianglesBuffer);
             unityMesh.triangles = triangles.ToArray();
             unityMesh.colors = colorsToAdd.ToArray();
             if (colors != null)
@@ -118,7 +113,7 @@ namespace Assets.g3UnityUtils
             }
             else unityMesh.colors = colorsToAdd.ToArray();
             //if (m.HasVertexNormals == false)
-            unityMesh.RecalculateNormals(); //TODO
+            unityMesh.RecalculateNormals(); //TODO?
 
             return unityMesh;
         }

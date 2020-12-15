@@ -12,27 +12,24 @@ using UnityEngine;
 
 public class PeprAlgorithm : Algorithm
 {
-    //represents one Original Triangle and holds infos to all corresponding
-    //internal class PeprStatusTri
-    //{
-    //    //The outer tri in old mesh that will be deleted
-    //    public int idOldMeshOuter;
-    //    //the outer tri in new mesh (direct copy of deleted one)
-    //    public int idNewMeshOuter;
-    //    //the newly generated (offsetted) tri in old mesh
-    //    public int idOldMeshInner;
-    //    //the inner (cut-side) tri in new mesh
-    //    public int idNewMeshInner;
-    //}
+
     public class PeprStatusVert
     {
-        //The outer vert in old mesh that might be deleted
+        /// <summary>
+        /// The outer vert in old mesh that might be deleted
+        /// </summary>
         public int idOldMeshOuter;
-        //the outer vert in new mesh (direct copy of deleted one)
+        /// <summary>
+        /// the outer vert in new mesh (direct copy of deleted one)
+        /// </summary>
         public int? idNewMeshOuter;
-        //the newly generated (offsetted) vert in old mesh
+        /// <summary>
+        /// the newly generated (offsetted) vert in old mesh
+        /// </summary>
         public int? idOldMeshInner;
-        //the inner (cut-side) vert in new mesh
+        /// <summary>
+        /// the inner (cut-side) vert in new mesh
+        /// </summary>
         public int? idNewMeshInner;
     }
 

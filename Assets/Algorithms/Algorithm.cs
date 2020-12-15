@@ -49,10 +49,6 @@ public class Algorithm
         if (near_tid != DMesh3.InvalidID)
         {
             return false;
-            //DistPoint3Triangle3 dist = MeshQueries.TriangleDistance(mesh, near_tid, position);
-            //Vector3d nearest_pt = dist.TriangleClosest;
-            //if (dist.DistanceSquared > 3) return true;
-            //else return false;
         }
 
         return true;
@@ -67,8 +63,6 @@ public class Algorithm
         int near_tid = tree.FindNearestTriangle(position, 3f); //TODO scale the max dist by SDF or so
         if (near_tid != DMesh3.InvalidID)
         {
-            //var nearTri = mesh.
-            //GetTriangle(near_tid);
             return -tree.Mesh.GetTriNormal(near_tid);
         }
 

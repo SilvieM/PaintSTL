@@ -16,7 +16,6 @@ public class BrushSizeSlider : MonoBehaviour
 
     private void OnSliderWasChanged()
     {
-        //Debug.Log(mainSlider.value);
         OnMeshClick[] components = GameObject.FindObjectsOfType<OnMeshClick>();
         foreach (var onMeshClick in components)
         {

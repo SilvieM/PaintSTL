@@ -88,19 +88,6 @@ public class InterfaceFunctions : MonoBehaviour
         }
     }
 
-    public void MovePoint()
-    {
-        ErrorMessage("abc");
-    }
-
-    public void DisplayNormals()
-    {
-        var objects = GameObject.FindObjectsOfType<Generate>();
-        foreach (var generate in objects)
-        {
-            //generate.DisplayNormals();
-        }
-    }
 
     public void Cut()
     {
@@ -114,9 +101,6 @@ public class InterfaceFunctions : MonoBehaviour
                 Debug.Log($"Cutting {cutSettingData.ColorNum} with Algo {cutSettingData.algo}");
             }
         }
-        //TODO get all colors and their settings
-        
-        
     }
 
 

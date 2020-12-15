@@ -24,7 +24,6 @@ public class Import : MonoBehaviour
     public void ImportSTL()
     {
         string path = EditorUtility.OpenFilePanel("Import STL File", "", "stl");
-        GameObject created = null;
         if (path.Length == 0)
         {
             return;

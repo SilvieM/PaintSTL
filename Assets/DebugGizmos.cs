@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace Assets
 {
-    public static class DrawArrow
+    public static class DebugGizmos
     {
-        public static void ForGizmo(Vector3 pos, Vector3 direction, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
+        public static void ArrowForGizmo(Vector3 pos, Vector3 direction, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
         {
             Gizmos.DrawRay(pos, direction);
 
@@ -16,7 +16,7 @@ namespace Assets
             Gizmos.DrawRay(pos + direction, left * arrowHeadLength);
         }
 
-        public static void ForGizmo(Vector3 pos, Vector3 direction, Color color, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
+        public static void ArrowForGizmo(Vector3 pos, Vector3 direction, Color color, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
         {
             Gizmos.color = color;
             Gizmos.DrawRay(pos, direction);
@@ -27,7 +27,7 @@ namespace Assets
             Gizmos.DrawRay(pos + direction, left * arrowHeadLength);
         }
 
-        public static void ForDebug(Vector3 pos, Vector3 direction, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
+        public static void ArrowForDebug(Vector3 pos, Vector3 direction, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
         {
             Debug.DrawRay(pos, direction);
 
@@ -36,7 +36,7 @@ namespace Assets
             Debug.DrawRay(pos + direction, right * arrowHeadLength);
             Debug.DrawRay(pos + direction, left * arrowHeadLength);
         }
-        public static void ForDebug(Vector3 pos, Vector3 direction, Color color, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
+        public static void ArrowForDebug(Vector3 pos, Vector3 direction, Color color, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
         {
             Debug.DrawRay(pos, direction, color);
 
@@ -58,7 +58,6 @@ namespace Assets
 
         public static void DrawBoundingBox(AxisAlignedBox3d bounds, Transform transform)
         {
-            //Debug.DrawLine(transform.TransformPoint(bounds.Min.toVector3()), transform.TransformPoint(bounds.Max.toVector3()), Color.red, 5, false);
             var min = bounds.Min.toVector3();
             var max = bounds.Max.toVector3();
             var bottomRightBack = new Vector3(max.x, min.y,min.z);

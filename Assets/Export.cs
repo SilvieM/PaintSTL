@@ -37,8 +37,6 @@ public class Export : MonoBehaviour
             num++;
             StartCoroutine(ExportOneFile(generate, path, num));
         }
-        
-
     }
 
     private IEnumerator ExportOneFile(Generate generate, string path, int num)

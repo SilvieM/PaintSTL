@@ -80,8 +80,6 @@ public class OnePointAlgorithm : Algorithm
     private void AddTriangle(DMesh3 currentMesh, int openEdge, int centerPoint, int currentGid)
     {
         var edge = currentMesh.GetOrientedBoundaryEdgeV(openEdge);
-        //var triangle = new Triangle3d(currentMesh.GetVertex(edge.b), currentMesh.GetVertex(edge.a), currentMesh.GetVertex(centerPoint));
-        //if(this.CheckIntersection(currentMesh, triangle)) Debug.Log("Intersection found");
         currentMesh.AppendTriangle(edge.b, edge.a, centerPoint, currentGid);
     }
 }

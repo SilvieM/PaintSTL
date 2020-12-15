@@ -16,6 +16,7 @@ public class Generate : MonoBehaviour
     public bool isImported;
     public DMesh3 originalMesh;
     public Vector3 center;
+    public Vector3 centerInWorldCoords => transform.TransformPoint(center);
 
     public void Start()
     {

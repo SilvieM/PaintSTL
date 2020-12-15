@@ -38,10 +38,11 @@ public class Import : MonoBehaviour
         DMesh3 readMesh = StandardMeshReader.ReadMesh(path);
         readMesh.EnableTriangleGroups();
         readMesh.EnableVertexColors(new Vector3f(1, 1, 1));
-        StaticFunctions.SpawnNewObject(readMesh, true);
-        var bounds = readMesh.GetBounds();
-        Camera.main.transform.LookAt(bounds.Center.toVector3());
-
+        var obj = StaticFunctions.SpawnNewObject(readMesh, true);
+        var center = obj.GetComponent<Generate>().centerInWorldCoords;
+        Camera.main.transform.position = center + obj.transform.TransformPoint(readMesh.GetBounds().Extents.toVector3())*2;
+        Camera.main.transform.LookAt(center);
+        DebugGizmos.DrawBoundingBox(readMesh.GetBounds(), obj.transform);
         Camera.main.GetComponent<SimpleCameraController>().m_TargetCameraState.SetFromTransform(Camera.main.transform);
         yield return null;
     }

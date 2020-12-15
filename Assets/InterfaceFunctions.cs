@@ -110,7 +110,7 @@ public class InterfaceFunctions : MonoBehaviour
         {
             foreach (var generate in objects)
             {
-                generate.Cut(cutSettingData.algo, cutSettingData.ColorNum, cutSettingData.depth);
+                generate.Cut(cutSettingData);
                 Debug.Log($"Cutting {cutSettingData.ColorNum} with Algo {cutSettingData.algo}");
             }
         }

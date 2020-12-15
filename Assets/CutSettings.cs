@@ -29,9 +29,10 @@ public class CutSettings : MonoBehaviour
         {
             var child = children[index];
             var depth = Double.Parse(child.GetComponentInChildren<InputField>().text);
-            var dropdown = child.GetComponentInChildren<TMPro.TMP_Dropdown>();
-            var algo = (Algorithm.AlgorithmType) dropdown.value;
-            data.Add(new CutSettingData(index+1, algo, depth )); //because the base color was left out
+            var dropdowns = child.GetComponentsInChildren<TMPro.TMP_Dropdown>();
+            var algo = (Algorithm.AlgorithmType) dropdowns[0].value;
+            var modifier = (CutSettingData.Modifier) dropdowns[1].value;
+            data.Add(new CutSettingData(index+1, algo, depth, modifier )); //because the base color was left out
             
         }
 

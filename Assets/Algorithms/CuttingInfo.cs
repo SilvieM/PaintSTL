@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Assets.Classes;
 using g3;
 
 namespace Assets.Algorithms
@@ -11,9 +12,6 @@ namespace Assets.Algorithms
     {
         public DMesh3 mesh;
         public DMesh3 oldMesh;
-        public int colorId;
-        public double depth;
-        public bool computeCorrectPosition=false;
-        public bool modelDepthDependantDepth = true;
+        public CutSettingData data;
     }
 }

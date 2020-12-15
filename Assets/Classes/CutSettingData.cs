@@ -11,12 +11,16 @@ namespace Assets.Classes
         public int ColorNum;
         public Algorithm.AlgorithmType algo;
         public double depth;
+        public Modifier modifier;
 
-        public CutSettingData(int colorNum, Algorithm.AlgorithmType algo, double depth)
+        public CutSettingData(int colorNum, Algorithm.AlgorithmType algo, double depth, Modifier modifier)
         {
             ColorNum = colorNum;
             this.algo = algo;
             this.depth = depth;
+            this.modifier = modifier;
         }
+
+        public enum Modifier { None, DepthDependant, Compute }
     }
 }

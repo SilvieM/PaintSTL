@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using Assets;
 using Assets.Algorithms;
+using Assets.Classes;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
 using g3;
@@ -37,7 +38,7 @@ public class PeprAlgorithm : Algorithm
 
     public override DMesh3 Cut(CuttingInfo info)
     {
-        var painted = FindPaintedTriangles(info.mesh, info.colorId);
+        var painted = FindPaintedTriangles(info.mesh, info.data.ColorNum);
         if (painted.Count <= 0) return info.mesh;
         var newMesh = new DMesh3();
         newMesh.EnableTriangleGroups();
@@ -59,7 +60,7 @@ public class PeprAlgorithm : Algorithm
             if (stati[triangle.b].idNewMeshOuter == null) stati[triangle.b].idNewMeshOuter = newMesh.AppendVertex(vertex2);
             if (stati[triangle.c].idNewMeshOuter == null) stati[triangle.c].idNewMeshOuter = newMesh.AppendVertex(vertex3);
 
-            var newTriOuter = newMesh.AppendTriangle(stati[triangle.a].idNewMeshOuter.Value, stati[triangle.b].idNewMeshOuter.Value, stati[triangle.c].idNewMeshOuter.Value, info.colorId);
+            var newTriOuter = newMesh.AppendTriangle(stati[triangle.a].idNewMeshOuter.Value, stati[triangle.b].idNewMeshOuter.Value, stati[triangle.c].idNewMeshOuter.Value, info.data.ColorNum);
             
 
             var normal1 = info.mesh.CalcVertexNormal(triangle.a);
@@ -67,9 +68,9 @@ public class PeprAlgorithm : Algorithm
             var normal3 = info.mesh.CalcVertexNormal(triangle.c);
 
             
-            var pos1 = vertex1 - normal1 * info.depth;
-            var pos2 = vertex2 - normal2 * info.depth;
-            var pos3 = vertex3 - normal3 * info.depth;
+            var pos1 = vertex1 - normal1 * info.data.depth;
+            var pos2 = vertex2 - normal2 * info.data.depth;
+            var pos3 = vertex3 - normal3 * info.data.depth;
             //if (info.modelDepthDependantDepth)
             //{
             //    pos1 = MovePointDepthDependant(info, vertex1, normal1);
@@ -85,14 +86,14 @@ public class PeprAlgorithm : Algorithm
             if (stati[triangle.c].idOldMeshInner == null) stati[triangle.c].idOldMeshInner = info.mesh.AppendVertex(pos3);
 
 
-            var color = ColorManager.Instance.GetColorForId(info.colorId).toVector3f();
+            var color = ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f();
             newMesh.SetVertexColor(stati[triangle.a].idNewMeshInner.Value, color);
             newMesh.SetVertexColor(stati[triangle.b].idNewMeshInner.Value, color);
             newMesh.SetVertexColor(stati[triangle.c].idNewMeshInner.Value, color);
             info.mesh.SetVertexColor(stati[triangle.a].idOldMeshInner.Value, color);
             info.mesh.SetVertexColor(stati[triangle.b].idOldMeshInner.Value, color);
             info.mesh.SetVertexColor(stati[triangle.c].idOldMeshInner.Value, color);
-            var newTriInner = newMesh.AppendTriangle(stati[triangle.a].idNewMeshInner.Value, stati[triangle.c].idNewMeshInner.Value, stati[triangle.b].idNewMeshInner.Value, info.colorId);
+            var newTriInner = newMesh.AppendTriangle(stati[triangle.a].idNewMeshInner.Value, stati[triangle.c].idNewMeshInner.Value, stati[triangle.b].idNewMeshInner.Value, info.data.ColorNum);
             var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value, stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value, 0);
         }
         painted.ForEach(index => info.mesh.RemoveTriangle(index));
@@ -102,7 +103,7 @@ public class PeprAlgorithm : Algorithm
         {
             var edgeOriented = newMesh.GetOrientedBoundaryEdgeV(openEdge);
             int thirdPoint = Corresponding(stati,edgeOriented.a, true);
-            var newTriSide = newMesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, info.colorId);
+            var newTriSide = newMesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, info.data.ColorNum);
         }
         var openEdgesOldMesh = info.mesh.BoundaryEdgeIndices();
         foreach (var openEdge in openEdgesOldMesh)
@@ -111,8 +112,8 @@ public class PeprAlgorithm : Algorithm
             int thirdPoint = Corresponding(stati, edgeOriented.a, false);
             var newTriSide = info.mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, 0);
         }
-        //if (info.computeCorrectPosition) MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh);
-        if(info.modelDepthDependantDepth) MoveAllPointsDepthDependant(info, newMesh, stati);
+        //if (info.computeCorrectPosition) MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh); //TODO
+        if(info.data.modifier == CutSettingData.Modifier.DepthDependant) MoveAllPointsDepthDependant(info, newMesh, stati);
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         return info.mesh;
     }

@@ -101,7 +101,7 @@ public class Algorithm
         if (!tree.IsInside(position))
         {
             Debug.Log("Point outside of mesh");
-            var getInside = GetInsideShell(tree, position, info.colorId);
+            var getInside = GetInsideShell(tree, position, info.data.ColorNum);
             if (getInside != null){
                 position += getInside.Value;
             Debug.Log($"GetInside. New Pos: {position} ");
@@ -112,7 +112,7 @@ public class Algorithm
             }
 
         }
-        var getAway = this.GetAwayFromShellDirection(tree, position, info.colorId);
+        var getAway = this.GetAwayFromShellDirection(tree, position, info.data.ColorNum);
         int count = 0;
         while (getAway != null)
         {
@@ -138,7 +138,7 @@ public class Algorithm
                 StaticFunctions.ErrorMessage("The object is too thin to find a suitable position. Might cause intersections.");
                 break;
             }
-            getAway = GetAwayFromShellDirection(tree, position, info.colorId);
+            getAway = GetAwayFromShellDirection(tree, position, info.data.ColorNum);
         }
         return position;
     }
@@ -146,7 +146,7 @@ public class Algorithm
     internal void MoveAllPointsDepthDependant(CuttingInfo info, DMesh3 newMesh, Dictionary<int, PeprAlgorithm.PeprStatusVert> stati)
     {
         var tree = new DMeshAABBTree3(info.oldMesh, true);
-        tree.TriangleFilterF = i => tree.Mesh.GetTriangleGroup(i) != info.colorId; 
+        tree.TriangleFilterF = i => tree.Mesh.GetTriangleGroup(i) != info.data.ColorNum; 
         foreach (var status in stati)
         {
             var shellPoint = newMesh.GetVertex(status.Value.idNewMeshOuter.Value);
@@ -159,7 +159,7 @@ public class Algorithm
             {
                 IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(info.oldMesh, hit_tid, ray);
                 double hit_dist = shellPoint.Distance(ray.PointAt(intr.RayParameter));
-                position = shellPoint - normal * hit_dist * (info.depth / 100);
+                position = shellPoint - normal * hit_dist * (info.data.depth / 100);
                 Debug.Log($"Hit Dist: {hit_dist}");
             }
             else
@@ -184,7 +184,7 @@ public class Algorithm
         {
             IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(info.oldMesh, hit_tid, ray);
             double hit_dist = shellPoint.Distance(ray.PointAt(intr.RayParameter));
-            position = shellPoint-normal * hit_dist * (info.depth / 100);
+            position = shellPoint-normal * hit_dist * (info.data.depth / 100);
             Debug.Log($"Hit Dist: {hit_dist}");
         }
         else

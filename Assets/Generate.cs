@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using Assets;
 using Assets.Algorithms;
+using Assets.Classes;
 using Assets.g3UnityUtils;
 using g3;
 using UnityEngine;
@@ -76,16 +77,22 @@ public class Generate : MonoBehaviour
         center = transform.TransformPoint(mesh.GetBounds().Center.toVector3());
     }
 
-    public void Cut(Algorithm.AlgorithmType type, int colorId, double depth)
+    public void Cut(CutSettingData cutSettings)
     {
-        var algorithm = Algorithm.BuildAlgo(type);
-        StartCoroutine(CutCoroutine(colorId, depth, algorithm));
+        
+        StartCoroutine(CutCoroutine(cutSettings));
     }
 
-    private IEnumerator CutCoroutine(int colorId, double depth, Algorithm algorithm)
+    private IEnumerator CutCoroutine(CutSettingData cutSettings)
     {
-        var newMesh = algorithm.Cut(new CuttingInfo()
-            {mesh = mesh, colorId = colorId, depth = depth, oldMesh = originalMesh});
+        var algorithm = Algorithm.BuildAlgo(cutSettings.algo);
+        var info = new CuttingInfo()
+        {
+            mesh = mesh,
+            oldMesh = originalMesh,
+            data = cutSettings
+        };
+        var newMesh = algorithm.Cut(info);
         mesh = g3UnityUtils.SetGOMesh(gameObject, newMesh);
         yield return null;
     }

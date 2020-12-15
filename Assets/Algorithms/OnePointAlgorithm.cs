@@ -2,6 +2,7 @@
 using System.Linq;
 using Assets;
 using Assets.Algorithms;
+using Assets.Classes;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
 using g3;
@@ -13,7 +14,7 @@ public class OnePointAlgorithm : Algorithm
 
     public override DMesh3 Cut(CuttingInfo info)
     {
-        var painted = FindPaintedTriangles(info.mesh, info.colorId);
+        var painted = FindPaintedTriangles(info.mesh, info.data.ColorNum);
         if (painted.Count <= 0) return info.mesh;
 
         painted.Reverse();
@@ -40,15 +41,15 @@ public class OnePointAlgorithm : Algorithm
 
             var result = info.mesh.RemoveTriangle(paintedTriNum);
             if (result != MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
-            newMesh.AppendTriangle(intA, intB, intC, info.colorId);
+            newMesh.AppendTriangle(intA, intB, intC, info.data.ColorNum);
         }
 
         var avgNormal = normals.Average();
         var avgVertices = vertices.Average();
-        var newPoint = avgVertices - avgNormal* info.depth;
+        var newPoint = avgVertices - avgNormal* info.data.depth;
 
-        if(info.computeCorrectPosition) newPoint = MovePointInsideAndAwayFromShell(info, newPoint);
-        if (info.modelDepthDependantDepth) newPoint = MovePointDepthDependant(info, avgVertices, avgNormal);
+        if(info.data.modifier == CutSettingData.Modifier.Compute) newPoint = MovePointInsideAndAwayFromShell(info, newPoint);
+        if (info.data.modifier == CutSettingData.Modifier.DepthDependant) newPoint = MovePointDepthDependant(info, avgVertices, avgNormal);
         
 
 
@@ -65,12 +66,12 @@ public class OnePointAlgorithm : Algorithm
         var eidsNewMesh = newMesh.BoundaryEdgeIndices().ToList();
         foreach (var openEdge in eidsNewMesh)
         {
-            AddTriangle(newMesh, openEdge, newPointId, info.colorId);
+            AddTriangle(newMesh, openEdge, newPointId, info.data.ColorNum);
         }
 
-        info.mesh.SetVertexColor(newPointIdInOldMesh, ColorManager.Instance.GetColorForId(info.colorId).toVector3f());
+        info.mesh.SetVertexColor(newPointIdInOldMesh, ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f());
 
-        newMesh.SetVertexColor(newPointId, ColorManager.Instance.GetColorForId(info.colorId).toVector3f());
+        newMesh.SetVertexColor(newPointId, ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f());
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
 
         return info.mesh;

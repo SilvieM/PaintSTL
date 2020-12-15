@@ -143,6 +143,35 @@ public class Algorithm
         return position;
     }
 
+    internal void MoveAllPointsDepthDependant(CuttingInfo info, DMesh3 newMesh, Dictionary<int, PeprAlgorithm.PeprStatusVert> stati)
+    {
+        var tree = new DMeshAABBTree3(info.oldMesh, true);
+        tree.TriangleFilterF = i => tree.Mesh.GetTriangleGroup(i) != info.colorId; 
+        foreach (var status in stati)
+        {
+            var shellPoint = newMesh.GetVertex(status.Value.idNewMeshOuter.Value);
+            var position = shellPoint;
+            var normal = info.oldMesh.CalcVertexNormal(status.Value.idOldMeshOuter);
+            Ray3d ray = new Ray3d(shellPoint-normal*0.1, -normal); //tiny shift to make sure it's not hitting itself
+            int hit_tid = tree.FindNearestHitTriangle(ray);
+            Debug.Log("Hit " + hit_tid);
+            if (hit_tid != DMesh3.InvalidID)
+            {
+                IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(info.oldMesh, hit_tid, ray);
+                double hit_dist = shellPoint.Distance(ray.PointAt(intr.RayParameter));
+                position = shellPoint - normal * hit_dist * (info.depth / 100);
+                Debug.Log($"Hit Dist: {hit_dist}");
+            }
+            else
+            {
+                position = shellPoint + 0.1 * normal; //a thin extrusion should be there
+                StaticFunctions.ErrorMessage("Depth Dependant Calculation has encountered an error");
+            }
+            info.mesh.SetVertex(status.Value.idOldMeshInner.Value, position);
+            newMesh.SetVertex(status.Value.idNewMeshInner.Value, position);
+        }
+    }
+
     internal Vector3d MovePointDepthDependant(CuttingInfo info, Vector3d shellPoint, Vector3d normal)
     {
         normal = normal.Normalized;

@@ -112,6 +112,7 @@ public class PeprAlgorithm : Algorithm
             var newTriSide = info.mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, 0);
         }
         //if (info.computeCorrectPosition) MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh);
+        if(info.modelDepthDependantDepth) MoveAllPointsDepthDependant(info, newMesh, stati);
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         return info.mesh;
     }

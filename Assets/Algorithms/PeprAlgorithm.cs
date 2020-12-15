@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using Assets;
 using Assets.Algorithms;
 using Assets.g3UnityUtils;
@@ -10,6 +11,30 @@ using UnityEngine;
 
 public class PeprAlgorithm : Algorithm
 {
+    //represents one Original Triangle and holds infos to all corresponding
+    //internal class PeprStatusTri
+    //{
+    //    //The outer tri in old mesh that will be deleted
+    //    public int idOldMeshOuter;
+    //    //the outer tri in new mesh (direct copy of deleted one)
+    //    public int idNewMeshOuter;
+    //    //the newly generated (offsetted) tri in old mesh
+    //    public int idOldMeshInner;
+    //    //the inner (cut-side) tri in new mesh
+    //    public int idNewMeshInner;
+    //}
+    public class PeprStatusVert
+    {
+        //The outer vert in old mesh that might be deleted
+        public int idOldMeshOuter;
+        //the outer vert in new mesh (direct copy of deleted one)
+        public int? idNewMeshOuter;
+        //the newly generated (offsetted) vert in old mesh
+        public int? idOldMeshInner;
+        //the inner (cut-side) vert in new mesh
+        public int? idNewMeshInner;
+    }
+
     public override DMesh3 Cut(CuttingInfo info)
     {
         var painted = FindPaintedTriangles(info.mesh, info.colorId);
@@ -18,22 +43,24 @@ public class PeprAlgorithm : Algorithm
         newMesh.EnableTriangleGroups();
         newMesh.EnableVertexColors(new Vector3f(1, 1, 1));
 
-        var verticesInNewMesh = new Dictionary<Vector3d, int>();
-        var verticesInOldMesh = new Dictionary<Vector3d, int>();
-        var InnerToOuter = new Dictionary<int, int>();
-        var InnerToOuterOldMesh = new Dictionary<int, int>();
+        var stati = new Dictionary<int,PeprStatusVert>();
+
         foreach (var triIndex in painted)
         {
             var triangle = info.mesh.GetTriangle(triIndex);
             var vertex1 = info.mesh.GetVertex(triangle.a);
             var vertex2 = info.mesh.GetVertex(triangle.b);
             var vertex3 = info.mesh.GetVertex(triangle.c);
+            stati.AppendIfNotExists(triangle.a);
+            stati.AppendIfNotExists(triangle.b);
+            stati.AppendIfNotExists(triangle.c);
 
-            var intAOuter = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex1, newMesh);
-            var intBOuter = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex2, newMesh); 
-            var intCOuter = StaticFunctions.AppendIfNotExists(verticesInNewMesh, vertex3, newMesh);
+            if(stati[triangle.a].idNewMeshOuter==null) stati[triangle.a].idNewMeshOuter = newMesh.AppendVertex(vertex1);
+            if (stati[triangle.b].idNewMeshOuter == null) stati[triangle.b].idNewMeshOuter = newMesh.AppendVertex(vertex2);
+            if (stati[triangle.c].idNewMeshOuter == null) stati[triangle.c].idNewMeshOuter = newMesh.AppendVertex(vertex3);
 
-            var newTriOuter = newMesh.AppendTriangle(intAOuter, intBOuter, intCOuter, info.colorId);
+            var newTriOuter = newMesh.AppendTriangle(stati[triangle.a].idNewMeshOuter.Value, stati[triangle.b].idNewMeshOuter.Value, stati[triangle.c].idNewMeshOuter.Value, info.colorId);
+            
 
             var normal1 = info.mesh.CalcVertexNormal(triangle.a);
             var normal2 = info.mesh.CalcVertexNormal(triangle.b);
@@ -50,27 +77,23 @@ public class PeprAlgorithm : Algorithm
             //    pos3 = MovePointDepthDependant(info, vertex3, normal3);
             //}
 
-            var intAInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, pos1, newMesh);
-            var intBInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, pos3, newMesh); //swapping to mirror
-            var intCInner = StaticFunctions.AppendIfNotExists(verticesInNewMesh, pos2, newMesh);
-            var intAInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, pos1, info.mesh);
-            var intBInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, pos2, info.mesh);
-            var intCInnerOldMesh = StaticFunctions.AppendIfNotExists(verticesInOldMesh, pos3, info.mesh);
+            if (stati[triangle.a].idNewMeshInner == null) stati[triangle.a].idNewMeshInner = newMesh.AppendVertex(pos1); 
+            if (stati[triangle.b].idNewMeshInner == null) stati[triangle.b].idNewMeshInner = newMesh.AppendVertex(pos2);
+            if (stati[triangle.c].idNewMeshInner == null) stati[triangle.c].idNewMeshInner = newMesh.AppendVertex(pos3); //TODO it was flipped from here before, but we have to flip when making the triangles
+            if (stati[triangle.a].idOldMeshInner == null) stati[triangle.a].idOldMeshInner = info.mesh.AppendVertex(pos1);
+            if (stati[triangle.b].idOldMeshInner == null) stati[triangle.b].idOldMeshInner = info.mesh.AppendVertex(pos2);
+            if (stati[triangle.c].idOldMeshInner == null) stati[triangle.c].idOldMeshInner = info.mesh.AppendVertex(pos3);
+
+
             var color = ColorManager.Instance.GetColorForId(info.colorId).toVector3f();
-            newMesh.SetVertexColor(intAInner, color);
-            newMesh.SetVertexColor(intBInner, color);
-            newMesh.SetVertexColor(intCInner, color);
-            info.mesh.SetVertexColor(intAInnerOldMesh, color);
-            info.mesh.SetVertexColor(intBInnerOldMesh, color);
-            info.mesh.SetVertexColor(intCInnerOldMesh, color);
-            var newTriInner = newMesh.AppendTriangle(intAInner, intBInner, intCInner, info.colorId);
-            var newTriInnerOldMesh = info.mesh.AppendTriangle(intAInnerOldMesh, intBInnerOldMesh, intCInnerOldMesh, 0);
-            InnerToOuter.AddIfNotExists(intAOuter, intAInner);
-            InnerToOuter.AddIfNotExists(intBOuter, intCInner);
-            InnerToOuter.AddIfNotExists(intCOuter, intBInner);
-            InnerToOuterOldMesh.AddIfNotExists(triangle.a, intAInnerOldMesh);
-            InnerToOuterOldMesh.AddIfNotExists(triangle.b, intBInnerOldMesh);
-            InnerToOuterOldMesh.AddIfNotExists(triangle.c, intCInnerOldMesh);
+            newMesh.SetVertexColor(stati[triangle.a].idNewMeshInner.Value, color);
+            newMesh.SetVertexColor(stati[triangle.b].idNewMeshInner.Value, color);
+            newMesh.SetVertexColor(stati[triangle.c].idNewMeshInner.Value, color);
+            info.mesh.SetVertexColor(stati[triangle.a].idOldMeshInner.Value, color);
+            info.mesh.SetVertexColor(stati[triangle.b].idOldMeshInner.Value, color);
+            info.mesh.SetVertexColor(stati[triangle.c].idOldMeshInner.Value, color);
+            var newTriInner = newMesh.AppendTriangle(stati[triangle.a].idNewMeshInner.Value, stati[triangle.c].idNewMeshInner.Value, stati[triangle.b].idNewMeshInner.Value, info.colorId);
+            var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value, stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value, 0);
         }
         painted.ForEach(index => info.mesh.RemoveTriangle(index));
 
@@ -78,17 +101,17 @@ public class PeprAlgorithm : Algorithm
         foreach (var openEdge in openEdges)
         {
             var edgeOriented = newMesh.GetOrientedBoundaryEdgeV(openEdge);
-            int thirdPoint = Corresponding(InnerToOuter,edgeOriented.a);
+            int thirdPoint = Corresponding(stati,edgeOriented.a, true);
             var newTriSide = newMesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, info.colorId);
         }
         var openEdgesOldMesh = info.mesh.BoundaryEdgeIndices();
         foreach (var openEdge in openEdgesOldMesh)
         {
             var edgeOriented = info.mesh.GetOrientedBoundaryEdgeV(openEdge);
-            int thirdPoint = Corresponding(InnerToOuterOldMesh, edgeOriented.a);
+            int thirdPoint = Corresponding(stati, edgeOriented.a, false);
             var newTriSide = info.mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, 0);
         }
-        if (info.computeCorrectPosition) MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh);
+        //if (info.computeCorrectPosition) MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh);
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         return info.mesh;
     }
@@ -106,12 +129,22 @@ public class PeprAlgorithm : Algorithm
         }
     }
 
-    private int Corresponding(Dictionary<int, int> InnerToOuter, int searchFor)
+    private int Corresponding(Dictionary<int, PeprStatusVert> stati, int searchFor, bool inNewMesh)
     {
-        if (InnerToOuter.ContainsKey(searchFor)) return InnerToOuter[searchFor];
-        if (InnerToOuter.ContainsValue(searchFor))
-            return InnerToOuter.First(tuple => tuple.Value == searchFor).Key;
-        else return Int32.MaxValue;
-
+        if (inNewMesh)
+        {
+            var found = stati.FirstOrDefault(status => status.Value.idNewMeshInner == searchFor);
+            if (found.Key != 0) return found.Value.idNewMeshOuter.Value;
+            var found2 = stati.FirstOrDefault(status => status.Value.idNewMeshOuter == searchFor);
+            if (found2.Key !=0) return found2.Value.idNewMeshInner.Value;
+        }
+        else
+        {
+            if (stati.ContainsKey(searchFor)) return stati[searchFor].idOldMeshInner.Value;
+            var found = stati.FirstOrDefault(status => status.Value.idOldMeshInner == searchFor);
+            if (found.Key != 0) return found.Value.idOldMeshOuter;
+        }
+        Debug.Log("Corresponding failed");
+        return Int32.MaxValue;
     }
 }

@@ -58,15 +58,18 @@ public class InterfaceFunctions : MonoBehaviour
         var paintables = GameObject.FindObjectsOfType<OnMeshClick>();
         foreach (var onMeshClick in paintables)
         {
-            onMeshClick.enabled=true;
+            onMeshClick.enabled = true;
         }
+        ResetCutted();
+    }
+
+    public void ResetCutted()
+    {
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
             generate.Revert();
         }
-
-
     }
 
     public void FixMyPaintJob()
@@ -91,6 +94,7 @@ public class InterfaceFunctions : MonoBehaviour
 
     public void Cut()
     {
+        ResetCutted();
         var objects = GameObject.FindObjectsOfType<Generate>();
         var settings = cutSettings.GetComponent<CutSettings>().GetSettings();
         foreach (var cutSettingData in settings)

@@ -3,17 +3,21 @@ using System.Collections;
 using System.Collections.Generic;
 using Assets;
 using Assets.Classes;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class CutSettings : MonoBehaviour
 {
-    public List<GameObject> children;
+    public List<GameObject> cutSettingColorGameObjects;
+
+    public GameObject cutSettingsContainer;
+
+    public GameObject minDepthField;
 
     // Start is called before the first frame update
     void Start()
     {
-        
     }
 
     // Update is called once per frame
@@ -25,14 +29,16 @@ public class CutSettings : MonoBehaviour
     public List<CutSettingData> GetSettings()
     {
         var data = new List<CutSettingData>();
-        for (var index = 0; index < children.Count; index++)
+        var minDepth = Double.Parse(minDepthField.GetComponent<TMPro.TMP_InputField>().text);
+
+        for (var index = 0; index < cutSettingColorGameObjects.Count; index++)
         {
-            var child = children[index];
-            var depth = Double.Parse(child.GetComponentInChildren<InputField>().text);
+            var child = cutSettingColorGameObjects[index];
+            var depth = Double.Parse(child.GetComponentInChildren<TMPro.TMP_InputField>().text);
             var dropdowns = child.GetComponentsInChildren<TMPro.TMP_Dropdown>();
             var algo = (Algorithm.AlgorithmType) dropdowns[0].value;
             var modifier = (CutSettingData.Modifier) dropdowns[1].value;
-            data.Add(new CutSettingData(index+1, algo, depth, modifier )); //because the base color was left out
+            data.Add(new CutSettingData(index+1, algo, depth, modifier, minDepth )); //because the base color was left out we need index+1
             
         }
 
@@ -41,16 +47,16 @@ public class CutSettings : MonoBehaviour
 
     public void Populate()
     {
-        var childCount = transform.childCount;
+        var childCount = cutSettingsContainer.transform.childCount;
         GameObject colors = (GameObject)Resources.Load("CutSettingColor");
 
         var list = ColorManager.Instance.GetUsedColorsWithoutBase();
         for (var index = childCount; index < list.Count; index++)
         {
             var usedColor = list[index];
-            var instance = Instantiate(colors, transform);
+            var instance = Instantiate(colors, cutSettingsContainer.transform);
             instance.GetComponentInChildren<Image>().color = usedColor;
-            children.Add(instance);
+            cutSettingColorGameObjects.Add(instance);
         }
     }
 }

@@ -11,7 +11,16 @@ namespace Assets.Static_Classes
             var res = Resources.Load("STLMeshMaterial2") as Material;
             var obj = g3UnityUtils.g3UnityUtils.CreateMeshGO("ImportedObject", mesh, null, res);
             obj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            if(isImported) obj.AddComponent<OnMeshClick>(); //cutted objects should not be painted on
+            if(isImported){
+                obj.AddComponent<OnMeshClick>(); //cutted objects should not be painted on
+                obj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            }
+            if (!isImported)
+            {
+                obj.transform.localScale = Vector3.one;
+                obj.transform.SetParent(GameObject.FindGameObjectWithTag("mainObject").transform);
+            }
+            obj.transform.localPosition = Vector3.zero;
             obj.AddComponent<Generate>().MyInit(mesh, isImported);
             return obj;
         }

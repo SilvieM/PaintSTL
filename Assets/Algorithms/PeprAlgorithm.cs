@@ -87,6 +87,7 @@ public class PeprAlgorithm : Algorithm
             var newTriInner = newMesh.AppendTriangle(stati[triangle.a].idNewMeshInner.Value, stati[triangle.c].idNewMeshInner.Value, stati[triangle.b].idNewMeshInner.Value, info.data.ColorNum);
             var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value, stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value, 0);
         }
+        //TODO can use mesh.RemoveTriangles
         painted.ForEach(index => info.mesh.RemoveTriangle(index));
 
         var openEdges = newMesh.BoundaryEdgeIndices();

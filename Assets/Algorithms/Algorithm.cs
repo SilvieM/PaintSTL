@@ -22,13 +22,14 @@ public class Algorithm
 
     public List<int> FindPaintedTriangles(DMesh3 mesh, int colorId)
     {
-        List<int> indices = new List<int>();
-        foreach (var triangleIndex in mesh.TriangleIndices())
-        {
-                if (mesh.GetTriangleGroup(triangleIndex) == colorId)
-                    indices.Add(triangleIndex);
-        }
+        //List<int> indices = new List<int>();
+        //foreach (var triangleIndex in mesh.TriangleIndices())
+        //{
+        //        if (mesh.GetTriangleGroup(triangleIndex) == colorId)
+        //            indices.Add(triangleIndex);
+        //}
 
+        List<int> indices = FaceGroupUtil.FindTrianglesByGroup(mesh, colorId);
         Debug.Log($"Painted Triangles: {indices.Count}");
 
         if (indices.Count <= 0)

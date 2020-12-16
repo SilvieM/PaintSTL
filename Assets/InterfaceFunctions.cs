@@ -121,5 +121,9 @@ public class InterfaceFunctions : MonoBehaviour
         ErrorMsgCanvas.SetActive(false);
     }
 
+    public void ResetCamera()
+    {
+        Camera.main.GetComponent<OrbitingCam>().ResetCam();
+    }
     
 }

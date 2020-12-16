@@ -98,11 +98,11 @@ public class Generate : MonoBehaviour
                 var dir = (this.center - mainObject.center).normalized;
                 Debug.Log($"{dir.x}, {dir.y}, {dir.z}");
                 isInExplodedMode = true;
-                transform.position += dir;
+                transform.localPosition += dir;
             }
             else
             {
-                transform.position = Vector3.zero;
+                transform.localPosition = Vector3.zero;
                 isInExplodedMode = false;
             }
         }

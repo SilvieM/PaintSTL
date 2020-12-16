@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.IO;
 using Assets;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
@@ -39,10 +40,10 @@ public class Import : MonoBehaviour
         DMesh3 readMesh = StandardMeshReader.ReadMesh(path);
 
         //if(readMesh.CheckValidity()) StaticFunctions.ErrorMessage("Imported Model has errors");
-        
+        var filename = Path.GetFileNameWithoutExtension(path);
         readMesh.EnableTriangleGroups();
         readMesh.EnableVertexColors(new Vector3f(1, 1, 1));
-        var obj = StaticFunctions.SpawnNewObject(readMesh, true);
+        var obj = StaticFunctions.SpawnNewObject(readMesh, filename, true);
         var center = obj.GetComponent<Generate>().centerInWorldCoords;
         obj.transform.position = -center; //position object such that center is zero.
         obj.tag = "mainObject";

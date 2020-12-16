@@ -6,10 +6,10 @@ namespace Assets.Static_Classes
 {
     public class StaticFunctions : MonoBehaviour
     {
-        public static GameObject SpawnNewObject(DMesh3 mesh, bool isImported = false)
+        public static GameObject SpawnNewObject(DMesh3 mesh, string name="CutObject", bool isImported = false)
         {
             var res = Resources.Load("STLMeshMaterial2") as Material;
-            var obj = g3UnityUtils.g3UnityUtils.CreateMeshGO("ImportedObject", mesh, null, res);
+            var obj = g3UnityUtils.g3UnityUtils.CreateMeshGO(name, mesh, null, res);
             obj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             if(isImported){
                 obj.AddComponent<OnMeshClick>(); //cutted objects should not be painted on
@@ -17,8 +17,8 @@ namespace Assets.Static_Classes
             }
             if (!isImported)
             {
-                obj.transform.localScale = Vector3.one;
                 obj.transform.SetParent(GameObject.FindGameObjectWithTag("mainObject").transform);
+                obj.transform.localScale = Vector3.one;
             }
             obj.transform.localPosition = Vector3.zero;
             obj.AddComponent<Generate>().MyInit(mesh, isImported);

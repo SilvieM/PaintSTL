@@ -55,12 +55,12 @@ public class Algorithm
     }
 
     //If the position is too close to shell, returns the direction to move away from it to try again. Returns null if not too close
-    internal Vector3d? GetAwayFromShellDirection(DMeshAABBTree3 tree, Vector3d position, int colorToExclude)
+    internal Vector3d? GetAwayFromShellDirection(CuttingInfo info, DMeshAABBTree3 tree, Vector3d position)
     {
 
-        tree.TriangleFilterF = i => tree.Mesh.GetTriangleGroup(i) != colorToExclude;
+        tree.TriangleFilterF = i => tree.Mesh.GetTriangleGroup(i) != info.data.ColorNum;
 
-        int near_tid = tree.FindNearestTriangle(position, 3f); //TODO scale the max dist by SDF or so
+        int near_tid = tree.FindNearestTriangle(position, info.data.minDepth); //TODO scale the max dist by SDF or so
         if (near_tid != DMesh3.InvalidID)
         {
             return -tree.Mesh.GetTriNormal(near_tid);
@@ -106,24 +106,25 @@ public class Algorithm
             }
 
         }
-        var getAway = this.GetAwayFromShellDirection(tree, position, info.data.ColorNum);
+        var getAway = this.GetAwayFromShellDirection(info, tree, position);
         int count = 0;
         while (getAway != null)
         {
-            var howFar = 0.1;
-            Ray3d ray = new Ray3d(position, getAway.Value.Normalized);
-            int hit_tid = tree.FindNearestHitTriangle(ray);
-            Debug.Log("Hit "+hit_tid);
-            if (hit_tid != DMesh3.InvalidID)
-            {
-                IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(info.oldMesh, hit_tid, ray);
-                double hit_dist = position.Distance(ray.PointAt(intr.RayParameter));
-                howFar = hit_dist * 0.2; //going 1/5 the way we can go
-                Debug.Log($"How far: {howFar}");
-            }
+            //var howFar = 0.1;
+            //Ray3d ray = new Ray3d(position, getAway.Value.Normalized);
+            //int hit_tid = tree.FindNearestHitTriangle(ray);
+            //Debug.Log("Hit "+hit_tid);
+            //if (hit_tid != DMesh3.InvalidID)
+            //{
+            //    IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(info.oldMesh, hit_tid, ray);
+            //    double hit_dist = position.Distance(ray.PointAt(intr.RayParameter));
+            //    howFar = hit_dist * 0.1; //going 1/5 the way we can go
+            //    Debug.Log($"How far: {howFar}");
+            //}
 
-            position += getAway.Value.Normalized * howFar; 
+            position += getAway.Value.Normalized * info.data.minDepth; 
             Debug.Log($"Getaway. New Pos: {position} ");
+
             count++;
 
             if (count >= 5)
@@ -132,7 +133,7 @@ public class Algorithm
                 StaticFunctions.ErrorMessage("The object is too thin to find a suitable position. Might cause intersections.");
                 break;
             }
-            getAway = GetAwayFromShellDirection(tree, position, info.data.ColorNum);
+            getAway = GetAwayFromShellDirection(info, tree, position);
         }
         return position;
     }
@@ -144,9 +145,9 @@ public class Algorithm
         foreach (var status in stati)
         {
             var shellPoint = newMesh.GetVertex(status.Value.idNewMeshOuter.Value);
-            var position = shellPoint;
             var normal = info.oldMesh.CalcVertexNormal(status.Value.idOldMeshOuter);
-            Ray3d ray = new Ray3d(shellPoint-normal*0.1, -normal); //tiny shift to make sure it's not hitting itself
+            var position = shellPoint + info.data.minDepth * normal;
+            Ray3d ray = new Ray3d(shellPoint-normal*info.data.minDepth, -normal); //tiny shift to make sure it's not hitting itself
             int hit_tid = tree.FindNearestHitTriangle(ray);
             Debug.Log("Hit " + hit_tid);
             if (hit_tid != DMesh3.InvalidID)
@@ -158,7 +159,6 @@ public class Algorithm
             }
             else
             {
-                position = shellPoint + 0.1 * normal; //a thin extrusion should be there
                 StaticFunctions.ErrorMessage("Depth Dependant Calculation has encountered an error");
             }
             info.mesh.SetVertex(status.Value.idOldMeshInner.Value, position);
@@ -169,7 +169,7 @@ public class Algorithm
     internal Vector3d MovePointDepthDependant(CuttingInfo info, Vector3d shellPoint, Vector3d normal)
     {
         normal = normal.Normalized;
-        var position = shellPoint;
+        var position = shellPoint + info.data.minDepth * normal; ;
         var tree = new DMeshAABBTree3(info.oldMesh, true);
         Ray3d ray = new Ray3d(shellPoint, -normal);
         int hit_tid = tree.FindNearestHitTriangle(ray);

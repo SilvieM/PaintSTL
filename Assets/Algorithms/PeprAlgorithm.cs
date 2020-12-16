@@ -68,12 +68,6 @@ public class PeprAlgorithm : Algorithm
             var pos1 = vertex1 - normal1 * info.data.depth;
             var pos2 = vertex2 - normal2 * info.data.depth;
             var pos3 = vertex3 - normal3 * info.data.depth;
-            //if (info.modelDepthDependantDepth)
-            //{
-            //    pos1 = MovePointDepthDependant(info, vertex1, normal1);
-            //    pos2 = MovePointDepthDependant(info, vertex2, normal2);
-            //    pos3 = MovePointDepthDependant(info, vertex3, normal3);
-            //}
 
             if (stati[triangle.a].idNewMeshInner == null) stati[triangle.a].idNewMeshInner = newMesh.AppendVertex(pos1); 
             if (stati[triangle.b].idNewMeshInner == null) stati[triangle.b].idNewMeshInner = newMesh.AppendVertex(pos2);

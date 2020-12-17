@@ -60,9 +60,9 @@ public class PeprAlgorithm : Algorithm
             var newTriOuter = newMesh.AppendTriangle(stati[triangle.a].idNewMeshOuter.Value, stati[triangle.b].idNewMeshOuter.Value, stati[triangle.c].idNewMeshOuter.Value, info.data.ColorNum);
             
 
-            var normal1 = info.mesh.CalcVertexNormal(triangle.a);
-            var normal2 = info.mesh.CalcVertexNormal(triangle.b);
-            var normal3 = info.mesh.CalcVertexNormal(triangle.c);
+            var normal1 = info.mesh.GetVertexNormal(triangle.a).toVector3d();
+            var normal2 = info.mesh.GetVertexNormal(triangle.b).toVector3d();
+            var normal3 = info.mesh.GetVertexNormal(triangle.c).toVector3d();
 
             
             var pos1 = vertex1 - normal1 * info.data.depth;

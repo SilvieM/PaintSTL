@@ -269,5 +269,9 @@ namespace Assets.g3UnityUtils
         {
             return new Vector3d(vec.x, vec.y, vec.z);
         }
+        public static Vector3f toVector3f(this Vector3d vec)
+        {
+            return new Vector3f(vec.x, vec.y, vec.z);
+        }
     }
 }

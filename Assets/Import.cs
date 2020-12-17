@@ -43,6 +43,13 @@ public class Import : MonoBehaviour
         var filename = Path.GetFileNameWithoutExtension(path);
         readMesh.EnableTriangleGroups();
         readMesh.EnableVertexColors(new Vector3f(1, 1, 1));
+        readMesh.EnableVertexNormals(Vector3f.One);
+
+        foreach (var vertexIndex in readMesh.VertexIndices())
+        {
+            readMesh.SetVertexNormal(vertexIndex, readMesh.CalcVertexNormal(vertexIndex).toVector3f());
+        }
+        
         var obj = StaticFunctions.SpawnNewObject(readMesh, filename, true);
         var center = obj.GetComponent<Generate>().centerInWorldCoords;
         obj.transform.position = -center; //position object such that center is zero.

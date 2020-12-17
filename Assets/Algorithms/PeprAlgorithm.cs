@@ -88,6 +88,8 @@ public class PeprAlgorithm : Algorithm
             var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value, stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value, 0);
         }
         //TODO can use mesh.RemoveTriangles
+        if (info.data.modifier == CutSettingData.Modifier.DepthDependant) MoveAllPointsDepthDependant(info, newMesh, stati);
+        //if (info.computeCorrectPosition) MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh); //TODO
         painted.ForEach(index => info.mesh.RemoveTriangle(index));
 
         var openEdges = newMesh.BoundaryEdgeIndices();
@@ -104,8 +106,8 @@ public class PeprAlgorithm : Algorithm
             int thirdPoint = Corresponding(stati, edgeOriented.a, false);
             var newTriSide = info.mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, 0);
         }
-        //if (info.computeCorrectPosition) MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh); //TODO
-        if(info.data.modifier == CutSettingData.Modifier.DepthDependant) MoveAllPointsDepthDependant(info, newMesh, stati);
+        
+        
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
         return info.mesh;
     }

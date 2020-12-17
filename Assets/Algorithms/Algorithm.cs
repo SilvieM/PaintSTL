@@ -92,7 +92,7 @@ public class Algorithm
 
     internal Vector3d MovePointInsideAndAwayFromShell(CuttingInfo info, Vector3d position)
     {
-        var tree = new DMeshAABBTree3(info.oldMesh, true);
+        var tree = new DMeshAABBTree3(info.mesh, true);
         if (!tree.IsInside(position))
         {
             Debug.Log("Point outside of mesh");
@@ -111,18 +111,6 @@ public class Algorithm
         int count = 0;
         while (getAway != null)
         {
-            //var howFar = 0.1;
-            //Ray3d ray = new Ray3d(position, getAway.Value.Normalized);
-            //int hit_tid = tree.FindNearestHitTriangle(ray);
-            //Debug.Log("Hit "+hit_tid);
-            //if (hit_tid != DMesh3.InvalidID)
-            //{
-            //    IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(info.oldMesh, hit_tid, ray);
-            //    double hit_dist = position.Distance(ray.PointAt(intr.RayParameter));
-            //    howFar = hit_dist * 0.1; //going 1/5 the way we can go
-            //    Debug.Log($"How far: {howFar}");
-            //}
-
             position += getAway.Value.Normalized * info.data.minDepth; 
             Debug.Log($"Getaway. New Pos: {position} ");
 

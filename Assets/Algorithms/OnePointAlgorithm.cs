@@ -39,18 +39,19 @@ public class OnePointAlgorithm : Algorithm
             var intB = StaticFunctions.AppendIfNotExists(verticesInNewMesh, orgB, newMesh);
             var intC = StaticFunctions.AppendIfNotExists(verticesInNewMesh, orgC, newMesh);
 
-            var result = info.mesh.RemoveTriangle(paintedTriNum);
-            if (result != MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
+            //var result = info.mesh.RemoveTriangle(paintedTriNum);
+            //if (result != MeshResult.Ok) Debug.Log($"Removing did not work, {paintedTriNum} {result}");
             newMesh.AppendTriangle(intA, intB, intC, info.data.ColorNum);
         }
 
+        
         var avgNormal = normals.Average();
         var avgVertices = vertices.Average();
         var newPoint = avgVertices - avgNormal* info.data.depth;
 
         if(info.data.modifier == CutSettingData.Modifier.Compute) newPoint = MovePointInsideAndAwayFromShell(info, newPoint);
         if (info.data.modifier == CutSettingData.Modifier.DepthDependant) newPoint = MovePointDepthDependant(info, avgVertices, avgNormal);
-        
+        painted.ForEach(index => info.mesh.RemoveTriangle(index));
 
 
         var newPointId = newMesh.AppendVertex(newPoint);

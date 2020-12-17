@@ -43,10 +43,14 @@ public class Generate : MonoBehaviour
         center = transform.TransformPoint(mesh.GetBounds().Center.toVector3());
     }
 
-    public void Cut(CutSettingData cutSettings)
+    public void Cut(List<CutSettingData> cutSettings)
     {
+        foreach (var cutSettingData in cutSettings)
+        {
+            StartCoroutine(CutCoroutine(cutSettingData));
+        }
+
         
-        StartCoroutine(CutCoroutine(cutSettings));
     }
 
     private IEnumerator CutCoroutine(CutSettingData cutSettings)
@@ -96,7 +100,7 @@ public class Generate : MonoBehaviour
                 var mainObject = FindObjectsOfType<Generate>().First(gen => gen.isImported);
                 var dir = (this.center - mainObject.center).normalized;
                 Debug.Log($"{dir.x}, {dir.y}, {dir.z}");
-                transform.localPosition = dir*value*10;
+                transform.localPosition = dir*value*30;
             }
             else
             {

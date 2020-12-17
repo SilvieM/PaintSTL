@@ -95,16 +95,9 @@ public class InterfaceFunctions : MonoBehaviour
     public void Cut()
     {
         ResetCutted();
-        var objects = GameObject.FindObjectsOfType<Generate>();
+        var generate = GameObject.FindObjectOfType<Generate>();
         var settings = cutSettings.GetComponent<CutSettings>().GetSettings();
-        foreach (var cutSettingData in settings)
-        {
-            foreach (var generate in objects)
-            {
-                generate.Cut(cutSettingData);
-                Debug.Log($"Cutting {cutSettingData.ColorNum} with Algo {cutSettingData.algo}");
-            }
-        }
+        generate.Cut(settings);
     }
 
 

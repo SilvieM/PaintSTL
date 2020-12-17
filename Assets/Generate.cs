@@ -87,23 +87,20 @@ public class Generate : MonoBehaviour
         g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
 
-    private bool isInExplodedMode;
-    public void Explode()
+    public void Explode(float value)
     {
         if (!isImported)
         {
-            if (!isInExplodedMode)
+            if (value > 0)
             {
                 var mainObject = FindObjectsOfType<Generate>().First(gen => gen.isImported);
                 var dir = (this.center - mainObject.center).normalized;
                 Debug.Log($"{dir.x}, {dir.y}, {dir.z}");
-                isInExplodedMode = true;
-                transform.localPosition += dir;
+                transform.localPosition = dir*value*10;
             }
             else
             {
                 transform.localPosition = Vector3.zero;
-                isInExplodedMode = false;
             }
         }
        

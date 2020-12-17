@@ -81,13 +81,13 @@ public class InterfaceFunctions : MonoBehaviour
         }
     }
 
-    public void ExplodedView()
+    public void ExplodedView(float value)
     {
         var objects = GameObject.FindObjectsOfType<Generate>();
         foreach (var generate in objects)
         {
             if(!generate.isImported)
-                generate.Explode();
+                generate.Explode(value);
         }
     }
 

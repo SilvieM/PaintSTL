@@ -48,11 +48,11 @@ namespace Assets
             var avg = normals.ToList().Average();
             return avg;
         }
-        public static PeprAlgorithm.PeprStatusVert AppendIfNotExists(this Dictionary<int, PeprAlgorithm.PeprStatusVert> stati, int index)
+        public static BacksideAlgorithm.PeprStatusVert AppendIfNotExists(this Dictionary<int, BacksideAlgorithm.PeprStatusVert> stati, int index)
         {
             if (!stati.TryGetValue(index, out var statusVert))
             {
-                statusVert = new PeprAlgorithm.PeprStatusVert() { idOldMeshOuter = index };
+                statusVert = new BacksideAlgorithm.PeprStatusVert() { idOldMeshOuter = index };
                 stati.Add(index, statusVert);
             }
             return statusVert;

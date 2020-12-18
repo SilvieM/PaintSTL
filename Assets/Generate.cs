@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
@@ -63,6 +64,8 @@ public class Generate : MonoBehaviour
             data = cutSettings
         };
         var newMesh = algorithm.Cut(info);
+        int removed = MeshEditor.RemoveSmallComponents(newMesh, 0.001, Double.MaxValue);
+        Debug.Log("Removed "+removed);
         mesh = g3UnityUtils.SetGOMesh(gameObject, newMesh);
         yield return null;
     }
@@ -99,7 +102,6 @@ public class Generate : MonoBehaviour
             {
                 var mainObject = FindObjectsOfType<Generate>().First(gen => gen.isImported);
                 var dir = (this.center - mainObject.center).normalized;
-                Debug.Log($"{dir.x}, {dir.y}, {dir.z}");
                 transform.localPosition = dir*value*30;
             }
             else

@@ -7,14 +7,14 @@ using UnityEngine;
 
 public class Algorithm
 {
-    public enum AlgorithmType {OnePoint, Pepr}
+    public enum AlgorithmType {Backside, OnePoint }
 
     public static Algorithm BuildAlgo(AlgorithmType whichAlgo)
     {
         switch (whichAlgo)
         {
             case AlgorithmType.OnePoint: return new OnePointAlgorithm();
-            case AlgorithmType.Pepr: return new PeprAlgorithm();
+            case AlgorithmType.Backside: return new BacksideAlgorithm();
         }
 
         return null;
@@ -22,13 +22,6 @@ public class Algorithm
 
     public List<int> FindPaintedTriangles(DMesh3 mesh, int colorId)
     {
-        //List<int> indices = new List<int>();
-        //foreach (var triangleIndex in mesh.TriangleIndices())
-        //{
-        //        if (mesh.GetTriangleGroup(triangleIndex) == colorId)
-        //            indices.Add(triangleIndex);
-        //}
-
         List<int> indices = FaceGroupUtil.FindTrianglesByGroup(mesh, colorId);
         Debug.Log($"Painted Triangles: {indices.Count}");
 
@@ -127,7 +120,7 @@ public class Algorithm
         return position;
     }
 
-    internal void MoveAllPointsDepthDependant(CuttingInfo info, DMesh3 newMesh, Dictionary<int, PeprAlgorithm.PeprStatusVert> stati)
+    internal void MoveAllPointsDepthDependant(CuttingInfo info, DMesh3 newMesh, Dictionary<int, BacksideAlgorithm.PeprStatusVert> stati)
     {
         var tree = new DMeshAABBTree3(info.oldMesh, true);
         tree.TriangleFilterF = i => tree.Mesh.GetTriangleGroup(i) != info.data.ColorNum; 

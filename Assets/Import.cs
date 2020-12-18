@@ -39,7 +39,7 @@ public class Import : MonoBehaviour
     {
         DMesh3 readMesh = StandardMeshReader.ReadMesh(path);
 
-        //if(readMesh.CheckValidity()) StaticFunctions.ErrorMessage("Imported Model has errors");
+        if(readMesh.CheckValidity(eFailMode: FailMode.ReturnOnly)) StaticFunctions.ErrorMessage("Imported Model has errors");
         var filename = Path.GetFileNameWithoutExtension(path);
         readMesh.EnableTriangleGroups();
         readMesh.EnableVertexColors(new Vector3f(1, 1, 1));

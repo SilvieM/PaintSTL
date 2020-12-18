@@ -10,7 +10,7 @@ using Assets.Static_Classes;
 using g3;
 using UnityEngine;
 
-public class PeprAlgorithm : Algorithm
+public class BacksideAlgorithm : Algorithm
 {
 
     public class PeprStatusVert
@@ -87,7 +87,6 @@ public class PeprAlgorithm : Algorithm
             var newTriInner = newMesh.AppendTriangle(stati[triangle.a].idNewMeshInner.Value, stati[triangle.c].idNewMeshInner.Value, stati[triangle.b].idNewMeshInner.Value, info.data.ColorNum);
             var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value, stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value, 0);
         }
-        //TODO can use mesh.RemoveTriangles
         if (info.data.modifier == CutSettingData.Modifier.DepthDependant) MoveAllPointsDepthDependant(info, newMesh, stati);
         //if (info.computeCorrectPosition) MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh); //TODO
         painted.ForEach(index => info.mesh.RemoveTriangle(index));

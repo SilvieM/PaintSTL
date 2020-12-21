@@ -88,7 +88,7 @@ public class BacksideAlgorithm : Algorithm
             var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value, stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value, 0);
         }
         if (info.data.modifier == CutSettingData.Modifier.DepthDependant) MoveAllPointsDepthDependant(info, newMesh, stati);
-        //if (info.computeCorrectPosition) MoveVerticesToValidPositions(info, newMesh, verticesInNewMesh, verticesInOldMesh); //TODO
+        if (info.data.modifier == CutSettingData.Modifier.Compute) MoveVerticesToValidPositions(info, newMesh, stati); //TODO
         painted.ForEach(index => info.mesh.RemoveTriangle(index));
 
         var openEdges = newMesh.BoundaryEdgeIndices();
@@ -111,15 +111,14 @@ public class BacksideAlgorithm : Algorithm
         return info.mesh;
     }
 
-    private void MoveVerticesToValidPositions(CuttingInfo info, DMesh3 newMesh, Dictionary<Vector3d, int> verticesInNewMesh, Dictionary<Vector3d, int> verticesInOldMesh)
+    private void MoveVerticesToValidPositions(CuttingInfo info, DMesh3 newMesh, Dictionary<int, PeprStatusVert> stati)
     {
-        foreach (var keyValuePair in verticesInOldMesh)
+        foreach (var status in stati)
         {
-            var point = keyValuePair.Key;
+            var point = info.mesh.GetVertex(status.Value.idOldMeshInner.Value);
             var newPoint = MovePointInsideAndAwayFromShell(info, point);
-            info.mesh.SetVertex(keyValuePair.Value, newPoint);
-            var vidInNewMesh =verticesInNewMesh[point];
-            newMesh.SetVertex(vidInNewMesh, newPoint);
+            info.mesh.SetVertex(status.Value.idOldMeshInner.Value, newPoint);
+            newMesh.SetVertex(status.Value.idNewMeshInner.Value, newPoint);
 
         }
     }

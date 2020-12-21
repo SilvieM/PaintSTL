@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.IO;
+using System.Linq;
 using Assets;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
@@ -39,7 +40,29 @@ public class Import : MonoBehaviour
     {
         DMesh3 readMesh = StandardMeshReader.ReadMesh(path);
 
-        if(readMesh.CheckValidity(eFailMode: FailMode.ReturnOnly)) StaticFunctions.ErrorMessage("Imported Model has errors");
+        if (!readMesh.CheckValidity(eFailMode: FailMode.ReturnOnly))
+        {
+            var errorMsg = "Imported Model has errors. ";
+            var loops = new MeshBoundaryLoops(readMesh, true);
+            if (loops.SawOpenSpans) errorMsg += " Open Spans can not be filled. ";
+            var fixedHoles = 0;
+            foreach (var meshBoundaryLoop in loops)
+            {
+                var holeFiller = new SimpleHoleFiller(readMesh, meshBoundaryLoop);
+                var valid = holeFiller.Validate();
+                if (valid == ValidationStatus.Ok)
+                {
+                    var res = holeFiller.Fill(0);
+                    if (res) fixedHoles ++;
+                }
+            }
+            if (fixedHoles > 0) errorMsg += $"Fixed {fixedHoles} holes for you. ";
+            if(!loops.Any()) errorMsg += "No holes. ";
+
+            if (readMesh.CheckValidity(eFailMode: FailMode.ReturnOnly)) errorMsg += "Model is now valid. ";
+            else errorMsg += "Could not fix all errors.";
+            StaticFunctions.ErrorMessage(errorMsg);
+        }
         var filename = Path.GetFileNameWithoutExtension(path);
         readMesh.EnableTriangleGroups();
         readMesh.EnableVertexColors(new Vector3f(1, 1, 1));

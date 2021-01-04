@@ -4,6 +4,7 @@ using System.Linq;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
 using g3;
+using SFB;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Windows;
@@ -24,13 +25,13 @@ public class Export : MonoBehaviour
     }
     public void ExportSTL()
     {
-        string path = EditorUtility.SaveFolderPanel("Export STL File", "","export");
+        string path = StandaloneFileBrowser.SaveFilePanel("Export STL File", "","export", "");
         
         if (path.Length == 0)
         {
             return;
         }
-
+        System.IO.Directory.CreateDirectory(path);
         var generates = GameObject.FindObjectsOfType<Generate>();
         var num = 0;
         var name = generates.First(generate => generate.isImported).name;

@@ -272,6 +272,12 @@
  <Reference Include="geometry3Sharp">
  <HintPath>D:/Daten/Unity/TestProjekt2/Assets/Packages/geometry3Sharp.1.0.324/lib/net45/geometry3Sharp.dll</HintPath>
  </Reference>
+ <Reference Include="Ookii.Dialogs">
+ <HintPath>D:/Daten/Unity/TestProjekt2/Assets/StandaloneFileBrowser/Plugins/Ookii.Dialogs.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Windows.Forms">
+ <HintPath>D:/Daten/Unity/TestProjekt2/Assets/StandaloneFileBrowser/Plugins/System.Windows.Forms.dll</HintPath>
+ </Reference>
  <Reference Include="ICSharpCode.NRefactory">
  <HintPath>D:/Daten/Unity/TestProjekt2/Library/PackageCache/com.unity.render-pipelines.core@8.2.0/Editor/ShaderGenerator/ICSharpCode.NRefactory.dll</HintPath>
  </Reference>

@@ -6,6 +6,7 @@ using Assets.g3UnityUtils;
 using Assets.Static_Classes;
 using g3;
 using gs;
+using SFB;
 using UnityEditor;
 using UnityEngine;
 using UnityTemplateProjects;
@@ -26,12 +27,12 @@ public class Import : MonoBehaviour
 
     public void ImportSTL()
     {
-        string path = EditorUtility.OpenFilePanel("Import STL File", "", "stl");
+        string[] path = StandaloneFileBrowser.OpenFilePanel("Import STL File", "", "stl", false);
         if (path.Length == 0)
         {
             return;
         }
-        var coroutine = ReadMesh(path);
+        var coroutine = ReadMesh(path[0]);
         StartCoroutine(coroutine);
 
     }

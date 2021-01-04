@@ -94,6 +94,11 @@ public class Generate : MonoBehaviour
         g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
 
+    public void Redraw()
+    {
+        g3UnityUtils.SetGOMesh(gameObject, mesh);
+    }
+
     public void Explode(float value)
     {
         if (!isImported)

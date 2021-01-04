@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Assets.Scripts;
 using g3;
 using UnityEngine;
 
@@ -22,6 +23,7 @@ namespace Assets.Static_Classes
             }
             obj.transform.localPosition = Vector3.zero;
             obj.AddComponent<Generate>().MyInit(mesh, isImported);
+            //obj.AddComponent<DragPoints>(); //TODO?
             return obj;
         }
 

@@ -81,7 +81,8 @@ public class Import : MonoBehaviour
         Camera.main.GetComponent<OrbitingCam>().SetTarget(obj, viewDistance);
         
         DebugGizmos.DrawBoundingBox(readMesh.GetBounds(), obj.transform);
-        //Camera.main.GetComponent<SimpleCameraController>().m_TargetCameraState.SetFromTransform(Camera.main.transform);
+        //Camera.main.GetCom
+        //ponent<SimpleCameraController>().m_TargetCameraState.SetFromTransform(Camera.main.transform);
         yield return null;
     }
 }

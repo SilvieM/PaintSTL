@@ -12,6 +12,8 @@ using UnityEngine.Rendering;
 public class OnMeshClick : MonoBehaviour
 {
     public double range = 1f;
+
+    public double AngleStop = 30;
     // Start is called before the first frame update
     public void Start()
     {
@@ -57,7 +59,7 @@ public class OnMeshClick : MonoBehaviour
 
                         foreach (var triIndex in neighborTris.array)
                         {
-                            if (!triIndices.Contains(triIndex)&&!newTriIndices.Contains(triIndex) && IsInRange(dmesh, hit.triangleIndex, triIndex, range))
+                            if (!triIndices.Contains(triIndex)&&!newTriIndices.Contains(triIndex) && IsInRange(dmesh, hit.triangleIndex, triIndex, range)&&AngleIsClose(dmesh, triIndex, hit.triangleIndex))
                             {
                                 newTriIndices.Add(triIndex);
                                 foundNewTriangle = true;
@@ -98,6 +100,16 @@ public class OnMeshClick : MonoBehaviour
         if (v2.DistanceSquared(triOriginal) < rangeSquared) return true;
         if (v3.DistanceSquared(triOriginal) < rangeSquared) return true;
         return false;
+    }
+
+    private bool AngleIsClose(DMesh3 mesh, int triIndex1, int triIndex2)
+    {
+        if (AngleStop >= 90) return true;
+        var normal1 = mesh.GetTriNormal(triIndex1);
+        var normal2 = mesh.GetTriNormal(triIndex2);
+        var angle = Vector3d.AngleD(normal1, normal2);
+        if (angle < AngleStop) return true;
+        else return false;
     }
 
 }

@@ -20,10 +20,11 @@ namespace Assets.Static_Classes
             {
                 obj.transform.SetParent(GameObject.FindGameObjectWithTag("mainObject").transform);
                 obj.transform.localScale = Vector3.one;
+                //obj.AddComponent<DragPoints>(); //TODO?
             }
             obj.transform.localPosition = Vector3.zero;
             obj.AddComponent<Generate>().MyInit(mesh, isImported);
-            //obj.AddComponent<DragPoints>(); //TODO?
+            
             return obj;
         }
 

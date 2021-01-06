@@ -14,9 +14,16 @@ public class OnMeshClick : MonoBehaviour
     public double range = 1f;
 
     public double AngleStop = 30;
+
+    private Generate generate;
+
+    public LineRenderer line;
     // Start is called before the first frame update
     public void Start()
     {
+        line = gameObject.AddComponent<LineRenderer>();
+        line.material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply"));
+        generate = GetComponent<Generate>();
     }
 
 
@@ -32,22 +39,21 @@ public class OnMeshClick : MonoBehaviour
             var mesh = hit.transform.gameObject.GetComponent<MeshFilter>().sharedMesh;
             Vector3[] vertices = mesh.vertices;
             int[] meshtriangles = mesh.triangles;
-            Vector3 p0 = vertices[meshtriangles[hit.triangleIndex * 3 + 0]];
-            Vector3 p1 = vertices[meshtriangles[hit.triangleIndex * 3 + 1]];
-            Vector3 p2 = vertices[meshtriangles[hit.triangleIndex * 3 + 2]];
-            p0 = hit.transform.TransformPoint(p0);
-            p1 = hit.transform.TransformPoint(p1);
-            p2 = hit.transform.TransformPoint(p2);
-            Debug.DrawLine(p0, p1, ColorManager.Instance.currentColor);
-            Debug.DrawLine(p1, p2, ColorManager.Instance.currentColor);
-            Debug.DrawLine(p2, p0, ColorManager.Instance.currentColor);
-
-            if (Input.GetMouseButton(0))
-            {
-                var triIndices = new List<int>();
-                var generate = GetComponent<Generate>();
+            var dmesh = generate.mesh;
+            var useBrush = ColorManager.Instance.currentTool == ColorManager.Tools.Brush;
+            //Vector3 p0 = vertices[meshtriangles[hit.triangleIndex * 3 + 0]];
+            //Vector3 p1 = vertices[meshtriangles[hit.triangleIndex * 3 + 1]];
+            //Vector3 p2 = vertices[meshtriangles[hit.triangleIndex * 3 + 2]];
+            //p0 = hit.transform.TransformPoint(p0);
+            //p1 = hit.transform.TransformPoint(p1);
+            //p2 = hit.transform.TransformPoint(p2);
+            //Debug.DrawLine(p0, p1, ColorManager.Instance.currentColor);
+            //Debug.DrawLine(p1, p2, ColorManager.Instance.currentColor);
+            //Debug.DrawLine(p2, p0, ColorManager.Instance.currentColor);
+            var triIndices = new List<int>();
+                
                 triIndices.Add(hit.triangleIndex);
-                var dmesh = generate.mesh;
+                
                 bool foundNewTriangle = true;
                 while (foundNewTriangle)
                 {
@@ -59,7 +65,9 @@ public class OnMeshClick : MonoBehaviour
 
                         foreach (var triIndex in neighborTris.array)
                         {
-                            if (!triIndices.Contains(triIndex)&&!newTriIndices.Contains(triIndex) && IsInRange(dmesh, hit.triangleIndex, triIndex, range)&&AngleIsClose(dmesh, triIndex, hit.triangleIndex))
+                            if (!triIndices.Contains(triIndex)&&!newTriIndices.Contains(triIndex) &&
+                                (!useBrush||IsInRange(dmesh, hit.triangleIndex, triIndex, range))&&
+                                AngleIsClose(dmesh, triIndex, useBrush? hit.triangleIndex:triIndexAlreadyFound))
                             {
                                 newTriIndices.Add(triIndex);
                                 foundNewTriangle = true;
@@ -67,9 +75,13 @@ public class OnMeshClick : MonoBehaviour
                         }
                     }
                     triIndices.AddRange(newTriIndices);
-                    
                 }
-
+            //DrawCircle((float)range, 0.1f, transform.InverseTransformPoint(hit.point), dmesh.GetTriNormal(hit.triangleIndex).toVector3(), paintColor, paintColor);
+            HighlightTriangles(triIndices, vertices, meshtriangles, hit.transform, paintColor);
+            
+            if (Input.GetMouseButton(0))
+            {
+                //Actually Paint
                 var colorIndex = ColorManager.Instance.FieldPainted(paintColor);
 
                 var colorsNew = mesh.colors;
@@ -86,6 +98,30 @@ public class OnMeshClick : MonoBehaviour
 
             }
         }
+    }
+
+    public void HighlightTriangles(List<int> tris, Vector3[] vertices, int[] meshtriangles, Transform transform, Color color)
+    {
+        List<Vector3> pointsToHighlight = new List<Vector3>();
+        foreach (var tri in tris)
+        {
+            Vector3 p0 = vertices[meshtriangles[tri * 3 + 0]];
+            Vector3 p1 = vertices[meshtriangles[tri * 3 + 1]];
+            Vector3 p2 = vertices[meshtriangles[tri * 3 + 2]];
+            pointsToHighlight.Add(p0);
+            pointsToHighlight.Add(p1);
+            pointsToHighlight.Add(p2);
+        }
+        line.useWorldSpace = false;
+        line.startWidth = 0.03f;
+        line.endWidth = 0.03f;
+        line.endColor = color;
+        line.startColor = color;
+        //line.colorGradient = new Gradient();
+        line.positionCount = pointsToHighlight.Count;
+        line.loop = true;
+        line.SetPositions(pointsToHighlight.ToArray());
+
     }
 
     private bool IsInRange(DMesh3 mesh,int triIndexOriginal, int triIndex, double range)
@@ -110,6 +146,29 @@ public class OnMeshClick : MonoBehaviour
         var angle = Vector3d.AngleD(normal1, normal2);
         if (angle < AngleStop) return true;
         else return false;
+    }
+
+    const int numberOfSegments = 360;
+    public void DrawCircle(float radius,
+        float lineWidth, Vector3 middle, Vector3 normal, Color startColor, Color endColor)
+    {
+        LineRenderer circle = GetComponent<LineRenderer>();
+        circle.useWorldSpace = false;
+        circle.startWidth = lineWidth;
+        circle.endWidth = lineWidth;
+        circle.endColor = endColor;
+        circle.startColor = startColor;
+        circle.positionCount = numberOfSegments + 1;
+        circle.loop = true;
+        Vector3[] points = new Vector3[numberOfSegments + 1];
+
+        for (int i = 0; i < numberOfSegments + 1; i++)
+        {
+            //points[i] = new Vector3(Mathf.Sin(rad) * radius, 0, Mathf.Cos(rad) * radius)+middle;
+            points[i] = middle + Quaternion.AngleAxis(i, normal).eulerAngles * radius;
+            
+        }
+        circle.SetPositions(points);
     }
 
 }

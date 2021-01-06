@@ -118,5 +118,11 @@ public class InterfaceFunctions : MonoBehaviour
     {
         Camera.main.GetComponent<OrbitingCam>().ResetCam();
     }
+
+    public void Exit()
+    {
+        Application.Quit();
+    }
+    
     
 }

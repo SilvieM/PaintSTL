@@ -74,6 +74,28 @@ namespace Assets
             }
         }
 
+        public void SkipToPreviousColor()
+        {
+            if (usedColors.ContainsKey(currentColor))
+            {
+                var number = usedColors[currentColor];
+                currentColor = GetColorForId(number - 1);
+            }
+            else
+            {
+                currentColor = usedColors.Last().Key;
+            }
+        }
+
+        public void SkipToNextColor()
+        {
+            if (usedColors.ContainsKey(currentColor))
+            {
+                var number = usedColors[currentColor];
+                currentColor = GetColorForId(number + 1);
+            }
+        }
+
         public Dictionary<Color, int> GetUsedColors()
         {
             return usedColors;

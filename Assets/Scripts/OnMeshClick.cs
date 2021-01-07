@@ -86,7 +86,7 @@ public class OnMeshClick : MonoBehaviour
         GL.MultMatrix(transform.localToWorldMatrix);
         var dmesh = generate.mesh;
         var borders = new MeshEdgeSelection(dmesh);
-        borders.SelectBoundaryTriEdges(selection);
+        borders.SelectTriangleEdges(selection);
         var bordersArray = borders.ToArray();
         GL.Begin(GL.LINES);
         GL.Color(ColorManager.Instance.currentColor);

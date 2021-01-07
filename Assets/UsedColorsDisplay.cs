@@ -33,4 +33,10 @@ public class UsedColorsDisplay : MonoBehaviour
             }
         }
     }
+
+    public void OnCurrentColorChange(int color)
+    {
+        var existingChildren = gameObject.GetComponentsInChildren<Image>().Skip(1).ToArray();
+        //existingChildren[color]
+    }
 }

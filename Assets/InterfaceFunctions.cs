@@ -28,7 +28,15 @@ public class InterfaceFunctions : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            ColorManager.Instance.SkipToNextColor();
+        }
 
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            ColorManager.Instance.SkipToPreviousColor();
+        }
     }
 
     public void SwitchToCuttingUI()

@@ -64,8 +64,6 @@ public class Generate : MonoBehaviour
             data = cutSettings
         };
         var newMesh = algorithm.Cut(info);
-        int removed = MeshEditor.RemoveSmallComponents(newMesh, 0.001, Double.MaxValue);
-        Debug.Log("Removed "+removed);
         mesh = g3UnityUtils.SetGOMesh(gameObject, newMesh);
         yield return null;
     }

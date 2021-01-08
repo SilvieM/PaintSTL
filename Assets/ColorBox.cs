@@ -25,4 +25,14 @@ public class ColorBox : MonoBehaviour
         var color = img.color;
         picker.CurrentColor = color;
     }
+
+    public void SetBorder()
+    {
+        transform.GetChild(0).GetComponent<Image>().enabled = true;
+    }
+
+    public void UnSetBorder()
+    {
+        transform.GetChild(0).GetComponent<Image>().enabled = false;
+    }
 }

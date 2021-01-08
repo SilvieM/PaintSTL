@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 using UnityEngine;
 
 namespace Assets
@@ -17,7 +18,10 @@ namespace Assets
 
         private ColorManager()
         {
-            usedColors.Add(Color.white, 0);
+            //_currentColor = Color.white;
+            //usedColors.Add(Color.white, 0);
+            //OnColorsChanged.Invoke(usedColors.Keys.ToList());
+            //OnCurrentColorChanged.Invoke(currentColorId ?? Int32.MaxValue);
         }
 
         public static ColorManager Instance
@@ -29,8 +33,8 @@ namespace Assets
             }
         }
 
-        public event Action<List<Color>> OnColorsChanged;
-        public event Action OnCurrentColorChanged = delegate {  };
+        public event Action<List<Color>> OnColorsChanged = delegate { };
+        public event Action<int> OnCurrentColorChanged = delegate {  };
 
         public Color currentColor
         {
@@ -38,7 +42,7 @@ namespace Assets
             set
             {
                 _currentColor = value;
-                OnCurrentColorChanged.Invoke();
+                OnCurrentColorChanged.Invoke(currentColorId?? Int32.MaxValue );
             }
         }
 

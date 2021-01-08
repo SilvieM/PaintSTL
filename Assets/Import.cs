@@ -34,7 +34,9 @@ public class Import : MonoBehaviour
         }
         var coroutine = ReadMesh(path[0]);
         StartCoroutine(coroutine);
-
+        ColorManager.Instance.currentColor = Color.white;
+        ColorManager.Instance.FieldPainted(Color.white);
+        ColorManager.Instance.currentColor = Color.red;
     }
 
     private IEnumerator ReadMesh(string path)

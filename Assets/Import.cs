@@ -83,7 +83,6 @@ public class Import : MonoBehaviour
         foreach (var vertexIndex in readMesh.VertexIndices())
         {
             readMesh.SetVertexNormal(vertexIndex, readMesh.CalcVertexNormal(vertexIndex).toVector3f());
-            
         }
 
         var existing = FindObjectsOfType<Generate>();

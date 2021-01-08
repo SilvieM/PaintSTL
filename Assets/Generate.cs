@@ -48,13 +48,20 @@ public class Generate : MonoBehaviour
 
     public void Remesh()
     {
-        Remesher r = new Remesher(mesh);
-        r.PreventNormalFlips = true;
-        double min_edge_len, max_edge_len, avg_edge_len;
-        MeshQueries.EdgeLengthStats(mesh, out min_edge_len, out max_edge_len, out avg_edge_len);
-        r.SetTargetEdgeLength(avg_edge_len * 0.8);
-        r.SetProjectionTarget(MeshProjectionTarget.Auto(mesh));
-        r.BasicRemeshPass();
+        //Remesher r = new Remesher(mesh);
+        //r.PreventNormalFlips = true;
+        //double min_edge_len, max_edge_len, avg_edge_len;
+        //MeshQueries.EdgeLengthStats(mesh, out min_edge_len, out max_edge_len, out avg_edge_len);
+        //r.SetTargetEdgeLength(avg_edge_len * 0.8);
+        //r.SetProjectionTarget(MeshProjectionTarget.Auto(mesh));
+        //r.BasicRemeshPass();
+        
+        Reducer r = new Reducer(mesh);
+        r.ReduceToTriangleCount(mesh.TriangleCount/2);
+        foreach (var vertexIndex in mesh.VertexIndices())
+        {
+            mesh.SetVertexNormal(vertexIndex, mesh.CalcVertexNormal(vertexIndex).toVector3f());
+        }
         Redraw();
     }
 

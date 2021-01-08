@@ -73,7 +73,12 @@ public class Import : MonoBehaviour
         {
             readMesh.SetVertexNormal(vertexIndex, readMesh.CalcVertexNormal(vertexIndex).toVector3f());
         }
-        
+
+        var existing = FindObjectsOfType<Generate>();
+        foreach (var generate in existing)
+        {
+            Destroy(generate.gameObject);
+        }
         var obj = StaticFunctions.SpawnNewObject(readMesh, filename, true);
         var center = obj.GetComponent<Generate>().centerInWorldCoords;
         obj.transform.position = -center; //position object such that center is zero.
@@ -82,8 +87,7 @@ public class Import : MonoBehaviour
         Camera.main.GetComponent<OrbitingCam>().SetTarget(obj, viewDistance);
         
         DebugGizmos.DrawBoundingBox(readMesh.GetBounds(), obj.transform);
-        //Camera.main.GetCom
-        //ponent<SimpleCameraController>().m_TargetCameraState.SetFromTransform(Camera.main.transform);
+        
         yield return null;
     }
 }

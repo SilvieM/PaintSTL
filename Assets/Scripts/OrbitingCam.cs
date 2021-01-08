@@ -37,10 +37,8 @@ public class OrbitingCam : MonoBehaviour
         {
             var mouseMovement = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
-
-       
-            transform.RotateAround(Vector3.zero, transform.up, mouseMovement.x*100*Time.deltaTime);
-            transform.RotateAround(Vector3.zero, -transform.right, mouseMovement.y*100*Time.deltaTime);
+            transform.RotateAround(Vector3.zero, transform.up, mouseMovement.x*5);
+            transform.RotateAround(Vector3.zero, -transform.right, mouseMovement.y*5);
         }
 
         transform.position += GetInputTranslationDirection()*10*Time.deltaTime;
@@ -76,6 +74,13 @@ public class OrbitingCam : MonoBehaviour
         if (Input.mouseScrollDelta != Vector2.zero)
         {
             direction += Input.mouseScrollDelta.y*5*transform.forward;
+        }
+
+
+        if (Input.GetMouseButton(2))
+        {
+            var mouseMovement = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+            direction += -transform.up*mouseMovement.y + -transform.right * mouseMovement.x;
         }
         return direction;
     }

@@ -80,6 +80,16 @@ public class InterfaceFunctions : MonoBehaviour
         }
     }
 
+    public void Remesh()
+    {
+        var objects = GameObject.FindObjectsOfType<Generate>();
+        foreach (var generate in objects)
+        {
+            generate.Remesh();
+        }
+    }
+
+
     public void FixMyPaintJob()
     {
         var objects = GameObject.FindObjectsOfType<Generate>();

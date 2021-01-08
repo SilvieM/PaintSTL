@@ -45,7 +45,7 @@ public class Import : MonoBehaviour
 
         if (!readMesh.CheckValidity(eFailMode: FailMode.ReturnOnly))
         {
-            var errorMsg = "Imported Model has errors. ";
+            var errorMsg = "Imported Model has errors.";
             var loops = new MeshBoundaryLoops(readMesh, true);
             if (loops.SawOpenSpans) errorMsg += " Open Spans can not be filled. ";
             var fixedHoles = 0;
@@ -60,20 +60,30 @@ public class Import : MonoBehaviour
                 }
             }
             if (fixedHoles > 0) errorMsg += $"Fixed {fixedHoles} holes for you. ";
-            if(!loops.Any()) errorMsg += "No holes. ";
-
+            if(!loops.Any()) errorMsg += "No holes had to be fixed. ";
+            MeshAutoRepair repair = new MeshAutoRepair(readMesh);
+            bool bOK = repair.Apply();
+            if (bOK == false)
+                errorMsg += ("Autorepair failed. ");
+                else
+                errorMsg += ("Autorepair done. ");
             if (readMesh.CheckValidity(eFailMode: FailMode.ReturnOnly)) errorMsg += "Model is now valid. ";
             else errorMsg += "Could not fix all errors.";
             StaticFunctions.ErrorMessage(errorMsg);
+            if (!readMesh.IsCompact)
+            {
+                readMesh = new DMesh3(readMesh, true);
+            }
         }
         var filename = Path.GetFileNameWithoutExtension(path);
         readMesh.EnableTriangleGroups();
         readMesh.EnableVertexColors(new Vector3f(1, 1, 1));
         readMesh.EnableVertexNormals(Vector3f.One);
-
+        //MeshNormals.QuickCompute(mesh: readMesh);
         foreach (var vertexIndex in readMesh.VertexIndices())
         {
             readMesh.SetVertexNormal(vertexIndex, readMesh.CalcVertexNormal(vertexIndex).toVector3f());
+            
         }
 
         var existing = FindObjectsOfType<Generate>();

@@ -83,7 +83,7 @@ public class Algorithm
         return null;
     }
 
-    internal Vector3d MovePointInsideAndAwayFromShell(CuttingInfo info, Vector3d position)
+    internal Vector3d MovePointInsideAndAwayFromShell(CuttingInfo info, Vector3d position, int maxCount = 5)
     {
         var tree = new DMeshAABBTree3(info.mesh, true);
         if (!tree.IsInside(position))
@@ -109,7 +109,7 @@ public class Algorithm
 
             count++;
 
-            if (count >= 5)
+            if (count >= maxCount)
             {
                 Debug.Log("MoveAway could not find a suitable position, count exceeded");
                 StaticFunctions.ErrorMessage("The object is too thin to find a suitable position. Might cause intersections.");

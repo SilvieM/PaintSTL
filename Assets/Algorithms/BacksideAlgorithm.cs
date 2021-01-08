@@ -88,7 +88,7 @@ public class BacksideAlgorithm : Algorithm
             var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value, stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value, 0);
         }
         if (info.data.modifier == CutSettingData.Modifier.DepthDependant) MoveAllPointsDepthDependant(info, newMesh, stati);
-        if (info.data.modifier == CutSettingData.Modifier.Compute) MoveVerticesToValidPositions(info, newMesh, stati); //TODO
+        if (info.data.modifier == CutSettingData.Modifier.Compute) MoveVerticesToValidPositions(info, newMesh, stati);
         painted.ForEach(index => info.mesh.RemoveTriangle(index));
 
         var openEdges = newMesh.BoundaryEdgeIndices();
@@ -116,7 +116,7 @@ public class BacksideAlgorithm : Algorithm
         foreach (var status in stati)
         {
             var point = info.mesh.GetVertex(status.Value.idOldMeshInner.Value);
-            var newPoint = MovePointInsideAndAwayFromShell(info, point);
+            var newPoint = MovePointInsideAndAwayFromShell(info, point, 1);
             info.mesh.SetVertex(status.Value.idOldMeshInner.Value, newPoint);
             newMesh.SetVertex(status.Value.idNewMeshInner.Value, newPoint);
 

@@ -8,6 +8,7 @@ using Assets.Algorithms;
 using Assets.Classes;
 using Assets.g3UnityUtils;
 using g3;
+using gs;
 using UnityEngine;
 
 public class Generate : MonoBehaviour
@@ -42,6 +43,19 @@ public class Generate : MonoBehaviour
             originalMesh = new DMesh3(mesh);
         }
         center = transform.TransformPoint(mesh.GetBounds().Center.toVector3());
+
+    }
+
+    public void Remesh()
+    {
+        Remesher r = new Remesher(mesh);
+        r.PreventNormalFlips = true;
+        double min_edge_len, max_edge_len, avg_edge_len;
+        MeshQueries.EdgeLengthStats(mesh, out min_edge_len, out max_edge_len, out avg_edge_len);
+        r.SetTargetEdgeLength(avg_edge_len * 0.8);
+        r.SetProjectionTarget(MeshProjectionTarget.Auto(mesh));
+        r.BasicRemeshPass();
+        Redraw();
     }
 
     public void Cut(List<CutSettingData> cutSettings)
@@ -89,12 +103,12 @@ public class Generate : MonoBehaviour
             }
 
         }
-        g3UnityUtils.SetGOMesh(gameObject, mesh);
+        Redraw();
     }
 
     public void Redraw()
     {
-        g3UnityUtils.SetGOMesh(gameObject, mesh);
+        mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
     }
 
     public void Explode(float value)

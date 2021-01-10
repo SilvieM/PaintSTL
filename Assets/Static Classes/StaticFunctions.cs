@@ -9,6 +9,7 @@ namespace Assets.Static_Classes
     {
         public static GameObject SpawnNewObject(DMesh3 mesh, string name="CutObject", bool isImported = false)
         {
+
             var res = Resources.Load("STLMeshMaterial2") as Material;
             var obj = g3UnityUtils.g3UnityUtils.CreateMeshGO(name, mesh, null, res);
             obj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);

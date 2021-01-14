@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Assets;
 using Assets.Classes;
 using JetBrains.Annotations;
@@ -26,6 +27,11 @@ public class CutSettings : MonoBehaviour
         
     }
 
+    public void CutSettingDropdownChanged()
+    {
+        
+    }
+
     public List<CutSettingData> GetSettings()
     {
         var data = new List<CutSettingData>();
@@ -34,29 +40,39 @@ public class CutSettings : MonoBehaviour
         for (var index = 0; index < cutSettingColorGameObjects.Count; index++)
         {
             var child = cutSettingColorGameObjects[index];
-            var depth = Double.Parse(child.GetComponentInChildren<TMPro.TMP_InputField>().text);
-            var dropdowns = child.GetComponentsInChildren<TMPro.TMP_Dropdown>();
-            var algo = (Algorithm.AlgorithmType) dropdowns[0].value;
-            var modifier = (CutSettingData.Modifier) dropdowns[1].value;
-            data.Add(new CutSettingData(index+1, algo, depth, modifier, minDepth )); //because the base color was left out we need index+1
+            var line = child.GetComponent<CutSettingUILine>();
             
+            var algo = (Algorithm.AlgorithmType) line.AlgoDropdown.value;
+            if (algo == Algorithm.AlgorithmType.Ignore) continue;
+            if (line.mainToggle.isOn)
+            {
+                ColorManager.Instance.MainColorId = index;
+                continue; //Maincolor will not be cut, so no need to add it to data
+            }
+            var depth = Double.Parse(line.depthField.text);
+            var modifier = (CutSettingData.Modifier) line.ModifierDropdown.value;
+            data.Add(new CutSettingData(index, algo, depth, modifier, minDepth ));
         }
-
         return data;
     }
 
     public void Populate()
     {
+        var toggleGroup = GetComponent<ToggleGroup>();
+        
         var childCount = cutSettingsContainer.transform.childCount;
         GameObject colors = (GameObject)Resources.Load("CutSettingColor");
 
-        var list = ColorManager.Instance.GetUsedColorsWithoutBase();
+        var list = ColorManager.Instance.GetUsedColors().Keys.ToList();
         for (var index = childCount; index < list.Count; index++)
         {
             var usedColor = list[index];
             var instance = Instantiate(colors, cutSettingsContainer.transform);
+            toggleGroup.RegisterToggle(instance.GetComponentInChildren<Toggle>());
+            instance.GetComponentInChildren<Toggle>().group = toggleGroup;
             instance.GetComponentInChildren<Image>().color = usedColor;
             cutSettingColorGameObjects.Add(instance);
         }
+        
     }
 }

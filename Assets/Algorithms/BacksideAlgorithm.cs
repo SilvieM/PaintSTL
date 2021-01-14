@@ -85,7 +85,7 @@ public class BacksideAlgorithm : Algorithm
             info.mesh.SetVertexColor(stati[triangle.b].idOldMeshInner.Value, color);
             info.mesh.SetVertexColor(stati[triangle.c].idOldMeshInner.Value, color);
             var newTriInner = newMesh.AppendTriangle(stati[triangle.a].idNewMeshInner.Value, stati[triangle.c].idNewMeshInner.Value, stati[triangle.b].idNewMeshInner.Value, info.data.ColorNum);
-            var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value, stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value, 0);
+            var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value, stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value, ColorManager.Instance.MainColorId);
         }
         if (info.data.modifier == CutSettingData.Modifier.DepthDependant) MoveAllPointsDepthDependant(info, newMesh, stati);
         if (info.data.modifier == CutSettingData.Modifier.Compute) MoveVerticesToValidPositions(info, newMesh, stati);
@@ -103,7 +103,7 @@ public class BacksideAlgorithm : Algorithm
         {
             var edgeOriented = info.mesh.GetOrientedBoundaryEdgeV(openEdge);
             int thirdPoint = Corresponding(stati, edgeOriented.a, false);
-            var newTriSide = info.mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, 0);
+            var newTriSide = info.mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, ColorManager.Instance.MainColorId);
         }
         
         

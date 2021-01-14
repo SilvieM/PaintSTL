@@ -62,7 +62,7 @@ public class OnePointAlgorithm : Algorithm
             var eids = info.mesh.BoundaryEdgeIndices().ToList();
             foreach (var openEdge in eids)
             {
-                AddTriangle(info.mesh, openEdge, newPointIdInOldMesh, 0);
+                AddTriangle(info.mesh, openEdge, newPointIdInOldMesh, ColorManager.Instance.MainColorId);
             }
 
             var eidsNewMesh = newMesh.BoundaryEdgeIndices().ToList();
@@ -82,10 +82,6 @@ public class OnePointAlgorithm : Algorithm
         return info.mesh;
     }
 
-    public void CutOnePiece(CuttingInfo info)
-    {
-
-    }
 
     private void AddTriangle(DMesh3 currentMesh, int openEdge, int centerPoint, int currentGid)
     {

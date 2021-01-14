@@ -8693,6 +8693,7 @@ GameObject:
   - component: {fileID: 940140844}
   - component: {fileID: 940140843}
   - component: {fileID: 940140842}
+  - component: {fileID: 940140847}
   m_Layer: 5
   m_Name: CutSettings
   m_TagString: Untagged
@@ -8822,6 +8823,19 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &940140847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 940140840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fafe2cfe61f6974895a912c3755e8f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AllowSwitchOff: 0
 --- !u!1 &964484294
 GameObject:
   m_ObjectHideFlags: 0

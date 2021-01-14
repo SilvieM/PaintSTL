@@ -13,6 +13,8 @@ namespace Assets.Classes
         public double depth;
         public Modifier modifier;
         public double minDepth;
+        public int mainColorId;
+
         public CutSettingData(int colorNum, Algorithm.AlgorithmType algo, double depth, Modifier modifier, double minDepth)
         {
             ColorNum = colorNum;

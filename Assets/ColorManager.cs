@@ -111,5 +111,7 @@ namespace Assets
         public enum Tools { Brush, Bucket }
 
         public Tools currentTool;
+
+        public int MainColorId;
     }
 }

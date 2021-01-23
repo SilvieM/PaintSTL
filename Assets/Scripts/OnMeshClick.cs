@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
 using Assets;
-using Assets.g3UnityUtils;
 using g3;
-using JetBrains.Annotations;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class OnMeshClick : MonoBehaviour
 {
@@ -58,11 +52,11 @@ public class OnMeshClick : MonoBehaviour
                 var colorIndex = ColorManager.Instance.FieldPainted(paintColor);
 
                 var colorsNew = mesh.colors;
-                var colorsForUndo = new Dictionary<int, int>();
+                //var colorsForUndo = new Dictionary<int, int>();
                 foreach (var triIndex in triIndices)
                 {
-                    var triGroupBefore = dmesh.GetTriangleGroup(triIndex);
-                    colorsForUndo.Add(triIndex, triGroupBefore);
+                    //var triGroupBefore = dmesh.GetTriangleGroup(triIndex);
+                    //colorsForUndo.Add(triIndex, triGroupBefore);
                     dmesh.SetTriangleGroup(triIndex, colorIndex);
                     for (int i = 0; i < 3; i++)
                     {
@@ -70,7 +64,7 @@ public class OnMeshClick : MonoBehaviour
                     }
                 }
                 mesh.colors = colorsNew;
-                StateManager.Instance.SaveAction(new StateManager.PaintAction(colorsForUndo));
+                //StateManager.Instance.SaveAction(new StateManager.PaintAction(colorsForUndo));
             }
 
             

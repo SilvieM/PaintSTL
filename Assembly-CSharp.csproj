@@ -104,6 +104,7 @@
      <Compile Include="Assets\g3UnityUtils\g3UnityUtils.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SimpleScript.cs" />
      <Compile Include="Assets\Export.cs" />
+     <Compile Include="Assets\SaveAndLoad.cs" />
      <Compile Include="Assets\ColorBox.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_FrameRateCounter.cs" />

@@ -141,6 +141,10 @@ public class InterfaceFunctions : MonoBehaviour
     {
         Application.Quit();
     }
-    
+
+    public void SavePainted()
+    {
+
+    }
     
 }

@@ -28,19 +28,19 @@ public class Generate : MonoBehaviour
 
     public void Update()
     {
-        if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.Z))
-        {
-            Debug.Log("Undo");
-            var action = StateManager.Instance.PeekLastAction();
-            if (action == null) return;
-            Debug.Log($"Undo {action.painted.Count}, {action.painted.Values.First()}");
-            foreach (var keyValuePair in action.painted)
-            {
-                mesh.SetTriangleGroup(keyValuePair.Key, keyValuePair.Value);
-            }
-            StateManager.Instance.CommitLastAction();
-        }
-        Redraw();
+        //if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.Z))
+        //{
+        //    Debug.Log("Undo");
+        //    var action = StateManager.Instance.PeekLastAction();
+        //    if (action == null) return;
+        //    Debug.Log($"Undo {action.painted.Count}, {action.painted.Values.First()}");
+        //    foreach (var keyValuePair in action.painted)
+        //    {
+        //        mesh.SetTriangleGroup(keyValuePair.Key, keyValuePair.Value);
+        //    }
+        //    StateManager.Instance.CommitLastAction();
+        //}
+        //Redraw();
     }
 
 

@@ -50,6 +50,16 @@ namespace Assets
         private readonly Dictionary<Color, int> usedColors = new Dictionary<Color, int>();
         private Color _currentColor;
 
+        public void Clear()
+        {
+            usedColors.Clear();
+        }
+
+        public void Setup(List<Color> colors)
+        {
+            colors.ForEach(color => FieldPainted(color) );
+        }
+
         public int? GetColorId(Color color)
         {
             if (usedColors.ContainsKey(color)) return usedColors[color];

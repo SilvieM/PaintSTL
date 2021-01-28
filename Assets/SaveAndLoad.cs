@@ -64,12 +64,14 @@ public class SaveAndLoad : MonoBehaviour
         {
             ColorManager.Instance.Clear();
             string[] lines = System.IO.File.ReadAllLines(colorsFile);
+            var color = UnityEngine.Color.clear;
             foreach (var line in lines)
             {
-                var color = UnityEngine.Color.clear;
                 ColorUtility.TryParseHtmlString(line, out color);
                 ColorManager.Instance.FieldPainted(color);
             }
+
+            ColorManager.Instance.currentColor = color;
         }
         else
         {

@@ -63,6 +63,7 @@ public class SaveAndLoad : MonoBehaviour
         if (File.Exists(colorsFile))
         {
             ColorManager.Instance.Clear();
+
             string[] lines = System.IO.File.ReadAllLines(colorsFile);
             var color = UnityEngine.Color.clear;
             foreach (var line in lines)

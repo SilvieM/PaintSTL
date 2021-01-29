@@ -57,11 +57,11 @@
   <ItemGroup>
      <Compile Include="Assets\HSVPicker\Editor\BoxSliderEditor.cs" />
      <None Include="Assets\HSVPicker\Editor\HSVPicker.Editors.asmdef" />
- <Reference Include="UnityEditor.UI">
- <HintPath>D:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
- </Reference>
  <Reference Include="UnityEngine.UI">
  <HintPath>D:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEditor.UI">
+ <HintPath>D:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.TestRunner">
  <HintPath>D:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/UnityEditor.TestRunner.dll</HintPath>

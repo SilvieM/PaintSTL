@@ -60,11 +60,11 @@
      <Compile Include="Packages\co.parabox.stl\Runtime\Stl.cs" />
      <Compile Include="Packages\co.parabox.stl\Runtime\VectorHash.cs" />
      <None Include="Packages\co.parabox.stl\Runtime\Parabox.Stl.asmdef" />
- <Reference Include="UnityEditor.UI">
- <HintPath>D:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
- </Reference>
  <Reference Include="UnityEngine.UI">
  <HintPath>D:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEditor.UI">
+ <HintPath>D:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.AIModule">
  <HintPath>D:/Programme/Unity/Editors/2020.1.2f1/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>

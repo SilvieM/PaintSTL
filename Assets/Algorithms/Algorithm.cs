@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class Algorithm
 {
-    public enum AlgorithmType {Backside, OnePoint, Ignore }
+    public enum AlgorithmType {Backside, OnePoint, HoleFill, Ignore }
 
     public static Algorithm BuildAlgo(AlgorithmType whichAlgo)
     {
@@ -16,6 +16,7 @@ public class Algorithm
             case AlgorithmType.Ignore: return null;
             case AlgorithmType.OnePoint: return new OnePointAlgorithm();
             case AlgorithmType.Backside: return new BacksideAlgorithm();
+            case AlgorithmType.HoleFill: return new HoleFillAlgorithm();
         }
 
         return null;

@@ -2054,6 +2054,8 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: Cut Point
       m_Image: {fileID: 0}
+    - m_Text: Cut Hole Fill
+      m_Image: {fileID: 0}
     - m_Text: Ignore
       m_Image: {fileID: 0}
   m_OnValueChanged:

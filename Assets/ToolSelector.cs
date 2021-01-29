@@ -8,6 +8,7 @@ public class ToolSelector : MonoBehaviour
 {
     private Image brush;
     private Image bucket;
+    private Image refiner;
 
     public enum Tools { Brush, Bucket}
     // Start is called before the first frame update
@@ -16,6 +17,7 @@ public class ToolSelector : MonoBehaviour
         var symbols = GetComponentsInChildren<Image>();
         brush = symbols[0];
         bucket = symbols[1];
+        refiner = symbols[2];
         brush.color = Color.red;
         ColorManager.Instance.currentTool = ColorManager.Tools.Brush;
     }
@@ -30,6 +32,7 @@ public class ToolSelector : MonoBehaviour
     {
         brush.color = Color.black;
         bucket.color = Color.red;
+        refiner.color = Color.black;
         ColorManager.Instance.currentTool = ColorManager.Tools.Bucket;
     }
 
@@ -37,6 +40,15 @@ public class ToolSelector : MonoBehaviour
     {
         brush.color = Color.red;
         bucket.color = Color.black;
+        refiner.color = Color.black;
         ColorManager.Instance.currentTool = ColorManager.Tools.Brush;
+    }
+
+    public void ChangeToolRefiner()
+    {
+        brush.color = Color.black;
+        bucket.color = Color.black;
+        refiner.color = Color.red;
+        ColorManager.Instance.currentTool = ColorManager.Tools.Refiner;
     }
 }

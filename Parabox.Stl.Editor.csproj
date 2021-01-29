@@ -59,11 +59,11 @@
      <Compile Include="Packages\co.parabox.stl\Editor\StlImporterEditor.cs" />
      <Compile Include="Packages\co.parabox.stl\Editor\StlImporter.cs" />
      <None Include="Packages\co.parabox.stl\Editor\Parabox.Stl.Editor.asmdef" />
- <Reference Include="UnityEngine.UI">
- <HintPath>D:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
- </Reference>
  <Reference Include="UnityEditor.UI">
  <HintPath>D:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.UI">
+ <HintPath>D:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.TestRunner">
  <HintPath>D:/Daten/Unity/TestProjekt2/Library/ScriptAssemblies/UnityEditor.TestRunner.dll</HintPath>

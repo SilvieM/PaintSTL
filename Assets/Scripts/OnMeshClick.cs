@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Assets;
+using Assets.g3UnityUtils;
 using g3;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class OnMeshClick : MonoBehaviour
 {
@@ -33,45 +35,76 @@ public class OnMeshClick : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, 100) && (hit.transform == transform || hit.transform.parent == transform))
         {
-            var paintColor = ColorManager.Instance.currentColor;
-            var mesh = hit.transform.gameObject.GetComponent<MeshFilter>().sharedMesh;
-            int[] meshtriangles = mesh.triangles;
-            var dmesh = generate.mesh;
-            var rangeSquared = Math.Pow(range, 2);
-            var useBrush = ColorManager.Instance.currentTool == ColorManager.Tools.Brush;
-            var triIndices = new MeshFaceSelection(dmesh);
-
-            if(useBrush) triIndices.FloodFill(hit.triangleIndex, tid => IsInRange(dmesh, hit.triangleIndex, tid, rangeSquared), eid => CheckAngle(dmesh, eid));
-            else triIndices.FloodFill(hit.triangleIndex, null, eid => CheckAngle(dmesh, eid) );
-
-            selection = triIndices; //will make it possible to highlight
-
-            if (Input.GetMouseButton(0))
+            if (ColorManager.Instance.currentTool == ColorManager.Tools.Brush ||
+                ColorManager.Instance.currentTool == ColorManager.Tools.Bucket)
             {
-                //Actually Paint
-                var colorIndex = ColorManager.Instance.FieldPainted(paintColor);
-
-                var colorsNew = mesh.colors;
-                //var colorsForUndo = new Dictionary<int, int>();
-                foreach (var triIndex in triIndices)
-                {
-                    //var triGroupBefore = dmesh.GetTriangleGroup(triIndex);
-                    //colorsForUndo.Add(triIndex, triGroupBefore);
-                    dmesh.SetTriangleGroup(triIndex, colorIndex);
-                    for (int i = 0; i < 3; i++)
-                    {
-                        colorsNew[meshtriangles[triIndex * 3 + i]] = paintColor;
-                    }
-                }
-                mesh.colors = colorsNew;
-                //StateManager.Instance.SaveAction(new StateManager.PaintAction(colorsForUndo));
+                PreviewAndPaint(hit);
             }
 
-            
+            if (ColorManager.Instance.currentTool == ColorManager.Tools.Refiner)
+            {
+                Refine(hit);
+            }
+
         }
         else
         {
             selection = null;
+        }
+    }
+
+    private void PreviewAndPaint(RaycastHit hit)
+    {
+        var paintColor = ColorManager.Instance.currentColor;
+        var mesh = hit.transform.gameObject.GetComponent<MeshFilter>().sharedMesh;
+        int[] meshtriangles = mesh.triangles;
+        var dmesh = generate.mesh;
+        var rangeSquared = Math.Pow(range, 2);
+        var useBrush = ColorManager.Instance.currentTool == ColorManager.Tools.Brush;
+        var triIndices = new MeshFaceSelection(dmesh);
+
+        if (useBrush)
+            triIndices.FloodFill(hit.triangleIndex,
+                tid => IsInRange(dmesh, hit.triangleIndex, tid, rangeSquared), eid => CheckAngle(dmesh, eid));
+        else triIndices.FloodFill(hit.triangleIndex, null, eid => CheckAngle(dmesh, eid));
+
+        selection = triIndices; //will make it possible to highlight
+
+        if (Input.GetMouseButton(0))
+        {
+            //Actually Paint
+            var colorIndex = ColorManager.Instance.FieldPainted(paintColor);
+
+            var colorsNew = mesh.colors;
+            //var colorsForUndo = new Dictionary<int, int>();
+            foreach (var triIndex in triIndices)
+            {
+                //var triGroupBefore = dmesh.GetTriangleGroup(triIndex);
+                //colorsForUndo.Add(triIndex, triGroupBefore);
+                dmesh.SetTriangleGroup(triIndex, colorIndex);
+                for (int i = 0; i < 3; i++)
+                {
+                    colorsNew[meshtriangles[triIndex * 3 + i]] = paintColor;
+                }
+            }
+
+            mesh.colors = colorsNew;
+            //StateManager.Instance.SaveAction(new StateManager.PaintAction(colorsForUndo));
+        }
+    }
+
+    private void Refine(RaycastHit hit)
+    {
+        var mesh = hit.transform.gameObject.GetComponent<MeshFilter>().sharedMesh;
+        var dmesh = generate.mesh;
+        selection = new MeshFaceSelection(dmesh);
+        selection.Select(hit.triangleIndex);
+        if (Input.GetMouseButtonDown(0)) //button down because it should not be possible to drag - it would lag
+        {
+            var result = new DMesh3.PokeTriangleInfo();
+            dmesh.PokeTriangle(hit.triangleIndex, hit.barycentricCoordinate.toVector3d(), out result);
+            selection.Select(new int[] {result.new_t1, result.new_t2});
+            generate.Redraw();
         }
     }
 

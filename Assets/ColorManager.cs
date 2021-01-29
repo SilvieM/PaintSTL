@@ -118,7 +118,7 @@ namespace Assets
         {
             return usedColors.Keys.ToList().Skip(1).ToList();
         }
-        public enum Tools { Brush, Bucket }
+        public enum Tools { Brush, Bucket, Refiner }
 
         public Tools currentTool;
 

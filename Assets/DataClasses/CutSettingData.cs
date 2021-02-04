@@ -23,6 +23,6 @@ namespace Assets.Classes
             this.minDepth = minDepth;
         }
 
-        public enum Modifier { None, DepthDependant, Compute, StraightNormals }
+        public enum Modifier { None, DepthDependant, Compute, StraightNormals, AveragedNormals }
     }
 }

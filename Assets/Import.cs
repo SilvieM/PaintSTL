@@ -42,10 +42,10 @@ public class Import : MonoBehaviour
     private IEnumerator ReadMesh(string path)
     {
         DMesh3 readMesh = StandardMeshReader.ReadMesh(path);
-
+        var errorMsg = "";
         if (!readMesh.CheckValidity(eFailMode: FailMode.ReturnOnly))
         {
-            var errorMsg = "Imported Model has errors.";
+            errorMsg += "Imported Model has errors.";
             var loops = new MeshBoundaryLoops(readMesh, true);
             if (loops.SawOpenSpans) errorMsg += " Open Spans can not be filled. ";
             var fixedHoles = 0;
@@ -56,25 +56,33 @@ public class Import : MonoBehaviour
                 if (valid == ValidationStatus.Ok)
                 {
                     var res = holeFiller.Fill(0);
-                    if (res) fixedHoles ++;
+                    if (res) fixedHoles++;
                 }
             }
+
             if (fixedHoles > 0) errorMsg += $"Fixed {fixedHoles} holes for you. ";
-            if(!loops.Any()) errorMsg += "No holes had to be fixed. ";
+            if (!loops.Any()) errorMsg += "No holes had to be fixed. ";
             MeshAutoRepair repair = new MeshAutoRepair(readMesh);
             bool bOK = repair.Apply();
             if (bOK == false)
                 errorMsg += ("Autorepair failed. ");
-                else
+            else
                 errorMsg += ("Autorepair done. ");
             if (readMesh.CheckValidity(eFailMode: FailMode.ReturnOnly)) errorMsg += "Model is now valid. ";
             else errorMsg += "Could not fix all errors.";
-            StaticFunctions.ErrorMessage(errorMsg);
-            if (!readMesh.IsCompact)
-            {
-                readMesh = new DMesh3(readMesh, true);
-            }
         }
+
+        var occlusionRemover = new RemoveOccludedTriangles(readMesh);
+        bool changed = occlusionRemover.Apply();
+        if (changed) errorMsg += " Removed occluded triangles.";
+
+        if(errorMsg != "") StaticFunctions.ErrorMessage(errorMsg);
+        Debug.Log(errorMsg);
+        if (!readMesh.IsCompact)
+        {
+            readMesh = new DMesh3(readMesh, true);
+        }
+        
         var filename = Path.GetFileNameWithoutExtension(path);
         readMesh.EnableTriangleGroups();
         readMesh.EnableVertexColors(new Vector3f(1, 1, 1));

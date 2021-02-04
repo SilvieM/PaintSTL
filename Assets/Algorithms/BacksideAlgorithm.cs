@@ -8,6 +8,7 @@ using Assets.Classes;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
 using g3;
+using gs;
 using UnityEngine;
 
 public class BacksideAlgorithm : Algorithm
@@ -73,6 +74,14 @@ public class BacksideAlgorithm : Algorithm
                 if (info.mesh.IsGroupBoundaryVertex(triangle.c))
                     normal3 = info.mesh.GetTriNormal(triIndex);
             }
+
+            if (info.data.modifier == CutSettingData.Modifier.AveragedNormals)
+            {
+                normal1 = GetAveragedNormal(info.mesh, triangle.a);
+                normal2 = GetAveragedNormal(info.mesh, triangle.b);
+                normal3 = GetAveragedNormal(info.mesh, triangle.c);
+            }
+
             
             var pos1 = vertex1 - normal1 * info.data.depth;
             var pos2 = vertex2 - normal2 * info.data.depth;
@@ -117,7 +126,63 @@ public class BacksideAlgorithm : Algorithm
         
         
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
+        //var remover = new RemoveDuplicateTriangles(info.mesh);
+        //remover.CheckOrientation = false;
+        //var removed = remover.Apply();
+        //Debug.Log($"Removed duplicates: {removed}");
         return info.mesh;
+    }
+
+    private static Vector3d GetAveragedNormal(DMesh3 mesh, int vertex)
+    {
+        MeshFaceSelection selection = new MeshFaceSelection(mesh);
+        var surroundingTris = new List<int>();
+        mesh.GetVtxTriangles(vertex, surroundingTris, false);
+        selection.FloodFill(surroundingTris.ToArray(), i => IsInRange(mesh, vertex, i, 3) );
+        Vector3d cumulative = Vector3d.Zero;
+        foreach (var i in selection)
+        {
+            cumulative += mesh.GetTriNormal(i);
+        }
+
+        var normal = cumulative / selection.Count;
+        //var tris = mesh.VtxTrianglesItr(vertex);
+        //var neighbors = tris.Select(tri => mesh.GetTriNeighbourTris(tri));
+        //int totalNumbers = 0;
+        //Vector3d cumulative = Vector3d.Zero;
+        //foreach (var index3I in neighbors)
+        //{
+        //    if (mesh.IsTriangle(index3I.a))
+        //    {
+        //        cumulative += mesh.GetTriNormal(index3I.a);
+        //        totalNumbers++;
+        //    }
+        //    if (mesh.IsTriangle(index3I.b))
+        //    {
+        //        cumulative += mesh.GetTriNormal(index3I.b);
+        //        totalNumbers++;
+        //    }
+        //    if (mesh.IsTriangle(index3I.c))
+        //    {
+        //        cumulative += mesh.GetTriNormal(index3I.c);
+        //        totalNumbers++;
+        //    }
+        //}
+
+        //normal1 = cumulative / totalNumbers;
+        return normal;
+    }
+    private static bool IsInRange(DMesh3 mesh, int vertexOriginal, int triIndex, double rangeSquared)
+    {
+        var vertexOriginalCoord = mesh.GetVertex(vertexOriginal);
+        var tri = mesh.GetTriangle(triIndex);
+        var v1 = mesh.GetVertex(tri.a);
+        var v2 = mesh.GetVertex(tri.b);
+        var v3 = mesh.GetVertex(tri.c);
+        if (v1.DistanceSquared(vertexOriginalCoord) < rangeSquared) return true;
+        if (v2.DistanceSquared(vertexOriginalCoord) < rangeSquared) return true;
+        if (v3.DistanceSquared(vertexOriginalCoord) < rangeSquared) return true;
+        return false;
     }
 
     private void MoveVerticesToValidPositions(CuttingInfo info, DMesh3 newMesh, Dictionary<int, PeprStatusVert> stati)

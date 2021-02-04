@@ -36,10 +36,13 @@ public class CutSettingUILine : MonoBehaviour
         {
            if(ModifierDropdown.options.Find(data => data.text == "StraightNormals") == null)
                ModifierDropdown.options.Add(new TMP_Dropdown.OptionData("StraightNormals"));
+           if (ModifierDropdown.options.Find(data => data.text == "AveragedNormals") == null)
+               ModifierDropdown.options.Add(new TMP_Dropdown.OptionData("AveragedNormals"));
         }
         else
         {
             ModifierDropdown.options.RemoveAll(data => data.text == "StraightNormals");
+            ModifierDropdown.options.RemoveAll(data => data.text == "AveragedNormals");
         }
     }
 

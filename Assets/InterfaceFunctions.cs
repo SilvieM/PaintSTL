@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System.Linq;
+using System.Threading;
 using Assets;
 using UnityEngine;
 using UnityEngine.UI;
@@ -113,9 +115,9 @@ public class InterfaceFunctions : MonoBehaviour
     public void Cut()
     {
         ResetCutted();
-        var generate = GameObject.FindObjectOfType<Generate>();
+        var generate = GameObject.FindObjectsOfType<Generate>(); //there should not be any others anymore as they should be destroyed by reset, but sometimes this is not fast enough and then it picks up the wrong one
         var settings = cutSettings.GetComponent<CutSettings>().GetSettings();
-        generate.Cut(settings);
+        generate.First(gen => gen.isImported).Cut(settings);
     }
 
 

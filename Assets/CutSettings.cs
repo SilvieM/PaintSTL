@@ -51,7 +51,8 @@ public class CutSettings : MonoBehaviour
             }
             var depth = Double.Parse(line.depthField.text);
             var modifier = (CutSettingData.Modifier) line.ModifierDropdown.value;
-            data.Add(new CutSettingData(index, algo, depth, modifier, minDepth ));
+            var cutSettingData = new CutSettingData(index, algo, depth, modifier, minDepth );
+            data.Add(cutSettingData);
         }
         return data;
     }

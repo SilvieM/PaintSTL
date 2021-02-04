@@ -3254,6 +3254,8 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: Compute
       m_Image: {fileID: 0}
+    - m_Text: StraightNormals
+      m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []

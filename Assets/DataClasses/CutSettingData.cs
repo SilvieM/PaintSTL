@@ -14,7 +14,6 @@ namespace Assets.Classes
         public Modifier modifier;
         public double minDepth;
         public int mainColorId;
-
         public CutSettingData(int colorNum, Algorithm.AlgorithmType algo, double depth, Modifier modifier, double minDepth)
         {
             ColorNum = colorNum;
@@ -24,6 +23,6 @@ namespace Assets.Classes
             this.minDepth = minDepth;
         }
 
-        public enum Modifier { None, DepthDependant, Compute }
+        public enum Modifier { None, DepthDependant, Compute, StraightNormals }
     }
 }

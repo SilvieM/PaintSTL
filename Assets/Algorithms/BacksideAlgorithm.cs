@@ -59,11 +59,20 @@ public class BacksideAlgorithm : Algorithm
 
             var newTriOuter = newMesh.AppendTriangle(stati[triangle.a].idNewMeshOuter.Value, stati[triangle.b].idNewMeshOuter.Value, stati[triangle.c].idNewMeshOuter.Value, info.data.ColorNum);
             
-
+            //normals TriAvgNormal
             var normal1 = info.mesh.GetVertexNormal(triangle.a).toVector3d();
             var normal2 = info.mesh.GetVertexNormal(triangle.b).toVector3d();
             var normal3 = info.mesh.GetVertexNormal(triangle.c).toVector3d();
 
+            if (info.data.modifier == CutSettingData.Modifier.StraightNormals)
+            {
+                if(info.mesh.IsGroupBoundaryVertex(triangle.a))
+                    normal1 = info.mesh.GetTriNormal(triIndex);
+                if (info.mesh.IsGroupBoundaryVertex(triangle.b))
+                    normal2 = info.mesh.GetTriNormal(triIndex);
+                if (info.mesh.IsGroupBoundaryVertex(triangle.c))
+                    normal3 = info.mesh.GetTriNormal(triIndex);
+            }
             
             var pos1 = vertex1 - normal1 * info.data.depth;
             var pos2 = vertex2 - normal2 * info.data.depth;

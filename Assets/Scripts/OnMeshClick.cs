@@ -26,7 +26,7 @@ public class OnMeshClick : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()||(Input.anyKey&&!Input.GetMouseButton(0)))
         {
             selection = null;
             return;

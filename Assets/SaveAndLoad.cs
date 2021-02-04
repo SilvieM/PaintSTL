@@ -25,16 +25,15 @@ public class SaveAndLoad : MonoBehaviour
 
     public void SavePainted()
     {
-        string path = StandaloneFileBrowser.SaveFilePanel("Export STL File", "", "export", "");
+        var generates = GameObject.FindObjectsOfType<Generate>();
+        var generate = generates.First(gen => gen.isImported);
+        string path = StandaloneFileBrowser.SaveFilePanel("Export STL File", "", $"{generate.name}_save ", "");
 
         if (path.Length == 0)
         {
             return;
         }
         System.IO.Directory.CreateDirectory(path);
-        var generates = GameObject.FindObjectsOfType<Generate>();
-        var generate = generates.First(gen => gen.isImported);
-        var num = 0;
         var name = generate.name;
         var mesh = generate.mesh;
         var filename = path + "/" + name + ".g3mesh";

@@ -20,11 +20,11 @@ public class OnePointAlgorithm : Algorithm
         var components = new MeshConnectedComponents(info.mesh);
         components.FilterF = i => info.mesh.GetTriangleGroup(i) == info.data.ColorNum;
         components.FindConnectedT();
+        var newMesh = new DMesh3();
+        newMesh.EnableTriangleGroups();
+        newMesh.EnableVertexColors(new Vector3f(1, 1, 1));
         foreach (var component in components)
         {
-            var newMesh = new DMesh3();
-            newMesh.EnableTriangleGroups();
-            newMesh.EnableVertexColors(new Vector3f(1, 1, 1));
             var normals = new List<Vector3d>();
             var vertices = new List<Vector3d>();
             var verticesInNewMesh = new Dictionary<Vector3d, int>();
@@ -74,9 +74,9 @@ public class OnePointAlgorithm : Algorithm
             info.mesh.SetVertexColor(newPointIdInOldMesh, ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f());
 
             newMesh.SetVertexColor(newPointId, ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f());
-            var newObj = StaticFunctions.SpawnNewObject(newMesh);
+            
         }
-         
+        var newObj = StaticFunctions.SpawnNewObject(newMesh);
 
 
         return info.mesh;

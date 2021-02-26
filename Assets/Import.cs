@@ -72,9 +72,9 @@ public class Import : MonoBehaviour
             else errorMsg += "Could not fix all errors.";
         }
 
-        var occlusionRemover = new RemoveOccludedTriangles(readMesh);
-        bool changed = occlusionRemover.Apply();
-        if (changed) errorMsg += " Removed occluded triangles.";
+        //var occlusionRemover = new RemoveOccludedTriangles(readMesh);
+        //bool changed = occlusionRemover.Apply();
+        //if (changed) errorMsg += " Removed occluded triangles.";
 
         if(errorMsg != "") StaticFunctions.ErrorMessage(errorMsg);
         Debug.Log(errorMsg);

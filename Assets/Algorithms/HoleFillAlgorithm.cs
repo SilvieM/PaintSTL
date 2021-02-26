@@ -67,11 +67,5 @@ namespace Assets.Algorithms
             return info.mesh;
         }
 
-
-        private void AddTriangle(DMesh3 currentMesh, int openEdge, int centerPoint, int currentGid)
-        {
-            var edge = currentMesh.GetOrientedBoundaryEdgeV(openEdge);
-            currentMesh.AppendTriangle(edge.b, edge.a, centerPoint, currentGid);
-        }
     }
 }

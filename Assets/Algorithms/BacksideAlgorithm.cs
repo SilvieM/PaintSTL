@@ -146,30 +146,7 @@ public class BacksideAlgorithm : Algorithm
         }
 
         var normal = cumulative / selection.Count;
-        //var tris = mesh.VtxTrianglesItr(vertex);
-        //var neighbors = tris.Select(tri => mesh.GetTriNeighbourTris(tri));
-        //int totalNumbers = 0;
-        //Vector3d cumulative = Vector3d.Zero;
-        //foreach (var index3I in neighbors)
-        //{
-        //    if (mesh.IsTriangle(index3I.a))
-        //    {
-        //        cumulative += mesh.GetTriNormal(index3I.a);
-        //        totalNumbers++;
-        //    }
-        //    if (mesh.IsTriangle(index3I.b))
-        //    {
-        //        cumulative += mesh.GetTriNormal(index3I.b);
-        //        totalNumbers++;
-        //    }
-        //    if (mesh.IsTriangle(index3I.c))
-        //    {
-        //        cumulative += mesh.GetTriNormal(index3I.c);
-        //        totalNumbers++;
-        //    }
-        //}
 
-        //normal1 = cumulative / totalNumbers;
         return normal;
     }
     private static bool IsInRange(DMesh3 mesh, int vertexOriginal, int triIndex, double rangeSquared)

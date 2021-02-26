@@ -31,7 +31,10 @@ public class CutSettingUILine : MonoBehaviour
             ModifierDropdown.gameObject.SetActive(true);
             depthField.gameObject.SetActive(true);
         }
-
+        if (algo == Algorithm.AlgorithmType.OffsetHoleFill)
+        {
+            ModifierDropdown.gameObject.SetActive(false);
+        }
         if (algo == Algorithm.AlgorithmType.Backside)
         {
            if(ModifierDropdown.options.Find(data => data.text == "StraightNormals") == null)

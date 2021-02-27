@@ -130,6 +130,13 @@ public class BacksideAlgorithm : Algorithm
         //remover.CheckOrientation = false;
         //var removed = remover.Apply();
         //Debug.Log($"Removed duplicates: {removed}");
+        foreach (var peprStatusVert in stati)
+        {
+            
+            if (info.PointToPoint.ContainsKey(peprStatusVert.Value.idNewMeshInner.Value)) Debug.Log($"Double insertion from HF: {peprStatusVert.Value.idNewMeshInner.Value}, {peprStatusVert.Value.idOldMeshInner.Value}");
+            else info.PointToPoint.Add(peprStatusVert.Value.idNewMeshInner.Value, peprStatusVert.Value.idOldMeshInner.Value);
+        }
+        newObj.GetComponent<Generate>().cuttingInfo = info;
         return info.mesh;
     }
 

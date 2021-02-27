@@ -57,7 +57,7 @@ public class OnePointAlgorithm : Algorithm
 
             var newPointId = newMesh.AppendVertex(newPoint);
             var newPointIdInOldMesh = info.mesh.AppendVertex(newPoint);
-
+            info.PointToPoint.Add(newPointId, newPointIdInOldMesh);
 
             var eids = info.mesh.BoundaryEdgeIndices().ToList();
             foreach (var openEdge in eids)
@@ -77,7 +77,7 @@ public class OnePointAlgorithm : Algorithm
             
         }
         var newObj = StaticFunctions.SpawnNewObject(newMesh);
-
+        newObj.GetComponent<Generate>().cuttingInfo = info;
 
         return info.mesh;
     }

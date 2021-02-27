@@ -13,5 +13,6 @@ namespace Assets.Algorithms
         public DMesh3 mesh;
         public DMesh3 oldMesh;
         public CutSettingData data;
+        public Dictionary<int, int> PointToPoint = new Dictionary<int, int>(); //first new vertex id, then old vertex id
     }
 }

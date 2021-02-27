@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using Assets.g3UnityUtils;
 using g3;
 using UnityEngine;
@@ -30,10 +31,19 @@ namespace Assets.Scripts
                     var triangle = generate.mesh.GetTriangle(hit.triangleIndex);
                     var coord = transform.InverseTransformPoint(hit.point);
                     var vert = GetNearestVertex(coord, generate.mesh, triangle);
-                    var dir = Camera.main.transform.up;
-                    var newPos = generate.mesh.GetVertex(vert) + dir.toVector3d() * 0.1f;
-                    generate.mesh.SetVertex(vert, newPos);
-                    generate.Redraw();
+                    if (generate.cuttingInfo.PointToPoint.ContainsKey(vert))
+                    {
+                        var dir = Camera.main.transform.up;
+                        var newPos = generate.mesh.GetVertex(vert) + dir.toVector3d() * 0.1f;
+                        generate.mesh.SetVertex(vert, newPos);
+                        generate.Redraw();
+
+                        var orgVertexId = generate.cuttingInfo.PointToPoint[vert];
+                        var generates = GameObject.FindObjectsOfType<Generate>();
+                        var org = generates.First(gen => gen.isImported);
+                        org.mesh.SetVertex(orgVertexId, newPos);
+                        org.Redraw();
+                    }
                 }
             }
         }

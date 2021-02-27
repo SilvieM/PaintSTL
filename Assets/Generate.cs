@@ -19,7 +19,7 @@ public class Generate : MonoBehaviour
     public DMesh3 originalMesh;
     public Vector3 center;
     public Vector3 centerInWorldCoords => transform.TransformPoint(center);
-
+    public CuttingInfo cuttingInfo; //if this is a cut base, then the info about cut is here
     public void Start()
     {
 
@@ -183,7 +183,22 @@ public class Generate : MonoBehaviour
         return allGroups;
     }
 
+    public int SanityCheck()
+    {
+        if (isImported) return 0;
+        var tree = new DMeshAABBTree3(cuttingInfo.oldMesh, true); //todo build tree earlier??
+        var errors = 0;
+        foreach (var keyValuePair in cuttingInfo.PointToPoint)
+        {
+            if(!mesh.IsVertex(keyValuePair.Key)) Debug.Log($"NonVertex from {cuttingInfo.data.algo.ToString()}");
+            var coords = mesh.GetVertex(keyValuePair.Key);
+            var oldMesh = cuttingInfo.oldMesh;
 
+            if (!tree.IsInside(coords)) errors++;
+        }
+
+        return errors;
+    }
     
 
     public void SaveColored()

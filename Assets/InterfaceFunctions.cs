@@ -144,9 +144,18 @@ public class InterfaceFunctions : MonoBehaviour
         Application.Quit();
     }
 
-    public void SavePainted()
+    public void ErrorCheck()
     {
-
+        string errormsg = "";
+        var generates = GameObject.FindObjectsOfType<Generate>();
+        foreach (var generate in generates)
+        {
+            int errors = generate.SanityCheck();
+            if(errors >0)
+                errormsg += $"Color {generate.cuttingInfo.data.ColorNum}: {errors} Vertices outside of shell. ";
+        }
+        if(errormsg != "") ErrorMessage(errormsg);
+        Debug.Log(errormsg);
     }
     
 }

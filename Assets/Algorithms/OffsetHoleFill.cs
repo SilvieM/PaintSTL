@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Assets.g3UnityUtils;
 using Assets.Static_Classes;
 using g3;
+using UnityEngine;
 
 namespace Assets.Algorithms
 {
@@ -30,17 +31,27 @@ namespace Assets.Algorithms
                 {
                     info.mesh.RemoveTriangle(componentIndex);
                 }
-                BuildStructure(info, newMesh, info.data.ColorNum);
-                BuildStructure(info, info.mesh, info.data.mainColorId);
+                var newVerticesNewMesh = BuildStructure(info, newMesh, info.data.ColorNum);
+                var newVerticesOldMesh = BuildStructure(info, info.mesh, info.data.mainColorId);
+
+                if (newVerticesNewMesh.Count != newVerticesOldMesh.Count) Debug.Log($"new holes: {newVerticesNewMesh.Count}, old holes: {newVerticesOldMesh.Count}");
+                for (var index = 0; index < newVerticesNewMesh.Count; index++)
+                {
+                    var i = newVerticesNewMesh[index];
+                    if (info.PointToPoint.ContainsKey(i)) Debug.Log($"Double insertion from OHF: {i}, {newVerticesOldMesh[index]}");
+                    else info.PointToPoint.Add(i, newVerticesOldMesh[index]);
+                }
 
                 var newObj = StaticFunctions.SpawnNewObject(newMesh);
+                newObj.GetComponent<Generate>().cuttingInfo = info;
             }
 
             return info.mesh;
         }
 
-        private static void BuildStructure(CuttingInfo info, DMesh3 mesh, int color)
+        private static List<int> BuildStructure(CuttingInfo info, DMesh3 mesh, int color)
         {
+            var newVertices = new List<int>();
             var loops = new MeshBoundaryLoops(mesh, true);
             var meshEditor = new MeshEditor(mesh);
             foreach (var meshBoundaryLoop in loops)
@@ -62,8 +73,15 @@ namespace Assets.Algorithms
                 if (valid == ValidationStatus.Ok)
                 {
                     var res = holeFiller.Fill(color);
+                    if (res)
+                    {
+                        var newVertex = holeFiller.NewVertex;
+                        newVertices.Add(newVertex);
+                    }
                 }
             }
+
+            return newVertices;
         }
 
         private bool IsInRange(DMesh3 mesh, int triIndexOriginal, int triIndex, double rangeSquared)

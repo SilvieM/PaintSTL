@@ -25,7 +25,7 @@ namespace Assets.Static_Classes
             }
             obj.transform.localPosition = Vector3.zero;
             obj.AddComponent<Generate>().MyInit(mesh, isImported);
-            
+            obj.AddComponent<DragPoints>();
             return obj;
         }
 

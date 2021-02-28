@@ -18,17 +18,11 @@ namespace Assets.Algorithms
             var painted = FindPaintedTriangles(info.mesh, info.data.ColorNum);
             if (painted.Count <= 0) return info.mesh;
 
-            var components = new MeshConnectedComponents(info.mesh);
-            components.FilterF = i => info.mesh.GetTriangleGroup(i) == info.data.ColorNum;
-            components.FindConnectedT();
-            
-            foreach (var component in components.Components)
-            {
-                DSubmesh3 subMesh = new DSubmesh3(info.mesh, component.Indices);
+                DSubmesh3 subMesh = new DSubmesh3(info.mesh, painted);
                 var newMesh = subMesh.SubMesh;
                 newMesh.EnableTriangleGroups();
                 newMesh.EnableVertexColors(ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f());
-                foreach (var componentIndex in component.Indices)
+                foreach (var componentIndex in painted)
                 {
                     info.mesh.RemoveTriangle(componentIndex);
                 }
@@ -104,7 +98,7 @@ namespace Assets.Algorithms
 
                 var newObj = StaticFunctions.SpawnNewObject(newMesh);
                 newObj.GetComponent<Generate>().cuttingInfo = info;
-            }
+            
 
             return info.mesh;
         }

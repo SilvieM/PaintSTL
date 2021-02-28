@@ -33,7 +33,7 @@ namespace Assets.Scripts
                     var vert = GetNearestVertex(coord, generate.mesh, triangle);
                     if (generate.cuttingInfo.PointToPoint.ContainsKey(vert))
                     {
-                        var dir = Camera.main.transform.up;
+                        var dir = Camera.main.transform.forward*3;
                         var newPos = generate.mesh.GetVertex(vert) + dir.toVector3d() * 0.1f;
                         generate.mesh.SetVertex(vert, newPos);
                         generate.Redraw();

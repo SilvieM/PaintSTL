@@ -74,7 +74,7 @@ public class Generate : MonoBehaviour
         {
             mesh.SetVertexNormal(vertexIndex, mesh.CalcVertexNormal(vertexIndex).toVector3f());
         }
-        Redraw();
+        Redraw(true);
     }
 
 
@@ -126,9 +126,9 @@ public class Generate : MonoBehaviour
         Redraw();
     }
 
-    public void Redraw()
+    public void Redraw(bool doCompact = false)
     {
-        mesh = g3UnityUtils.SetGOMesh(gameObject, mesh);
+        mesh = g3UnityUtils.SetGOMesh(gameObject, mesh, null, doCompact);
     }
 
     public void Explode(float value)

@@ -106,7 +106,10 @@ public class Import : MonoBehaviour
         Camera.main.GetComponent<OrbitingCam>().SetTarget(obj, viewDistance);
         
         DebugGizmos.DrawBoundingBox(readMesh.GetBounds(), obj.transform);
-        
+        var angleSlider = FindObjectOfType<AngleSlider>();
+        if (angleSlider != null) angleSlider.OnSliderWasChanged();
+        var brushSizeSlider = FindObjectOfType<BrushSizeSlider>();
+        if (brushSizeSlider != null) brushSizeSlider.OnSliderWasChanged();
         yield return null;
     }
 }

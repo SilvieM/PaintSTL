@@ -35,13 +35,13 @@ namespace Assets.g3UnityUtils
         }
 
 
-        public static DMesh3 SetGOMesh(GameObject go, DMesh3 mesh, List<Color> colors = null)
+        public static DMesh3 SetGOMesh(GameObject go, DMesh3 mesh, List<Color> colors = null, bool doCompact = false)
         {
             DMesh3 useMesh = mesh;
-            //if (!mesh.IsCompact)
-            //{
-            //    useMesh = new DMesh3(mesh, true);
-            //}
+            if (doCompact &&!mesh.IsCompact)
+            {
+                useMesh = new DMesh3(mesh, true);
+            }
             //Do not compact
 
             MeshFilter filter = go.GetComponent<MeshFilter>();

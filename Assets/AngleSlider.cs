@@ -15,7 +15,7 @@ public class AngleSlider : MonoBehaviour
         text = GetComponentInChildren<Text>();
         OnSliderWasChanged();
     }
-    private void OnSliderWasChanged()
+    public void OnSliderWasChanged()
     {
         OnMeshClick[] components = GameObject.FindObjectsOfType<OnMeshClick>();
         foreach (var onMeshClick in components)

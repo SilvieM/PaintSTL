@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Assets;
 using Assets.g3UnityUtils;
+using Assets.Scripts;
 using Assets.Static_Classes;
 using g3;
 using gs;
@@ -104,7 +105,6 @@ public class Import : MonoBehaviour
         obj.tag = "mainObject";
         var viewDistance = obj.transform.TransformPoint(readMesh.GetBounds().Extents.toVector3()) * 2;
         Camera.main.GetComponent<OrbitingCam>().SetTarget(obj, viewDistance);
-        
         DebugGizmos.DrawBoundingBox(readMesh.GetBounds(), obj.transform);
         var angleSlider = FindObjectOfType<AngleSlider>();
         if (angleSlider != null) angleSlider.OnSliderWasChanged();

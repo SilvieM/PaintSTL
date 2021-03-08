@@ -35,13 +35,29 @@ public class OrbitingCam : MonoBehaviour
     {
         if (Input.GetMouseButton(1))
         {
+            var rotationMiddle = Vector3.zero;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, 100))
+            {
+                rotationMiddle = hit.point;
+            }
+            else
+            {
+                Ray ray2 = Camera.main.ScreenPointToRay(new Vector2(Screen.width/2, Screen.height/2));
+                RaycastHit hit2;
+                if (Physics.SphereCast(ray2, 10.0f, out hit2, 100f))
+                {
+                    rotationMiddle = hit2.point;
+                }
+            }
             var mouseMovement = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
-            transform.RotateAround(Vector3.zero, transform.up, mouseMovement.x*5);
-            transform.RotateAround(Vector3.zero, -transform.right, mouseMovement.y*5);
+            transform.RotateAround(rotationMiddle, transform.up, mouseMovement.x*5);
+            transform.RotateAround(rotationMiddle, -transform.right, mouseMovement.y*5);
         }
 
-        transform.position += GetInputTranslationDirection()*10*Time.deltaTime;
+        transform.position += GetInputTranslationDirection()*0.1f;
     }
     Vector3 GetInputTranslationDirection()
     {

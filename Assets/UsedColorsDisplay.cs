@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using Assets;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,6 +24,15 @@ public class UsedColorsDisplay : MonoBehaviour
     {
         var colorBox = Resources.Load<GameObject>("ColorBox");
         var existingChildren = gameObject.GetComponentsInChildren<ColorBox>();
+        if (existingChildren.Length > colors.Count)
+        {
+            foreach (var existingChild in existingChildren)
+            {
+                Destroy(existingChild.gameObject);
+            }
+            existingChildren = new ColorBox[0];
+        }
+        
         for (var index = 0; index < colors.Count; index++)
         {
             var color = colors[index];

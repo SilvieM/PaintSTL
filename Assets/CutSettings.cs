@@ -65,14 +65,28 @@ public class CutSettings : MonoBehaviour
         GameObject colors = (GameObject)Resources.Load("CutSettingColor");
 
         var list = ColorManager.Instance.GetUsedColors().Keys.ToList();
-        for (var index = childCount; index < list.Count; index++)
+        if (childCount > list.Count) //in that case a new obj was loaded with less colors
         {
-            var usedColor = list[index];
-            var instance = Instantiate(colors, cutSettingsContainer.transform);
-            toggleGroup.RegisterToggle(instance.GetComponentInChildren<Toggle>());
-            instance.GetComponentInChildren<Toggle>().group = toggleGroup;
-            instance.GetComponentInChildren<Image>().color = usedColor;
-            cutSettingColorGameObjects.Add(instance);
+            cutSettingColorGameObjects.ForEach(obj => Destroy(obj));
+            cutSettingColorGameObjects.Clear();
+            childCount = 0;
+        }
+        for (var index = 0; index < list.Count; index++)
+        {
+            if (index >= childCount) //make new
+            {
+                var usedColor = list[index];
+                var instance = Instantiate(colors, cutSettingsContainer.transform);
+                toggleGroup.RegisterToggle(instance.GetComponentInChildren<Toggle>());
+                instance.GetComponentInChildren<Toggle>().group = toggleGroup;
+                instance.GetComponentInChildren<Image>().color = usedColor;
+                cutSettingColorGameObjects.Add(instance);
+            }
+            else
+            {
+                var usedColor = list[index];
+                cutSettingsContainer.transform.GetChild(index).GetComponentInChildren<Image>().color = usedColor;
+            }
         }
         
     }

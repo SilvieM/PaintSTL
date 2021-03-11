@@ -38,107 +38,137 @@ public class BacksideAlgorithm : Algorithm
     {
         var painted = FindPaintedTriangles(info.mesh, info.data.ColorNum);
         if (painted.Count <= 0) return info.mesh;
-        var newMesh = new DMesh3();
-        newMesh.EnableTriangleGroups();
-        newMesh.EnableVertexColors(new Vector3f(1, 1, 1));
+        var components = FindConnectedComponents(info, painted);
 
-        var stati = new Dictionary<int,PeprStatusVert>();
-
-        foreach (var triIndex in painted)
+        var subMeshes = new List<DMesh3>();
+        foreach (var component in components.Components)
         {
-            var triangle = info.mesh.GetTriangle(triIndex);
-            var vertex1 = info.mesh.GetVertex(triangle.a);
-            var vertex2 = info.mesh.GetVertex(triangle.b);
-            var vertex3 = info.mesh.GetVertex(triangle.c);
-            stati.AppendIfNotExists(triangle.a);
-            stati.AppendIfNotExists(triangle.b);
-            stati.AppendIfNotExists(triangle.c);
+            DSubmesh3 subMesh = new DSubmesh3(info.mesh, component.Indices);
+            var newMesh = subMesh.SubMesh;
+            newMesh.EnableTriangleGroups();
+            newMesh.EnableVertexColors(ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f());
 
-            if(stati[triangle.a].idNewMeshOuter==null) stati[triangle.a].idNewMeshOuter = newMesh.AppendVertex(vertex1);
-            if (stati[triangle.b].idNewMeshOuter == null) stati[triangle.b].idNewMeshOuter = newMesh.AppendVertex(vertex2);
-            if (stati[triangle.c].idNewMeshOuter == null) stati[triangle.c].idNewMeshOuter = newMesh.AppendVertex(vertex3);
-
-            var newTriOuter = newMesh.AppendTriangle(stati[triangle.a].idNewMeshOuter.Value, stati[triangle.b].idNewMeshOuter.Value, stati[triangle.c].idNewMeshOuter.Value, info.data.ColorNum);
-            
-            //normals TriAvgNormal
-            var normal1 = info.mesh.GetVertexNormal(triangle.a).toVector3d();
-            var normal2 = info.mesh.GetVertexNormal(triangle.b).toVector3d();
-            var normal3 = info.mesh.GetVertexNormal(triangle.c).toVector3d();
-
-            if (info.data.modifier == CutSettingData.Modifier.StraightNormals)
+            var stati = new Dictionary<int, PeprStatusVert>();
+            foreach (var triIndex in component.Indices)
             {
-                if(info.mesh.IsGroupBoundaryVertex(triangle.a))
-                    normal1 = info.mesh.GetTriNormal(triIndex);
-                if (info.mesh.IsGroupBoundaryVertex(triangle.b))
-                    normal2 = info.mesh.GetTriNormal(triIndex);
-                if (info.mesh.IsGroupBoundaryVertex(triangle.c))
-                    normal3 = info.mesh.GetTriNormal(triIndex);
+                var triangle = info.mesh.GetTriangle(triIndex);
+                var vertex1 = info.mesh.GetVertex(triangle.a);
+                var vertex2 = info.mesh.GetVertex(triangle.b);
+                var vertex3 = info.mesh.GetVertex(triangle.c);
+                stati.AppendIfNotExists(triangle.a);
+                stati.AppendIfNotExists(triangle.b);
+                stati.AppendIfNotExists(triangle.c);
+
+                if (stati[triangle.a].idNewMeshOuter == null)
+                    stati[triangle.a].idNewMeshOuter = newMesh.AppendVertex(vertex1);
+                if (stati[triangle.b].idNewMeshOuter == null)
+                    stati[triangle.b].idNewMeshOuter = newMesh.AppendVertex(vertex2);
+                if (stati[triangle.c].idNewMeshOuter == null)
+                    stati[triangle.c].idNewMeshOuter = newMesh.AppendVertex(vertex3);
+
+                var newTriOuter = newMesh.AppendTriangle(stati[triangle.a].idNewMeshOuter.Value,
+                    stati[triangle.b].idNewMeshOuter.Value, stati[triangle.c].idNewMeshOuter.Value, info.data.ColorNum);
+
+                //normals TriAvgNormal
+                var normal1 = info.mesh.GetVertexNormal(triangle.a).toVector3d();
+                var normal2 = info.mesh.GetVertexNormal(triangle.b).toVector3d();
+                var normal3 = info.mesh.GetVertexNormal(triangle.c).toVector3d();
+
+                if (info.data.modifier == CutSettingData.Modifier.StraightNormals)
+                {
+                    if (info.mesh.IsGroupBoundaryVertex(triangle.a))
+                        normal1 = info.mesh.GetTriNormal(triIndex);
+                    if (info.mesh.IsGroupBoundaryVertex(triangle.b))
+                        normal2 = info.mesh.GetTriNormal(triIndex);
+                    if (info.mesh.IsGroupBoundaryVertex(triangle.c))
+                        normal3 = info.mesh.GetTriNormal(triIndex);
+                }
+
+                if (info.data.modifier == CutSettingData.Modifier.AveragedNormals)
+                {
+                    normal1 = GetAveragedNormal(info.mesh, triangle.a);
+                    normal2 = GetAveragedNormal(info.mesh, triangle.b);
+                    normal3 = GetAveragedNormal(info.mesh, triangle.c);
+                }
+
+
+                var pos1 = vertex1 - normal1 * info.data.depth;
+                var pos2 = vertex2 - normal2 * info.data.depth;
+                var pos3 = vertex3 - normal3 * info.data.depth;
+
+                if (stati[triangle.a].idNewMeshInner == null)
+                    stati[triangle.a].idNewMeshInner = newMesh.AppendVertex(pos1);
+                if (stati[triangle.b].idNewMeshInner == null)
+                    stati[triangle.b].idNewMeshInner = newMesh.AppendVertex(pos2);
+                if (stati[triangle.c].idNewMeshInner == null)
+                    stati[triangle.c].idNewMeshInner =
+                        newMesh.AppendVertex(
+                            pos3); //TODO it was flipped from here before, but we have to flip when making the triangles
+                if (stati[triangle.a].idOldMeshInner == null)
+                    stati[triangle.a].idOldMeshInner = info.mesh.AppendVertex(pos1);
+                if (stati[triangle.b].idOldMeshInner == null)
+                    stati[triangle.b].idOldMeshInner = info.mesh.AppendVertex(pos2);
+                if (stati[triangle.c].idOldMeshInner == null)
+                    stati[triangle.c].idOldMeshInner = info.mesh.AppendVertex(pos3);
+
+
+                var color = ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f();
+                newMesh.SetVertexColor(stati[triangle.a].idNewMeshInner.Value, color);
+                newMesh.SetVertexColor(stati[triangle.b].idNewMeshInner.Value, color);
+                newMesh.SetVertexColor(stati[triangle.c].idNewMeshInner.Value, color);
+                info.mesh.SetVertexColor(stati[triangle.a].idOldMeshInner.Value, color);
+                info.mesh.SetVertexColor(stati[triangle.b].idOldMeshInner.Value, color);
+                info.mesh.SetVertexColor(stati[triangle.c].idOldMeshInner.Value, color);
+                var newTriInner = newMesh.AppendTriangle(stati[triangle.a].idNewMeshInner.Value,
+                    stati[triangle.c].idNewMeshInner.Value, stati[triangle.b].idNewMeshInner.Value, info.data.ColorNum);
+                var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value,
+                    stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value,
+                    ColorManager.Instance.MainColorId);
             }
 
-            if (info.data.modifier == CutSettingData.Modifier.AveragedNormals)
+            if (info.data.modifier == CutSettingData.Modifier.DepthDependant)
+                MoveAllPointsDepthDependant(info, newMesh, stati);
+            if (info.data.modifier == CutSettingData.Modifier.Compute)
+                MoveVerticesToValidPositions(info, newMesh, stati);
+
+            component.Indices.ToList().ForEach(index => info.mesh.RemoveTriangle(index));
+
+            var openEdges = newMesh.BoundaryEdgeIndices();
+            foreach (var openEdge in openEdges)
             {
-                normal1 = GetAveragedNormal(info.mesh, triangle.a);
-                normal2 = GetAveragedNormal(info.mesh, triangle.b);
-                normal3 = GetAveragedNormal(info.mesh, triangle.c);
+                var edgeOriented = newMesh.GetOrientedBoundaryEdgeV(openEdge);
+                int thirdPoint = Corresponding(stati, edgeOriented.a, true);
+                var newTriSide = newMesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, info.data.ColorNum);
             }
 
-            
-            var pos1 = vertex1 - normal1 * info.data.depth;
-            var pos2 = vertex2 - normal2 * info.data.depth;
-            var pos3 = vertex3 - normal3 * info.data.depth;
-
-            if (stati[triangle.a].idNewMeshInner == null) stati[triangle.a].idNewMeshInner = newMesh.AppendVertex(pos1); 
-            if (stati[triangle.b].idNewMeshInner == null) stati[triangle.b].idNewMeshInner = newMesh.AppendVertex(pos2);
-            if (stati[triangle.c].idNewMeshInner == null) stati[triangle.c].idNewMeshInner = newMesh.AppendVertex(pos3); //TODO it was flipped from here before, but we have to flip when making the triangles
-            if (stati[triangle.a].idOldMeshInner == null) stati[triangle.a].idOldMeshInner = info.mesh.AppendVertex(pos1);
-            if (stati[triangle.b].idOldMeshInner == null) stati[triangle.b].idOldMeshInner = info.mesh.AppendVertex(pos2);
-            if (stati[triangle.c].idOldMeshInner == null) stati[triangle.c].idOldMeshInner = info.mesh.AppendVertex(pos3);
+            var openEdgesOldMesh = info.mesh.BoundaryEdgeIndices();
+            foreach (var openEdge in openEdgesOldMesh)
+            {
+                var edgeOriented = info.mesh.GetOrientedBoundaryEdgeV(openEdge);
+                int thirdPoint = Corresponding(stati, edgeOriented.a, false);
+                var newTriSide = info.mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint,
+                    ColorManager.Instance.MainColorId);
+            }
 
 
-            var color = ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f();
-            newMesh.SetVertexColor(stati[triangle.a].idNewMeshInner.Value, color);
-            newMesh.SetVertexColor(stati[triangle.b].idNewMeshInner.Value, color);
-            newMesh.SetVertexColor(stati[triangle.c].idNewMeshInner.Value, color);
-            info.mesh.SetVertexColor(stati[triangle.a].idOldMeshInner.Value, color);
-            info.mesh.SetVertexColor(stati[triangle.b].idOldMeshInner.Value, color);
-            info.mesh.SetVertexColor(stati[triangle.c].idOldMeshInner.Value, color);
-            var newTriInner = newMesh.AppendTriangle(stati[triangle.a].idNewMeshInner.Value, stati[triangle.c].idNewMeshInner.Value, stati[triangle.b].idNewMeshInner.Value, info.data.ColorNum);
-            var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value, stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value, ColorManager.Instance.MainColorId);
-        }
-        if (info.data.modifier == CutSettingData.Modifier.DepthDependant) MoveAllPointsDepthDependant(info, newMesh, stati);
-        if (info.data.modifier == CutSettingData.Modifier.Compute) MoveVerticesToValidPositions(info, newMesh, stati);
-        painted.ForEach(index => info.mesh.RemoveTriangle(index));
+            foreach (var peprStatusVert in stati)
+            {
 
-        var openEdges = newMesh.BoundaryEdgeIndices();
-        foreach (var openEdge in openEdges)
-        {
-            var edgeOriented = newMesh.GetOrientedBoundaryEdgeV(openEdge);
-            int thirdPoint = Corresponding(stati,edgeOriented.a, true);
-            var newTriSide = newMesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, info.data.ColorNum);
+                if (info.PointToPoint.ContainsKey(peprStatusVert.Value.idNewMeshInner.Value))
+                    Debug.Log(
+                        $"Double insertion from BS: {peprStatusVert.Value.idNewMeshInner.Value}, {peprStatusVert.Value.idOldMeshInner.Value}");
+                else
+                    info.PointToPoint.Add(peprStatusVert.Value.idNewMeshInner.Value,
+                        peprStatusVert.Value.idOldMeshInner.Value);
+            }
+            subMeshes.Add(newMesh);
         }
-        var openEdgesOldMesh = info.mesh.BoundaryEdgeIndices();
-        foreach (var openEdge in openEdgesOldMesh)
-        {
-            var edgeOriented = info.mesh.GetOrientedBoundaryEdgeV(openEdge);
-            int thirdPoint = Corresponding(stati, edgeOriented.a, false);
-            var newTriSide = info.mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint, ColorManager.Instance.MainColorId);
-        }
-        
-        
-        var newObj = StaticFunctions.SpawnNewObject(newMesh);
-        //var remover = new RemoveDuplicateTriangles(info.mesh);
-        //remover.CheckOrientation = false;
-        //var removed = remover.Apply();
-        //Debug.Log($"Removed duplicates: {removed}");
-        foreach (var peprStatusVert in stati)
-        {
-            
-            if (info.PointToPoint.ContainsKey(peprStatusVert.Value.idNewMeshInner.Value)) Debug.Log($"Double insertion from HF: {peprStatusVert.Value.idNewMeshInner.Value}, {peprStatusVert.Value.idOldMeshInner.Value}");
-            else info.PointToPoint.Add(peprStatusVert.Value.idNewMeshInner.Value, peprStatusVert.Value.idOldMeshInner.Value);
-        }
-        newObj.GetComponent<Generate>().cuttingInfo = info;
+
+        InstantiateNewObjects(info, subMeshes);
         return info.mesh;
     }
+
+    
 
     private static Vector3d GetAveragedNormal(DMesh3 mesh, int vertex)
     {

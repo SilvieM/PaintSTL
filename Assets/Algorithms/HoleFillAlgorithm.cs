@@ -17,22 +17,21 @@ namespace Assets.Algorithms
         {
             var painted = FindPaintedTriangles(info.mesh, info.data.ColorNum);
             if (painted.Count <= 0) return info.mesh;
-            
-            //var components = new MeshConnectedComponents(info.mesh);
-            //components.FilterF = i => info.mesh.GetTriangleGroup(i) == info.data.ColorNum;
-            //components.FindConnectedT();
-            //foreach (var component in components.Components)
-            //{
-                DSubmesh3 subMesh = new DSubmesh3(info.mesh, painted);
+
+            var components = FindConnectedComponents(info, painted);
+            var subMeshes = new List<DMesh3>();
+            foreach (var component in components.Components)
+            {
+                DSubmesh3 subMesh = new DSubmesh3(info.mesh, component.Indices);
                 var newMesh = subMesh.SubMesh;
                 newMesh.EnableTriangleGroups();
                 newMesh.EnableVertexColors(ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f());
-                foreach (var componentIndex in painted)
+                foreach (var componentIndex in component.Indices)
                 {
                     info.mesh.RemoveTriangle(componentIndex);
                 }
 
-                
+
                 var loops = new MeshBoundaryLoops(newMesh, true);
                 foreach (var meshBoundaryLoop in loops)
                 {
@@ -45,7 +44,7 @@ namespace Assets.Algorithms
                         {
                             var newVertex = holeFiller.NewVertex;
                             var newTriangles = holeFiller.NewTriangles;
-                            
+
                             //Add the same triangles to old mesh.
                             if (newVertex == -1) //case where it added only one tri
                             {
@@ -76,16 +75,12 @@ namespace Assets.Algorithms
                         }
                     }
                 }
+                subMeshes.Add(newMesh);
+            }
 
-
-                var newObj = StaticFunctions.SpawnNewObject(newMesh);
-                newObj.GetComponent<Generate>().cuttingInfo = info;
-
-
-
+            InstantiateNewObjects(info, subMeshes);
 
             return info.mesh;
         }
-
     }
 }

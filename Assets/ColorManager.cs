@@ -17,10 +17,6 @@ namespace Assets
 
         private ColorManager()
         {
-            //_currentColor = Color.white;
-            //usedColors.Add(Color.white, 0);
-            //OnColorsChanged.Invoke(usedColors.Keys.ToList());
-            //OnCurrentColorChanged.Invoke(currentColorId ?? Int32.MaxValue);
         }
 
         public static ColorManager Instance

@@ -35,6 +35,46 @@ public class Algorithm
         return indices;
     }
 
+    public static MeshConnectedComponents FindConnectedComponents(CuttingInfo info, List<int> painted)
+    {
+        var components = new MeshConnectedComponents(info.mesh);
+        if (info.data.Multipiece)
+        {
+            components.FilterF = i => info.mesh.GetTriangleGroup(i) == info.data.ColorNum;
+            components.FindConnectedT();
+        }
+        else
+        {
+            var newC = new MeshConnectedComponents.Component
+            {
+                Indices = painted.ToArray()
+            };
+            components.Components.Add(newC);
+        }
+
+        return components;
+    }
+
+    public static void InstantiateNewObjects(CuttingInfo info, List<DMesh3> subMeshes)
+    {
+        if (info.data.Multipiece)
+        {
+            foreach (var subMesh in subMeshes)
+            {
+                subMesh.EnableTriangleGroups(info.data.ColorNum);
+                var newObj = StaticFunctions.SpawnNewObject(subMesh);
+                newObj.GetComponent<Generate>().cuttingInfo = info;
+            }
+        }
+        else
+        {
+            var totalNewMesh = MeshEditor.Combine(subMeshes.ToArray());
+            totalNewMesh.EnableTriangleGroups(info.data.ColorNum);
+            var newObj = StaticFunctions.SpawnNewObject(totalNewMesh);
+            newObj.GetComponent<Generate>().cuttingInfo = info; //todo do we need to fix PointToPoint if we combine?
+        }
+    }
+
     internal bool CheckPositionValid(DMesh3 mesh, Vector3d position, int colorToExclude)
     {
         var spatial = new DMeshAABBTree3(mesh);

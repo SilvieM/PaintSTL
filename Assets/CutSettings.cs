@@ -5,6 +5,7 @@ using System.Linq;
 using Assets;
 using Assets.Classes;
 using JetBrains.Annotations;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,8 @@ public class CutSettings : MonoBehaviour
     public GameObject cutSettingsContainer;
 
     public GameObject minDepthField;
+
+    public TMP_Dropdown Multipiece;
 
     // Start is called before the first frame update
     void Start()
@@ -36,7 +39,7 @@ public class CutSettings : MonoBehaviour
     {
         var data = new List<CutSettingData>();
         var minDepth = Double.Parse(minDepthField.GetComponent<TMPro.TMP_InputField>().text);
-
+        var multipiece = Multipiece.value>0;
         for (var index = 0; index < cutSettingColorGameObjects.Count; index++)
         {
             var child = cutSettingColorGameObjects[index];
@@ -51,7 +54,7 @@ public class CutSettings : MonoBehaviour
             }
             var depth = Double.Parse(line.depthField.text);
             var modifier = (CutSettingData.Modifier) line.ModifierDropdown.value;
-            var cutSettingData = new CutSettingData(index, algo, depth, modifier, minDepth );
+            var cutSettingData = new CutSettingData(index, algo, depth, modifier, minDepth, multipiece );
             data.Add(cutSettingData);
         }
         return data;

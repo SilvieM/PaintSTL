@@ -18,15 +18,19 @@ namespace Assets.Algorithms
             var painted = FindPaintedTriangles(info.mesh, info.data.ColorNum);
             if (painted.Count <= 0) return info.mesh;
 
-                DSubmesh3 subMesh = new DSubmesh3(info.mesh, painted);
+            var components = FindConnectedComponents(info, painted);
+            var subMeshes = new List<DMesh3>();
+            foreach (var component in components.Components)
+            {
+                DSubmesh3 subMesh = new DSubmesh3(info.mesh, component.Indices);
                 var newMesh = subMesh.SubMesh;
                 newMesh.EnableTriangleGroups();
                 newMesh.EnableVertexColors(ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f());
-                foreach (var componentIndex in painted)
+
+                foreach (var componentIndex in component.Indices)
                 {
                     info.mesh.RemoveTriangle(componentIndex);
                 }
-                var pointToPoint = new Dictionary<int, int>();
 
                 var loops = new MeshBoundaryLoops(newMesh, true);
                 var meshEditorNewMesh = new MeshEditor(newMesh);
@@ -41,14 +45,17 @@ namespace Assets.Algorithms
                         var vertextPosition = newMesh.GetVertex(vertex);
                         var newVertex = newMesh.AppendVertex(vertextPosition - normal.toVector3d() * info.data.depth);
                         offsettedVerticesNewMesh.Add(newVertex);
-                        var newVertexOldMesh = info.mesh.AppendVertex(vertextPosition - normal.toVector3d() * info.data.depth);
+                        var newVertexOldMesh =
+                            info.mesh.AppendVertex(vertextPosition - normal.toVector3d() * info.data.depth);
                         offsettedVerticesOldMesh.Add(newVertexOldMesh);
                     }
 
                     var boundaryLoopOfOldMesh = meshBoundaryLoop.Vertices
                         .Select(subv => subMesh.MapVertexToBaseMesh(subv)).ToArray();
-                    var loopNewMesh = meshEditorNewMesh.StitchLoop(meshBoundaryLoop.Vertices, offsettedVerticesNewMesh.ToArray(), info.data.ColorNum);
-                    var loopOldMesh = meshEditorOldMesh.StitchLoop(boundaryLoopOfOldMesh, offsettedVerticesOldMesh.ToArray(), info.data.mainColorId);
+                    var loopNewMesh = meshEditorNewMesh.StitchLoop(meshBoundaryLoop.Vertices,
+                        offsettedVerticesNewMesh.ToArray(), info.data.ColorNum);
+                    var loopOldMesh = meshEditorOldMesh.StitchLoop(boundaryLoopOfOldMesh,
+                        offsettedVerticesOldMesh.ToArray(), info.data.mainColorId);
 
                     for (var index = 0; index < offsettedVerticesNewMesh.Count; index++)
                     {
@@ -95,9 +102,10 @@ namespace Assets.Algorithms
                         }
                     }
                 }
+                subMeshes.Add(newMesh);
+            }
 
-                var newObj = StaticFunctions.SpawnNewObject(newMesh);
-                newObj.GetComponent<Generate>().cuttingInfo = info;
+            InstantiateNewObjects(info, subMeshes);
             
 
             return info.mesh;

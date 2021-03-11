@@ -17,9 +17,7 @@ public class OnePointAlgorithm : Algorithm
         var painted = FindPaintedTriangles(info.mesh, info.data.ColorNum);
         if (painted.Count <= 0) return info.mesh;
 
-        var components = new MeshConnectedComponents(info.mesh);
-        components.FilterF = i => info.mesh.GetTriangleGroup(i) == info.data.ColorNum;
-        components.FindConnectedT();
+        var components = FindConnectedComponents(info, painted);
         var subMeshes = new List<DMesh3>();
         foreach (var component in components)
         {
@@ -82,10 +80,8 @@ public class OnePointAlgorithm : Algorithm
             subMeshes.Add(newMesh);
         }
 
-        var totalNewMesh = MeshEditor.Combine(subMeshes.ToArray());
-        totalNewMesh.EnableTriangleGroups(info.data.ColorNum);
-        var newObj = StaticFunctions.SpawnNewObject(totalNewMesh);
-        newObj.GetComponent<Generate>().cuttingInfo = info;
+        InstantiateNewObjects(info, subMeshes);
+        
 
         return info.mesh;
     }

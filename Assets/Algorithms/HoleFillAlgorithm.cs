@@ -52,7 +52,7 @@ namespace Assets.Algorithms
                                 var edgeAOldMesh = subMesh.MapVertexToBaseMesh(vertices.a);
                                 var edgeBOldMesh = subMesh.MapVertexToBaseMesh(vertices.b);
                                 var edgeCOldMesh = subMesh.MapVertexToBaseMesh(vertices.c);
-                                info.mesh.AppendTriangle(edgeAOldMesh, edgeCOldMesh, edgeBOldMesh);
+                                info.mesh.AppendTriangle(edgeAOldMesh, edgeCOldMesh, edgeBOldMesh, info.data.mainColorId);
                             }
                             else //case where multiple tris and a middle vertex were added
                             {

@@ -17,17 +17,19 @@ public class OnePointAlgorithm : Algorithm
         var painted = FindPaintedTriangles(info.mesh, info.data.ColorNum);
         if (painted.Count <= 0) return info.mesh;
 
-        var components = FindConnectedComponents(info, painted);
+        var components = new MeshConnectedComponents(info.mesh);
+        components.FilterF = i => info.mesh.GetTriangleGroup(i) == info.data.ColorNum;
+        components.FindConnectedT();
         var subMeshes = new List<DMesh3>();
         foreach (var component in components)
         {
             DSubmesh3 subMesh = new DSubmesh3(info.mesh, component.Indices);
             var newMesh = subMesh.SubMesh;
             newMesh.EnableTriangleGroups();
-            //newMesh.EnableVertexColors(new Vector3f(1, 1, 1));
+            
             var normals = new List<Vector3d>();
             var vertices = new List<Vector3d>();
-            var verticesInNewMesh = new Dictionary<Vector3d, int>();
+            
             foreach (var componentTriIndex in component.Indices)
             {
                 var tri = info.mesh.GetTriangle(componentTriIndex);
@@ -39,11 +41,6 @@ public class OnePointAlgorithm : Algorithm
                 vertices.Add(orgB);
                 var orgC = info.mesh.GetVertex(tri.c);
                 vertices.Add(orgC);
-                //var intA = StaticFunctions.AppendIfNotExists(verticesInNewMesh, orgA, newMesh);
-                //var intB = StaticFunctions.AppendIfNotExists(verticesInNewMesh, orgB, newMesh);
-                //var intC = StaticFunctions.AppendIfNotExists(verticesInNewMesh, orgC, newMesh);
-
-                //newMesh.AppendTriangle(intA, intB, intC, info.data.ColorNum);
             }
 
             var avgNormal = normals.Average();
@@ -59,12 +56,6 @@ public class OnePointAlgorithm : Algorithm
             var newPointIdInOldMesh = info.mesh.AppendVertex(newPoint);
             info.PointToPoint.Add(newPointId, newPointIdInOldMesh);
 
-            //var eids = info.mesh.BoundaryEdgeIndices().ToList();
-            //foreach (var openEdge in eids)
-            //{
-            //    AddTriangle(info.mesh, openEdge, newPointIdInOldMesh, ColorManager.Instance.MainColorId);
-            //}
-            
             var eidsNewMesh = newMesh.BoundaryEdgeIndices().ToList();
             foreach (var openEdge in eidsNewMesh)
             {
@@ -74,9 +65,6 @@ public class OnePointAlgorithm : Algorithm
                     newPointIdInOldMesh, ColorManager.Instance.MainColorId);
             }
 
-            //info.mesh.SetVertexColor(newPointIdInOldMesh, ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f());
-
-            //newMesh.SetVertexColor(newPointId, ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f());
             subMeshes.Add(newMesh);
         }
 

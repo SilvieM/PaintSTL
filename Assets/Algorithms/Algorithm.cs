@@ -57,7 +57,7 @@ public class Algorithm
 
     public static void InstantiateNewObjects(CuttingInfo info, List<DMesh3> subMeshes)
     {
-        if (info.data.Multipiece)
+        if (info.data.Multipiece||subMeshes.Count<=1)
         {
             foreach (var subMesh in subMeshes)
             {
@@ -71,7 +71,7 @@ public class Algorithm
             var totalNewMesh = MeshEditor.Combine(subMeshes.ToArray());
             totalNewMesh.EnableTriangleGroups(info.data.ColorNum);
             var newObj = StaticFunctions.SpawnNewObject(totalNewMesh);
-            newObj.GetComponent<Generate>().cuttingInfo = info; //todo do we need to fix PointToPoint if we combine?
+            newObj.GetComponent<Generate>().cuttingInfo = info; //todo we need to fix PointToPoint for Point algo if we combine
         }
     }
 

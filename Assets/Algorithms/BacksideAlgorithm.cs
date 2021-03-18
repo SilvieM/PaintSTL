@@ -43,7 +43,7 @@ public class BacksideAlgorithm : Algorithm
         var subMeshes = new List<DMesh3>();
         foreach (var component in components.Components)
         {
-            DSubmesh3 subMesh = new DSubmesh3(info.mesh, component.Indices);
+            DSubmesh3 subMesh = new DSubmesh3(info.mesh, new List<int>()); //component.Indices
             var newMesh = subMesh.SubMesh;
             newMesh.EnableTriangleGroups();
             newMesh.EnableVertexColors(ColorManager.Instance.GetColorForId(info.data.ColorNum).toVector3f());
@@ -123,7 +123,7 @@ public class BacksideAlgorithm : Algorithm
                     stati[triangle.c].idNewMeshInner.Value, stati[triangle.b].idNewMeshInner.Value, info.data.ColorNum);
                 var newTriInnerOldMesh = info.mesh.AppendTriangle(stati[triangle.a].idOldMeshInner.Value,
                     stati[triangle.b].idOldMeshInner.Value, stati[triangle.c].idOldMeshInner.Value,
-                    ColorManager.Instance.MainColorId);
+                    info.data.mainColorId);
             }
 
             if (info.data.modifier == CutSettingData.Modifier.DepthDependant)
@@ -147,7 +147,7 @@ public class BacksideAlgorithm : Algorithm
                 var edgeOriented = info.mesh.GetOrientedBoundaryEdgeV(openEdge);
                 int thirdPoint = Corresponding(stati, edgeOriented.a, false);
                 var newTriSide = info.mesh.AppendTriangle(edgeOriented.b, edgeOriented.a, thirdPoint,
-                    ColorManager.Instance.MainColorId);
+                    info.data.mainColorId);
             }
 
 

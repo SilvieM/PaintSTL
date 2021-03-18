@@ -80,7 +80,7 @@ namespace Assets.Algorithms
                                 var edgeAOldMesh = info.PointToPoint[vertices.a];
                                 var edgeBOldMesh = info.PointToPoint[vertices.b];
                                 var edgeCOldMesh = info.PointToPoint[vertices.c];
-                                info.mesh.AppendTriangle(edgeAOldMesh, edgeCOldMesh, edgeBOldMesh);
+                                info.mesh.AppendTriangle(edgeAOldMesh, edgeCOldMesh, edgeBOldMesh, info.data.mainColorId);
                             }
                             else //case where multiple tris and a middle vertex were added
                             {

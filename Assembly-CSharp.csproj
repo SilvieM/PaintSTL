@@ -63,6 +63,7 @@
     <Compile Include="Assets\Scripts\SimpleCameraController.cs" />
     <Compile Include="Assets\StandaloneFileBrowser\Sample\BasicSample.cs" />
     <Compile Include="Assets\DataClasses\CuttingInfo.cs" />
+    <Compile Include="Assets\Algorithms\OffsetHoleFill.cs" />
     <Compile Include="Assets\ColorManager.cs" />
     <Compile Include="Assets\ColorChange.cs" />
     <Compile Include="Assets\StandaloneFileBrowser\Sample\CanvasSampleOpenFileText.cs" />
@@ -132,7 +133,6 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeA.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\EnvMapAnimator.cs" />
     <Compile Include="Assets\StandaloneFileBrowser\Sample\CanvasSampleSaveFileText.cs" />
-    <Compile Include="Assets\Algorithms\OffsetHoleFill.cs" />
   </ItemGroup>
   <ItemGroup>
      <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
